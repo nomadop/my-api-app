@@ -8,7 +8,7 @@ class LoadInventoryJob < ApplicationJob
 
     option = {
         method: :get,
-        url: "http://steamcommunity.com/inventory/#{steam_id}/753/6?l=schinese'",
+        url: "http://steamcommunity.com/inventory/#{steam_id}/753/6?l=schinese",
         headers: {
             :Accept => '*/*',
             :'Accept-Encoding' => 'gzip, deflate, sdch',
