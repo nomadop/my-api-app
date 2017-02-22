@@ -18,11 +18,20 @@ class Authentication
       redis.set(:account, account)
     end
 
+    def steam_id
+      redis.get(:steam_id)
+    end
+
+    def steam_id=(steam_id)
+      redis.set(:steam_id, steam_id)
+    end
+
     def as_json(options)
-      { cookie: cookie, account: account }
+      { cookie: cookie, account: account, steam_id: steam_id }
     end
 
     def update(params)
+      self.steam_id = params[:steam_id]
       self.account = params[:account]
       self.cookie = params[:cookie]
     end
