@@ -1,10 +1,10 @@
 class AuthenticationsController < ApplicationController
   def show
-    render json: AuthenticationRecord
+    render json: Authentication
   end
 
   def update
-    AuthenticationRecord.update(params)
-    render json: AuthenticationRecord
+    Authentication.update(params)
+    render json: Authentication
   end
 end

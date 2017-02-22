@@ -1,4 +1,4 @@
-class AuthenticationRecord
+class Authentication
   class << self
     attr_reader :redis
 
