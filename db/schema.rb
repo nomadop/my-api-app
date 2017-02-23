@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170222054528) do
+ActiveRecord::Schema.define(version: 20170223031322) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -53,6 +53,38 @@ ActiveRecord::Schema.define(version: 20170222054528) do
     t.json     "owner_descriptions"
     t.index ["appid"], name: "index_inventory_descriptions_on_appid", using: :btree
     t.index ["classid", "instanceid"], name: "index_inventory_descriptions_on_classid_and_instanceid", using: :btree
+  end
+
+  create_table "market_assets", id: :bigserial, force: :cascade do |t|
+    t.string   "amount"
+    t.string   "app_icon"
+    t.integer  "appid"
+    t.string   "background_color"
+    t.string   "classid"
+    t.integer  "commodity"
+    t.string   "contextid"
+    t.integer  "currency"
+    t.json     "descriptions"
+    t.string   "icon_url"
+    t.string   "icon_url_large"
+    t.string   "market_hash_name"
+    t.string   "market_marketable_restriction"
+    t.string   "market_name"
+    t.string   "market_tradable_restriction"
+    t.integer  "marketable"
+    t.string   "name"
+    t.string   "original_amount"
+    t.integer  "owner"
+    t.json     "owner_actions"
+    t.integer  "status"
+    t.integer  "tradable"
+    t.string   "type"
+    t.integer  "item_nameid"
+    t.datetime "created_at",                    null: false
+    t.datetime "updated_at",                    null: false
+    t.string   "instanceid"
+    t.index ["classid"], name: "index_market_assets_on_classid", using: :btree
+    t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
   end
 
 end
