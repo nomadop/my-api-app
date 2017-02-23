@@ -1,6 +1,6 @@
 class CreateMarketAssets < ActiveRecord::Migration[5.0]
   def change
-    create_table :market_assets do |t|
+    create_table :market_assets, id: false do |t|
       t.string :amount
       t.string :app_icon
       t.integer :appid
@@ -12,7 +12,7 @@ class CreateMarketAssets < ActiveRecord::Migration[5.0]
       t.json :descriptions
       t.string :icon_url
       t.string :icon_url_large
-      t.string :instance_id
+      t.string :instanceid
       t.string :market_hash_name
       t.string :market_marketable_restriction
       t.string :market_name
@@ -28,8 +28,7 @@ class CreateMarketAssets < ActiveRecord::Migration[5.0]
       t.integer :item_nameid
       t.timestamps
     end
-    change_column :market_assets, :id, :bigint
-    add_index :market_assets, :classid
+    add_index :market_assets, :classid, unique: true
     add_index :market_assets, :item_nameid
   end
 end
