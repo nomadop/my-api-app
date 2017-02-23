@@ -31,10 +31,8 @@ class Inventory
       result = load_all
       assets = result['assets']
       InventoryAsset.transaction do
-        assets.each do |json|
-          asset = InventoryAsset.find_or_create_by(assetid: json['assetid'])
-          asset.update(json)
-        end
+        InventoryAsset.destroy_all
+        InventoryAsset.create(assets)
       end
       descriptions = result['descriptions']
       InventoryDescription.transaction do
