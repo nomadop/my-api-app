@@ -1,4 +1,5 @@
 class MarketAsset < ApplicationRecord
+  include ActAsGooItem
   self.inheritance_column = nil
 
   class << self
