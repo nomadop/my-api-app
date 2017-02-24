@@ -15,3 +15,7 @@
 
 # Ignore Byebug command history file.
 .byebug_history
+
+/config/database.yml
+/config/secrets.yml
+/config/certs/ca_certificate.pem
