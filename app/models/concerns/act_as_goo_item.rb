@@ -30,9 +30,7 @@ module ActAsGooItem
     }
     response = RestClient::Request.execute(option)
 
-    if response.code == 200
-      result = JSON.parse(response.body)
-      result['goo_value']
-    end
+    result = JSON.parse(response.body)
+    result['goo_value']
   end
 end

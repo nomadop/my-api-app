@@ -15,4 +15,14 @@ class MarketAsset < ApplicationRecord
 
     LoadOrderHistogramJob.perform_later(item_nameid)
   end
+
+  def load_goo_value
+    return false if owner_actions.nil?
+
+    queue = Sidekiq::Queue.new
+    in_queue = queue.any? { |job| job.display_class == 'GetGooValueJob' && job.display_args == [classid] }
+    return false if in_queue
+
+    GetGooValueJob.perform_later(classid)
+  end
 end
