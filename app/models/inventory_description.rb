@@ -8,6 +8,7 @@ class InventoryDescription < ApplicationRecord
   belongs_to :market_asset, foreign_key: :classid
 
   def load_market_asset
+    return false if marketable == 0
     return false unless market_asset.nil?
 
     queue = Sidekiq::Queue.new

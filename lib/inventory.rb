@@ -42,7 +42,7 @@ class Inventory
               instanceid: json['instanceid']
           )
           description.update(json)
-          description.load_market_asset
+          description.load_market_asset if description.marketable == 0
         end
       end
     end
