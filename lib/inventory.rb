@@ -42,7 +42,7 @@ class Inventory
               instanceid: json['instanceid']
           )
           description.update(json)
-          LoadMarketAssetJob.perform_later(description.market_hash_name) if description.market_asset.nil?
+          description.load_market_asset
         end
       end
     end

@@ -1,7 +1,7 @@
 class Market
   class << self
     def load_asset(market_hash_name)
-      response = RestClient.get("http://steamcommunity.com/market/listings/753/#{market_hash_name}")
+      response = RestClient.get("http://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}")
       html = response.body
       assets = Utility.match_json_var('g_rgAssets', html)
       asset = assets&.values&.[](0)&.values&.[](0)&.values&.[](0)

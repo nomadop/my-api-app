@@ -4,7 +4,7 @@ class LoadMarketAssetJob < ApplicationJob
   def perform(market_hash_name)
     Market.load_asset(market_hash_name)
   rescue Exception => e
-    puts [e.message, e.backtrace]
+    puts [e.inspect, e.backtrace]
     ps = Sidekiq::ProcessSet.new
     ps.each(&:stop!)
   end
