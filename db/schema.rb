@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170224083733) do
+ActiveRecord::Schema.define(version: 20170224090640) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -91,8 +91,8 @@ ActiveRecord::Schema.define(version: 20170224083733) do
 
   create_table "order_histograms", force: :cascade do |t|
     t.string   "item_nameid"
-    t.string   "highest_buy_order"
-    t.string   "lowest_sell_order"
+    t.integer  "highest_buy_order"
+    t.integer  "lowest_sell_order"
     t.json     "buy_order_graph"
     t.json     "sell_order_graph"
     t.datetime "created_at",        null: false
