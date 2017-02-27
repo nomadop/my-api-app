@@ -47,5 +47,14 @@ class InventoryAsset < ApplicationRecord
   def quick_sell
     sell(order_histogram.lowest_sell_order_exclude_vat)
   end
+
+  def quick_sell_later
+    return false if order_histogram.nil?
+
+    queue = Sidekiq::Queue.new
+    in_queue = queue.any? { |job| job.display_class == 'QuickSellAssetJob' && job.display_args == [id] }
+    return false if in_queue
+
+    QuickSellAssetJob.perform_later(id)
   end
 end

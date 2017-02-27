@@ -46,5 +46,17 @@ class Inventory
         end
       end
     end
+
+    def auto_sell
+      inventory_assets = InventoryAsset.all
+      order_histograms = inventory_assets.map(&:order_histogram).compact
+      order_histograms.each(&:refresh)
+
+      prepare = inventory_assets.select do |asset|
+        price = asset.market_asset&.price_per_goo_exclude_vat || Float::INFINITY
+        price&.> 0.6
+      end
+      prepare.each(&:quick_sell_later)
+    end
   end
 end
