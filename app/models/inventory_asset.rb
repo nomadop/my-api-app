@@ -4,6 +4,7 @@ class InventoryAsset < ApplicationRecord
           class_name: 'InventoryDescription', primary_key: :classid, foreign_key: :classid
 
   has_one :market_asset, through: :description
+  has_one :order_histogram, through: :market_asset
 
   def sell(price)
     account = Authentication.account
@@ -44,6 +45,7 @@ class InventoryAsset < ApplicationRecord
   end
 
   def quick_sell
-    sell(market_asset.order_histogram.lowest_sell_order_exclude_vat)
+    sell(order_histogram.lowest_sell_order_exclude_vat)
+  end
   end
 end

@@ -8,4 +8,8 @@ class OrderHistogram < ApplicationRecord
   def lowest_sell_order_exclude_vat
     Utility.exclude_val(lowest_sell_order)
   end
+
+  def refrest
+    Market.load_order_histogram(item_nameid)
+  end
 end
