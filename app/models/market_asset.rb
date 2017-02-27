@@ -25,4 +25,16 @@ class MarketAsset < ApplicationRecord
 
     GetGooValueJob.perform_later(classid)
   end
+
+  def price_per_goo
+    return Float::INFINITY if item_nameid.nil? || goo_value.nil?
+
+    1.0 * order_histogram.lowest_sell_order / goo_value
+  end
+
+  def price_per_goo_exclude_vat
+    return Float::INFINITY if item_nameid.nil? || goo_value.nil?
+
+    1.0 * order_histogram.lowest_sell_order_exclude_vat / goo_value
+  end
 end
