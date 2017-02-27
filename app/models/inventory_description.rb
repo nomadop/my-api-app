@@ -9,7 +9,6 @@ class InventoryDescription < ApplicationRecord
 
   def load_market_asset
     return false if marketable == 0
-    return false unless market_asset.nil?
 
     queue = Sidekiq::Queue.new
     in_queue = queue.any? { |job| job.display_class == 'LoadMarketAssetJob' && job.display_args == [market_hash_name] }
