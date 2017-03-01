@@ -9,7 +9,7 @@ class OrderHistogram < ApplicationRecord
     Utility.exclude_val(lowest_sell_order)
   end
 
-  def refrest
+  def refresh
     Market.load_order_histogram(item_nameid)
   end
 end
