@@ -6,7 +6,7 @@ class Market
       asset = assets&.values&.[](0)&.values&.[](0)&.values&.[](0)
       return nil if asset.nil? or asset.empty?
 
-      asset_model = MarketAsset.find_or_create_by(classid: asset['classid'])
+      asset_model = MarketAsset.find_or_initialize_by(classid: asset['classid'])
       item_nameid = /Market_LoadOrderSpread\( (\d+) \);/.match(html)&.[] 1
       asset_model.update(asset.except('id').merge(item_nameid: item_nameid))
       asset_model

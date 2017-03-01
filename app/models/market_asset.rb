@@ -6,6 +6,8 @@ class MarketAsset < ApplicationRecord
   has_one :inventory_description, foreign_key: :classid
   has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
 
+  after_create :load_order_histogram, :load_goo_value
+
   def load_order_histogram
     return false if item_nameid.nil?
 

@@ -1,5 +1,5 @@
 class ScanMarketJob < ApplicationJob
-  queue_as :default
+  queue_as :low
 
   def perform(query, start, count)
     result = Market.search(query, start, count)
