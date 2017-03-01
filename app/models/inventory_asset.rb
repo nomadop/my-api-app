@@ -57,4 +57,42 @@ class InventoryAsset < ApplicationRecord
 
     QuickSellAssetJob.perform_later(id)
   end
+
+  def grind_into_goo
+    account = Authentication.account
+    cookie = Authentication.cookie
+    scanner = HTTP::Cookie::Scanner.new(cookie)
+    scanner.skip_until(/sessionid=/)
+    sessionid = scanner.scan_value
+
+    option = {
+        method: :post,
+        url: "http://steamcommunity.com/id/#{account}/ajaxgrindintogoo/",
+        headers: {
+            :Accept => '*/*',
+            :'Accept-Encoding' => 'gzip, deflate, br',
+            :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+            :'Cache-Control' => 'no-cache',
+            :'Connection' => 'keep-alive',
+            :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+            :'Cookie' => cookie,
+            :'Host' => 'steamcommunity.com',
+            :'Origin' => 'http://steamcommunity.com',
+            :'Pragma' => 'no-cache',
+            :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+            :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+            :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: {
+            sessionid: sessionid,
+            appid: appid,
+            contextid: contextid,
+            assetid: assetid,
+            goo_value_expected: market_asset.goo_value
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+    }
+    RestClient::Request.execute(option)
+  end
 end

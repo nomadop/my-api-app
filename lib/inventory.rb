@@ -58,5 +58,17 @@ class Inventory
       end
       prepare.each(&:quick_sell_later)
     end
+
+    def auto_grind
+      inventory_assets = InventoryAsset.includes(:order_histogram)
+      order_histograms = inventory_assets.map(&:order_histogram).compact
+      order_histograms.each(&:refresh)
+
+      prepare = inventory_assets.select do |asset|
+        price = asset.market_asset&.price_per_goo_exclude_vat
+        price&.<= 0.6
+      end
+      prepare.each(&:grind_into_goo)
+    end
   end
 end
