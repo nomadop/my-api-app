@@ -29,12 +29,41 @@ class Market
               currency: 23,
               item_nameid: item_nameid
           },
-          proxy: 'http://127.0.0.1:8888'
       })
       result = JSON.parse(response.body)
       order_histogram = OrderHistogram.find_or_create_by(item_nameid: item_nameid)
       order_histogram.update(result.slice('highest_buy_order', 'lowest_sell_order', 'buy_order_graph', 'sell_order_graph'))
       order_histogram
+    end
+
+    def search(query, start = 0, count = 10)
+      response = RestClient.get('http://steamcommunity.com/market/search/render/', {
+          params: {
+              query: query,
+              start: start,
+              count: count,
+              search_descriptions: 0,
+              sort_column: 'default',
+              sort_dir: 'desc'
+          },
+      })
+      JSON.parse(response.body)
+    end
+
+    def save_search_result(result)
+      doc = Nokogiri::HTML(result['results_html'])
+      rows = doc.search('.market_listing_row_link')
+
+      MarketSearchResult.transaction do
+        rows.each do |row|
+          listing_url = row.attr(:href)
+          item_name = row.search('.market_listing_item_name')&.inner_text
+          game_name = row.search('.market_listing_game_name')&.inner_text
+
+          model = MarketSearchResult.find_or_initialize_by(listing_url: listing_url)
+          model.update(item_name: item_name, game_name: game_name)
+        end
+      end
     end
   end
 end
