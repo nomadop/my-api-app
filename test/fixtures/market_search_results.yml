@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  listing_url: MyString
+  item_name: MyString
+  game_name: MyString
+
+two:
+  listing_url: MyString
+  item_name: MyString
+  game_name: MyString

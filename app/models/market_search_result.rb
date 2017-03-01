@@ -1,0 +1,2 @@
+class MarketSearchResult < ApplicationRecord
+end

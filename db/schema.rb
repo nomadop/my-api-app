@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170301053811) do
+ActiveRecord::Schema.define(version: 20170301071815) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -88,6 +88,16 @@ ActiveRecord::Schema.define(version: 20170301053811) do
     t.integer  "goo_value"
     t.index ["classid"], name: "index_market_assets_on_classid", unique: true, using: :btree
     t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
+  end
+
+  create_table "market_search_results", force: :cascade do |t|
+    t.string   "listing_url"
+    t.string   "item_name"
+    t.string   "game_name"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["game_name"], name: "index_market_search_results_on_game_name", using: :btree
+    t.index ["listing_url"], name: "index_market_search_results_on_listing_url", unique: true, using: :btree
   end
 
   create_table "order_histograms", force: :cascade do |t|
