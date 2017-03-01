@@ -48,7 +48,7 @@ class Inventory
     end
 
     def auto_sell
-      inventory_assets = InventoryAsset.all
+      inventory_assets = InventoryAsset.includes(:order_histogram)
       order_histograms = inventory_assets.map(&:order_histogram).compact
       order_histograms.each(&:refresh)
 

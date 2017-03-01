@@ -3,7 +3,7 @@ class InventoryAsset < ApplicationRecord
           ->(asset) { where(instanceid: asset.instanceid) },
           class_name: 'InventoryDescription', primary_key: :classid, foreign_key: :classid
 
-  has_one :market_asset, through: :description
+  has_one :market_asset, primary_key: :classid, foreign_key: :classid
   has_one :order_histogram, through: :market_asset
 
   def sell(price)
