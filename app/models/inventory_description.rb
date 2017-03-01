@@ -7,13 +7,24 @@ class InventoryDescription < ApplicationRecord
            class_name: 'InventoryAsset', primary_key: :classid, foreign_key: :classid
   belongs_to :market_asset, foreign_key: :classid
 
+  scope :marketable, -> { where(marketable: 1) }
+  scope :unmarketable, -> { where(marketable: 0) }
+
   def load_market_asset
-    return false if marketable == 0
+    return false if unmarketable?
 
     queue = Sidekiq::Queue.new
     in_queue = queue.any? { |job| job.display_class == 'LoadMarketAssetJob' && job.display_args == [market_hash_name] }
     return false if in_queue
 
     LoadMarketAssetJob.perform_later(market_hash_name)
+  end
+
+  def marketable?
+    marketable == 1
+  end
+
+  def unmarketable?
+    marketable == 0
   end
 end
