@@ -51,11 +51,7 @@ class InventoryAsset < ApplicationRecord
   def quick_sell_later
     return false if order_histogram.nil?
 
-    queue = Sidekiq::Queue.new
-    in_queue = queue.any? { |job| job.display_class == 'QuickSellAssetJob' && job.display_args == [id] }
-    return false if in_queue
-
-    QuickSellAssetJob.perform_later(id)
+    ApplicationJob.perform_unique(QuickSellAssetJob, id)
   end
 
   def grind_into_goo

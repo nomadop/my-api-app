@@ -13,11 +13,7 @@ class InventoryDescription < ApplicationRecord
   def load_market_asset
     return false if unmarketable?
 
-    queue = Sidekiq::Queue.new
-    in_queue = queue.any? { |job| job.display_class == 'LoadMarketAssetJob' && job.display_args == [market_hash_name] }
-    return false if in_queue
-
-    LoadMarketAssetJob.perform_later(market_hash_name)
+    ApplicationJob.perform_unique(LoadMarketAssetJob, market_hash_name)
   end
 
   def marketable?
