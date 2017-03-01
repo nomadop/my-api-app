@@ -36,11 +36,13 @@ class Authentication
       self.cookie = params[:cookie] if params[:cookie]
     end
 
-    def refresh
+    def cookie_jar
       uri = URI('http://store.steampowered.com')
       parse_cookie = Proc.new {|c| HTTP::Cookie.parse(c, uri)}
-      jar = cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new, &:add)
+      cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new, &:add)
+    end
 
+    def refresh
       option = {
           method: :get,
           url: 'https://store.steampowered.com/login/checkstoredlogin/?redirectURL=0',
@@ -61,7 +63,7 @@ class Authentication
           ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
-      response.cookie_jar.cookies.reduce(jar, &:add)
+      jar = response.cookie_jar.cookies.reduce(cookie_jar, &:add)
       self.cookie = jar.cookies.join(';')
     end
   end
