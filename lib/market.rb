@@ -1,7 +1,6 @@
 class Market
   class << self
-    def load_asset(market_hash_name)
-      response = RestClient.get("http://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}")
+    def load_asset(response)
       html = response.body
       assets = Utility.match_json_var('g_rgAssets', html)
       asset = assets&.values&.[](0)&.values&.[](0)&.values&.[](0)
@@ -11,6 +10,16 @@ class Market
       item_nameid = /Market_LoadOrderSpread\( (\d+) \);/.match(html)&.[] 1
       asset_model.update(asset.except('id').merge(item_nameid: item_nameid))
       asset_model
+    end
+
+    def load_asset_by_url(url)
+      response = RestClient.get(url)
+      load_asset(response)
+    end
+
+    def load_asset_by_hash_name(market_hash_name)
+      response = RestClient.get("http://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}")
+      load_asset(response)
     end
 
     def load_order_histogram(item_nameid)
