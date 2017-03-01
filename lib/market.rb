@@ -65,5 +65,9 @@ class Market
         end
       end
     end
+
+    def scan(query)
+      ScanMarketJob.perform_later(query, 0, 100)
+    end
   end
 end
