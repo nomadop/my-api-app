@@ -7,6 +7,7 @@ class MarketAsset < ApplicationRecord
   has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
 
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
+  scope :trading_card, -> { where('type LIKE \'%Trading Card\'') }
 
   after_create :load_order_histogram, :load_goo_value
 
