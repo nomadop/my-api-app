@@ -50,18 +50,17 @@ class Market
       JSON.parse(response.body)
     end
 
-    def save_search_result(result)
+    def handle_search_result(result)
       doc = Nokogiri::HTML(result['results_html'])
       rows = doc.search('.market_listing_row_link')
 
-      MarketSearchResult.transaction do
-        rows.each do |row|
-          listing_url = row.attr(:href)
-          item_name = row.search('.market_listing_item_name')&.inner_text
-          game_name = row.search('.market_listing_game_name')&.inner_text
+      rows.each do |row|
+        url = row.attr(:href)
+        name = row.search('.market_listing_item_name')&.inner_text
+        type = row.search('.market_listing_game_name')&.inner_text
 
-          model = MarketSearchResult.find_or_initialize_by(listing_url: listing_url)
-          model.update(item_name: item_name, game_name: game_name)
+        if MarketAsset.where(market_name: name, type: type).empty?
+          ApplicationJob.perform_unique(LoadMarketAssetJob, url: url)
         end
       end
     end
