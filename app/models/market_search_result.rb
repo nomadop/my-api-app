@@ -1,2 +1,0 @@
-class MarketSearchResult < ApplicationRecord
-end

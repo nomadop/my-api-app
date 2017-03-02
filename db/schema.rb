@@ -86,21 +86,9 @@ ActiveRecord::Schema.define(version: 20170301083008) do
     t.datetime "updated_at",                    null: false
     t.json     "actions"
     t.integer  "goo_value"
-    t.integer  "market_search_result_id"
     t.integer  "market_fee_app"
     t.index ["classid"], name: "index_market_assets_on_classid", unique: true, using: :btree
     t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
-    t.index ["market_search_result_id"], name: "index_market_assets_on_market_search_result_id", using: :btree
-  end
-
-  create_table "market_search_results", force: :cascade do |t|
-    t.string   "listing_url"
-    t.string   "item_name"
-    t.string   "game_name"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-    t.index ["game_name"], name: "index_market_search_results_on_game_name", using: :btree
-    t.index ["listing_url"], name: "index_market_search_results_on_listing_url", unique: true, using: :btree
   end
 
   create_table "order_histograms", force: :cascade do |t|
