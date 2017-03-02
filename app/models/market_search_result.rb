@@ -9,10 +9,4 @@ class MarketSearchResult < ApplicationRecord
       save
     end
   end
-
-  def load_market_asset_later
-    return unless market_asset.nil?
-
-    ApplicationJob.perform_unique(LoadMarketAssetJob, market_search_result_id: id)
-  end
 end

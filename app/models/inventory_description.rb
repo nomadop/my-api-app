@@ -13,7 +13,7 @@ class InventoryDescription < ApplicationRecord
   def load_market_asset
     return false if unmarketable?
 
-    ApplicationJob.perform_unique(LoadMarketAssetJob, market_hash_name: market_hash_name)
+    ApplicationJob.perform_unique(LoadMarketAssetJob, market_hash_name)
   end
 
   def marketable?
