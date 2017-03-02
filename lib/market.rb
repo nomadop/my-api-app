@@ -1,4 +1,10 @@
 class Market
+  ALLOWED_ASSET_TYPE = [
+      'Booster Pack', 'Trading Card', 'Foil Trading Card',
+      'Emoticon', 'Rare Emoticon', 'Uncommon Emoticon',
+      'Profile Background', 'Rare Profile Background', 'Uncommon Profile Background',
+  ]
+
   class << self
     def load_asset(response)
       html = response.body
@@ -58,6 +64,7 @@ class Market
         url = row.attr(:href)
         name = row.search('.market_listing_item_name')&.inner_text
         type = row.search('.market_listing_game_name')&.inner_text
+        next if ALLOWED_ASSET_TYPE.none?(&type.method(:end_with?))
 
         if MarketAsset.where(market_name: name, type: type).empty?
           ApplicationJob.perform_unique(LoadMarketAssetJob, url: url)
