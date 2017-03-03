@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170303022306) do
+ActiveRecord::Schema.define(version: 20170303032343) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -99,6 +99,7 @@ ActiveRecord::Schema.define(version: 20170303022306) do
     t.integer  "market_fee_app"
     t.index ["classid"], name: "index_market_assets_on_classid", unique: true, using: :btree
     t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
+    t.index ["type"], name: "index_market_assets_on_type", using: :btree
   end
 
   create_table "order_histograms", force: :cascade do |t|
