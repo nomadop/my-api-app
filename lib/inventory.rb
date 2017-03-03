@@ -70,5 +70,38 @@ class Inventory
       end
       prepare.each(&:grind_into_goo)
     end
+
+    def request_booster_creators
+      cookie = Authentication.cookie
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/tradingcards/boostercreator/',
+          headers: {
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, sdch',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          },
+          proxy: 'http://127.0.0.1:8888'
+      }
+      response = RestClient::Request.execute(option)
+      regexp = /CBoosterCreatorPage.Init\(\s+(.*),\s+parseFloat/
+      JSON.parse(regexp.match(response.body)[1])
+    end
+
+    def load_booster_creators
+      boosters = request_booster_creators
+      BoosterCreator.transaction do
+        boosters.each do |booster|
+          model = BoosterCreator.find_or_initialize_by(appid: booster['appid'])
+          model.update(booster)
+        end
+      end
+    end
   end
 end
