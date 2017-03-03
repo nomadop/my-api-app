@@ -9,6 +9,12 @@ class ApplicationJob < ActiveJob::Base
     end
   end
 
+  rescue_from(RestClient::TooManyRequests) do
+    '429 Too Many Requests, waiting for 3 minutes...'
+    sleep 3.minutes
+    retry_job
+  end
+
   rescue_from(Exception) do |exception|
     ps = Sidekiq::ProcessSet.new
     ps.each do |process|
