@@ -21,8 +21,8 @@ class ApplicationJob < ActiveJob::Base
   end
 
   rescue_from(RestClient::TooManyRequests) do
-    puts '429 Too Many Requests, waiting for 3 minutes...'
-    sleep 3.minutes
+    puts '429 Too Many Requests, waiting for 5 minutes...'
+    sleep 5.minutes
     retry_job
   end
 end
