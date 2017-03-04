@@ -45,7 +45,7 @@ class Market
     def search(query, start = 0, count = 10)
       response = RestClient.get('http://steamcommunity.com/market/search/render/', {
           params: {
-              query: query,
+              query: URI.encode(query),
               start: start,
               count: count,
               search_descriptions: 0,
