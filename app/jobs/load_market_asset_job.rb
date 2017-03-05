@@ -1,5 +1,5 @@
 class LoadMarketAssetJob < ApplicationJob
-  queue_as :low
+  queue_as :market_asset
 
   def perform(option)
     Market.load_asset_by_url(option[:url]) if option[:url]
