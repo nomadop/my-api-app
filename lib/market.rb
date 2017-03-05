@@ -56,7 +56,7 @@ class Market
       JSON.parse(response.body)
     end
 
-    def handle_search_result(result)
+    def handle_search_result(result, game_name = nil)
       doc = Nokogiri::HTML(result['results_html'])
       rows = doc.search('.market_listing_row_link')
 
@@ -64,7 +64,8 @@ class Market
         url = row.attr(:href)
         name = row.search('.market_listing_item_name')&.inner_text
         type = row.search('.market_listing_game_name')&.inner_text
-        next if ALLOWED_ASSET_TYPE.none?(&type.method(:end_with?))
+        allows = game_name.nil? ? ALLOWED_ASSET_TYPE : ALLOWED_ASSET_TYPE.map { |type| "#{game_name} #{type}" }
+        next if allows.none?(&type.method(:end_with?))
 
         if MarketAsset.where(market_name: name, type: type).empty?
           ApplicationJob.perform_unique(LoadMarketAssetJob, url: url)
