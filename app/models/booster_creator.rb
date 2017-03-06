@@ -22,7 +22,7 @@ class BoosterCreator < ApplicationRecord
     standard_variance = variance ** 0.5
     coefficient_of_variation = standard_variance / average
     {
-        total: prices.sum,
+        total: average * 3,
         variance: variance,
         standard_variance: standard_variance,
         coefficient_of_variation: coefficient_of_variation,
@@ -31,7 +31,7 @@ class BoosterCreator < ApplicationRecord
 
   def price_per_goo(include_vat = true)
     prices = include_vat ? trading_card_prices : trading_card_prices_exclude_vat
-    1.0 * prices.sum / price
+    1.0 * prices.sum / prices.size * 3 / price
   end
 
   def scan_market
