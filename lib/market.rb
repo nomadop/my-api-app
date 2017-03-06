@@ -9,7 +9,12 @@ class Market
     def load_asset(response)
       html = response.body
       assets = Utility.match_json_var('g_rgAssets', html)
-      asset = assets&.values&.[](0)&.values&.[](0)&.values&.[](0)
+      app_asset = assets&.values&.[](0)
+      asset = if app_asset.is_a?(Array)
+                app_asset[0][0]
+              else
+                app_asset&.values&.[](0)&.values&.[](0)
+              end
       return nil if asset.nil? or asset.empty?
 
       asset_model = MarketAsset.find_or_initialize_by(classid: asset['classid'])
