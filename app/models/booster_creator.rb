@@ -6,6 +6,12 @@ class BoosterCreator < ApplicationRecord
   has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
            through: :trading_cards, source: :order_histogram
 
+  class << self
+    def refresh_price
+      includes(:trading_card_order_histograms).find_each(&:refresh_price_later)
+    end
+  end
+
   def booster_pack
     MarketAsset.booster_pack.find_by(name: "#{name} Booster Pack")
   end
@@ -44,7 +50,11 @@ class BoosterCreator < ApplicationRecord
   end
 
   def refresh_price
-    trading_card_order_histograms.find_each(&:refresh)
+    trading_card_order_histograms.each(&:refresh)
+  end
+
+  def refresh_price_later
+    trading_card_order_histograms.each(&:refresh_later)
   end
 
   def set_trading_card_type
