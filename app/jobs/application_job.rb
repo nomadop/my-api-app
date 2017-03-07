@@ -20,6 +20,10 @@ class ApplicationJob < ActiveJob::Base
     raise exception
   end
 
+  rescue_from(SocketError) do
+    retry_job
+  end
+
   rescue_from(RestClient::TooManyRequests) do
     puts '429 Too Many Requests, waiting for 5 minutes...'
     sleep 5.minutes
