@@ -43,6 +43,10 @@ class BoosterCreator < ApplicationRecord
     Market.scan(name)
   end
 
+  def refresh_price
+    trading_card_order_histograms.find_each(&:refresh)
+  end
+
   def set_trading_card_type
     self.trading_card_type = "#{name} Trading Card"
   end

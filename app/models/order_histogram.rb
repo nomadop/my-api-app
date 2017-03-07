@@ -12,4 +12,8 @@ class OrderHistogram < ApplicationRecord
   def refresh
     Market.load_order_histogram(item_nameid)
   end
+
+  def refresh_later
+    ApplicationJob.perform_unique(LoadOrderHistogramJob, item_nameid)
+  end
 end
