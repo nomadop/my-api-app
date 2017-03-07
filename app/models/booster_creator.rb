@@ -1,15 +1,17 @@
 class BoosterCreator < ApplicationRecord
   before_save :set_trading_card_type
 
-  has_many :trading_cards, -> { includes(:order_histogram) },
-           class_name: 'MarketAsset', primary_key: :trading_card_type, foreign_key: :type
+  has_many :trading_cards, class_name: 'MarketAsset',
+           primary_key: :trading_card_type, foreign_key: :type
+  has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
+           through: :trading_cards, source: :order_histogram
 
   def booster_pack
     MarketAsset.booster_pack.find_by(name: "#{name} Booster Pack")
   end
 
   def trading_card_prices
-    trading_cards.map(&:order_histogram).compact.map(&:lowest_sell_order).compact
+    trading_card_order_histograms.pluck(:lowest_sell_order).compact
   end
 
   def trading_card_prices_exclude_vat
