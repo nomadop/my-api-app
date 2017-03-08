@@ -21,10 +21,18 @@ class Market
       item_nameid = /Market_LoadOrderSpread\( (\d+) \);/.match(html)&.[] 1
       asset_model.update(asset.except('id').merge(item_nameid: item_nameid))
       asset_model
+    rescue Exception => e
+      puts assets
+      raise e
     end
 
     def load_asset_by_url(url)
-      response = RestClient.get(url)
+      option = {
+          method: :get,
+          url: url,
+          proxy: 'http://localhost:8888',
+      }
+      response = RestClient::Request.execute(option)
       load_asset(response)
     end
 
@@ -73,7 +81,7 @@ class Market
         next if allows.none?(&type.method(:end_with?))
 
         if MarketAsset.where(market_name: name, type: type).empty?
-          ApplicationJob.perform_unique(LoadMarketAssetJob, url: url)
+          ApplicationJob.perform_unique(LoadMarketAssetJob, url)
         end
       end
     end

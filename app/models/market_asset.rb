@@ -21,7 +21,7 @@ class MarketAsset < ApplicationRecord
   def load_goo_value
     return false if owner_actions.nil?
 
-    ApplicationJob.perform_unique(GetGooValueJob, classid)
+    ApplicationJob.perform_unique(GetGooValueJob, classid, wait: 3.seconds)
   end
 
   def price_per_goo

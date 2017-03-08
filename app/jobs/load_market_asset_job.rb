@@ -1,8 +1,8 @@
 class LoadMarketAssetJob < ApplicationJob
   queue_as :market_asset
 
-  def perform(option)
-    Market.load_asset_by_url(option[:url]) if option[:url]
-    Market.load_asset_by_hash_name(option[:market_hash_name]) if option[:market_hash_name]
+  def perform(url, market_hash_name = nil)
+    Market.load_asset_by_url(url) if url
+    Market.load_asset_by_hash_name(market_hash_name) if market_hash_name
   end
 end
