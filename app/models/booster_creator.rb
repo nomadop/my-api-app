@@ -12,6 +12,10 @@ class BoosterCreator < ApplicationRecord
     def refresh_price
       includes(:trading_card_order_histograms).find_each(&:refresh_price_later)
     end
+
+    def scan_all
+      find_each(&:scan_market)
+    end
   end
 
   def booster_pack
