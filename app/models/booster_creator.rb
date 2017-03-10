@@ -6,6 +6,8 @@ class BoosterCreator < ApplicationRecord
   has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
            through: :trading_cards, source: :order_histogram
 
+  scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
+
   class << self
     def refresh_price
       includes(:trading_card_order_histograms).find_each(&:refresh_price_later)
