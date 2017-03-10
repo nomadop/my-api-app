@@ -99,6 +99,7 @@ class Inventory
       BoosterCreator.transaction do
         boosters.each do |booster|
           model = BoosterCreator.find_or_initialize_by(appid: booster['appid'])
+          booster['name'] = Utility.unescapeHTML(booster['name'])
           model.update(booster)
         end
       end

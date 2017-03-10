@@ -9,5 +9,9 @@ class Utility
     def exclude_val(price)
       price - (price * 0.1).floor - (price * 0.05).floor
     end
+
+    def unescapeHTML(string)
+      Nokogiri::HTML.fragment(string).text
+    end
   end
 end
