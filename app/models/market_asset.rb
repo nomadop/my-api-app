@@ -3,12 +3,15 @@ class MarketAsset < ApplicationRecord
   self.inheritance_column = nil
   self.primary_key = :classid
 
+  has_one :my_listing, foreign_key: :classid
   has_one :inventory_description, foreign_key: :classid
   has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
 
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
   scope :trading_card, -> { where('type LIKE \'%Trading Card\'') }
   scope :booster_pack, -> { where(type: 'Booster Pack') }
+  scope :with_my_listing, -> { joins(:my_listing).distinct }
+  scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }
 
   after_create :load_order_histogram, :load_goo_value
 
