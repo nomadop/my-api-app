@@ -55,15 +55,17 @@ class Market
       order_histogram
     end
 
-    def search(query, start = 0, count = 10)
+    def search(appid, start = 0, count = 10)
       response = RestClient.get('http://steamcommunity.com/market/search/render/', {
           params: {
-              query: URI.encode(query),
+              query: '',
               start: start,
               count: count,
               search_descriptions: 0,
               sort_column: 'default',
-              sort_dir: 'desc'
+              sort_dir: 'desc',
+              appid: 753,
+              :'category_753_Game[]' => "tag_app_#{appid}",
           },
       })
       JSON.parse(response.body)
@@ -86,8 +88,8 @@ class Market
       end
     end
 
-    def scan(query)
-      ScanMarketJob.perform_later(query, 0, 100)
+    def scan(appid)
+      ScanMarketJob.perform_later(appid, 0, 100)
     end
   end
 end

@@ -52,7 +52,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def scan_market
-    Market.scan(name)
+    Market.scan(appid)
   end
 
   def refresh_price
