@@ -97,5 +97,49 @@ class Market
     def scan(appid)
       ScanMarketJob.perform_later(appid, 0, 100)
     end
+
+    def request_my_listings(start, count)
+      cookie = Authentication.cookie
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/market/mylistings/render/',
+          headers: {
+              :params => {
+                  start: start,
+                  count: count,
+              },
+              :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+              :'Accept-Encoding' => 'gzip, deflate, sdch',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'http://steamcommunity.com/market/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Prototype-Version' => 1.7,
+          },
+          proxy: 'http://127.0.0.1:8888'
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def handle_my_listing_result(result)
+      assets = result['assets']['753']['6'].values
+      MyListing.destroy_all
+      MyListing.create(assets.map do |asset|
+        {
+            listingid: asset['id'],
+            classid: asset['classid'],
+            market_hash_name: asset['market_hash_name'],
+        }
+      end)
+    end
+
+    def load_my_listings
+      LoadMyListingsJob.perform_later(0, 100)
+    end
   end
 end
