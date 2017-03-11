@@ -1,5 +1,5 @@
 class QuickSellAssetJob < ApplicationJob
-  queue_as :default
+  queue_as :quick_sell
 
   def perform(id)
     InventoryAsset.find(id).quick_sell
