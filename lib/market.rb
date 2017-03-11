@@ -42,13 +42,19 @@ class Market
     end
 
     def load_order_histogram(item_nameid)
-      response = RestClient.get('http://steamcommunity.com/market/itemordershistogram', {
-          params: {
-              language: :english,
-              currency: 23,
-              item_nameid: item_nameid
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/market/itemordershistogram',
+          headers: {
+              params: {
+                  language: :english,
+                  currency: 23,
+                  item_nameid: item_nameid,
+              }
           },
-      })
+          proxy: 'http://localhost:1087/'
+      }
+      response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
       order_histogram = OrderHistogram.find_or_create_by(item_nameid: item_nameid)
       order_histogram.update(result.slice('highest_buy_order', 'lowest_sell_order', 'buy_order_graph', 'sell_order_graph'))
