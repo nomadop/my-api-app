@@ -30,6 +30,11 @@ class BoosterCreator < ApplicationRecord
     trading_card_prices.map(&Utility.method(:exclude_val))
   end
 
+  def trading_card_prices_proportion
+    proportions = trading_card_order_histograms.map(&:proportion)
+    proportions.sum / proportions.size
+  end
+
   def open_price(include_vat = true)
     prices = include_vat ? trading_card_prices : trading_card_prices_exclude_vat
     average = 1.0 * prices.sum / prices.size
