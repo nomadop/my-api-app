@@ -6,6 +6,7 @@ class MarketAsset < ApplicationRecord
   has_one :my_listing, foreign_key: :classid
   has_one :inventory_description, foreign_key: :classid
   has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
+  has_many :buy_orders, primary_key: :market_hash_name, foreign_key: :market_hash_name
 
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
   scope :trading_card, -> { where('type LIKE \'%Trading Card\'') }
