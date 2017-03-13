@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  buy_orderid: MyString
+  active: 1
+  purchased: 1
+  purchases: 
+  quantity: 1
+  quantity_remaining: 1
+  success: 1
+
+two:
+  buy_orderid: MyString
+  active: 1
+  purchased: 1
+  purchases: 
+  quantity: 1
+  quantity_remaining: 1
+  success: 1
