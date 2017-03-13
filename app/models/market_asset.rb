@@ -43,6 +43,7 @@ class MarketAsset < ApplicationRecord
 
   def create_buy_order(price, quantity)
     result = Market.create_buy_order(market_hash_name, price, quantity)
-    BuyOrder.create(result.merge(market_hash_name: market_hash_name)) if result['success'] == 1
+    BuyOrder.create(result.merge(market_hash_name: market_hash_name, price: price)) if result['success'] == 1
+  end
   end
 end
