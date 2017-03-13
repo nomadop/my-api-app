@@ -9,9 +9,7 @@ class InventoryAsset < ApplicationRecord
   def sell(price)
     account = Authentication.account
     cookie = Authentication.cookie
-    scanner = HTTP::Cookie::Scanner.new(cookie)
-    scanner.skip_until(/sessionid=/)
-    sessionid = scanner.scan_value
+    sessionid = Authentication.session_id
 
     option = {
         method: :post,
@@ -41,7 +39,8 @@ class InventoryAsset < ApplicationRecord
         proxy: 'http://127.0.0.1:8888',
         ssl_ca_file: 'config/certs/ca_certificate.pem',
     }
-    RestClient::Request.execute(option)
+    response = RestClient::Request.execute(option)
+    Authentication.update_cookie(response)
   end
 
   def quick_sell
@@ -89,6 +88,7 @@ class InventoryAsset < ApplicationRecord
         proxy: 'http://127.0.0.1:8888',
         ssl_ca_file: 'config/certs/ca_certificate.pem',
     }
-    RestClient::Request.execute(option)
+    response = RestClient::Request.execute(option)
+    Authentication.update_cookie(response)
   end
 end

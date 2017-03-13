@@ -47,6 +47,11 @@ class Authentication
       cookie.value
     end
 
+    def update_cookie(response)
+      jar = response.cookie_jar.cookies.reduce(cookie_jar, &:add)
+      self.cookie = jar.cookies.join(';')
+    end
+
     def refresh
       option = {
           method: :get,
@@ -68,8 +73,7 @@ class Authentication
           ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
-      jar = response.cookie_jar.cookies.reduce(cookie_jar, &:add)
-      self.cookie = jar.cookies.join(';')
+      update_cookie(response)
     end
   end
 
