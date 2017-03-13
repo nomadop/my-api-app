@@ -177,5 +177,34 @@ class Market
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
     end
+
+    def get_buy_order_status(buy_order_id)
+      cookie = Authentication.cookie
+      session_id = Authentication.session_id
+
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/market/getbuyorderstatus/',
+          headers: {
+              :params => {
+                  sessionid: session_id,
+                  buy_orderid: buy_order_id,
+              },
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, br',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'http://steamcommunity.com/market/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
   end
 end
