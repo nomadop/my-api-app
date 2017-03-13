@@ -42,6 +42,11 @@ class Authentication
       cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new, &:add)
     end
 
+    def session_id
+      cookie = cookie_jar.find { |cookie| cookie.name == 'sessionid' }
+      cookie.value
+    end
+
     def refresh
       option = {
           method: :get,
