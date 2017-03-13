@@ -46,5 +46,16 @@ class MarketAsset < ApplicationRecord
     result = Market.create_buy_order(market_hash_name, price, quantity)
     BuyOrder.create(result.merge(market_hash_name: market_hash_name, price: price)) if result['success'] == 1
   end
+
+  def quick_create_buy_order
+    order_histogram.refresh
+    highest_buy_order_graph = order_histogram.highest_buy_order_graph
+    return if 1.0 * highest_buy_order_graph.price / goo_value > 0.5
+
+    create_buy_order(highest_buy_order_graph.price + 1, 1)
+  end
+
+  def quick_create_buy_order_later
+    ApplicationJob.perform_unique(CreateBuyOrderJob, classid)
   end
 end
