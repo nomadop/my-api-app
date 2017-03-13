@@ -13,6 +13,12 @@ class OrderHistogram < ApplicationRecord
     end
   end
 
+  class OrderGraph < Struct.new(:price, :amount)
+    def initialize(graph)
+      super((graph[0] * 100).to_i, graph[1])
+    end
+  end
+
   def proportion
     1.0 * highest_buy_order / lowest_sell_order
   end
@@ -31,5 +37,13 @@ class OrderHistogram < ApplicationRecord
 
   def refresh_later
     ApplicationJob.perform_unique(LoadOrderHistogramJob, item_nameid)
+  end
+
+  def highest_buy_order_graph
+    OrderGraph.new(buy_order_graph.first)
+  end
+
+  def lowest_sell_order_graph
+    OrderGraph.new(sell_order_graph.first)
   end
 end
