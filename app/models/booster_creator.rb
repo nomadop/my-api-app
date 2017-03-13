@@ -16,6 +16,12 @@ class BoosterCreator < ApplicationRecord
     def scan_all
       find_each(&:scan_market)
     end
+
+    def creatable
+      includes(:trading_card_order_histograms).to_a.select do |booster_creator|
+        booster_creator.price_per_goo(false) > 0.6
+      end
+    end
   end
 
   def booster_pack
