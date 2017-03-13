@@ -7,7 +7,7 @@ class Utility
     end
 
     def exclude_val(price)
-      price - (price * 0.1).floor - (price * 0.05).floor
+      (1..price).bsearch { |p| p + (p * 0.1).floor + (p * 0.05).floor >= price }
     end
 
     def unescapeHTML(string)
