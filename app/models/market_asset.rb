@@ -12,6 +12,8 @@ class MarketAsset < ApplicationRecord
   scope :booster_pack, -> { where(type: 'Booster Pack') }
   scope :with_my_listing, -> { joins(:my_listing).distinct }
   scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }
+  scope :buyable, -> { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value < 0.55') }
+  scope :orderable, -> { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < 0.5') }
 
   after_create :load_order_histogram, :load_goo_value
 
@@ -37,5 +39,10 @@ class MarketAsset < ApplicationRecord
     return Float::INFINITY if order_histogram&.lowest_sell_order_exclude_vat.nil? || goo_value.nil?
 
     1.0 * order_histogram.lowest_sell_order_exclude_vat / goo_value
+  end
+
+  def create_buy_order(price, quantity)
+    result = Market.create_buy_order(market_hash_name, price, quantity)
+    BuyOrder.create(result.merge(market_hash_name: market_hash_name)) if result['success'] == 1
   end
 end

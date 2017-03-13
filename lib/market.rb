@@ -141,5 +141,41 @@ class Market
     def load_my_listings
       LoadMyListingsJob.perform_later(0, 100)
     end
+
+    def create_buy_order(market_hash_name, price, quantity)
+      cookie = Authentication.cookie
+      session_id = Authentication.session_id
+
+      option = {
+          method: :post,
+          url: 'https://steamcommunity.com/market/createbuyorder/',
+          headers: {
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, br',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => "http://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}",
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          },
+          payload: {
+              sessionid: session_id,
+              currency: 23,
+              appid: 753,
+              market_hash_name: market_hash_name,
+              price_total: price * quantity,
+              quantity: quantity
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
   end
 end
