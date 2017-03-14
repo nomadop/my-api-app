@@ -5,4 +5,8 @@ class SteamApp < ApplicationRecord
 
   scope :with_market_assets, -> { joins(:market_assets).distinct }
   scope :without_market_assets, -> { left_outer_joins(:market_assets).where(market_assets: {market_fee_app: nil}) }
+
+  def scan_market
+    Market.scan(steam_appid)
+  end
 end
