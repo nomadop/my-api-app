@@ -47,6 +47,14 @@ class Authentication
       cookie.value
     end
 
+    def session_id=(session_id)
+      jar = cookie_jar.tap do |jar|
+        cookie = jar.parse("sessionid=#{session_id}", URI('http://store.steampowered.com'))[0]
+        jar.add(cookie)
+      end
+      self.cookie = jar.cookies.join(';')
+    end
+
     def update_cookie(response)
       jar = response.cookie_jar.cookies.reduce(cookie_jar, &:add)
       self.cookie = jar.cookies.join(';')
