@@ -1,5 +1,5 @@
 class GetGooValueJob < ApplicationJob
-  queue_as :default
+  queue_as :goo_value
 
   def perform(classid)
     description = MarketAsset.find(classid)
