@@ -8,6 +8,8 @@ class MarketAsset < ApplicationRecord
   has_one :inventory_description, foreign_key: :classid
   has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :buy_orders, primary_key: :market_hash_name, foreign_key: :market_hash_name
+  has_many :active_buy_orders, -> { where(active: 1) },
+           class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
 
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
   scope :trading_card, -> { where('type LIKE \'%Trading Card\'') }
@@ -16,6 +18,7 @@ class MarketAsset < ApplicationRecord
   scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }
   scope :buyable, -> { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value < 0.55') }
   scope :orderable, -> { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < 0.5') }
+  scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
 
   after_create :load_order_histogram, :load_goo_value
 
@@ -48,6 +51,12 @@ class MarketAsset < ApplicationRecord
     BuyOrder.create(result.merge(market_hash_name: market_hash_name, price: price)) if result['success'] == 1
   end
 
+  def quick_buy
+    order_histogram.refresh
+    graphs = order_histogram.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= 0.525}
+    graphs.each { |g| create_buy_order(g.price, g.amount) }
+  end
+
   def quick_create_buy_order
     order_histogram.refresh
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
@@ -58,5 +67,9 @@ class MarketAsset < ApplicationRecord
 
   def quick_create_buy_order_later
     ApplicationJob.perform_unique(CreateBuyOrderJob, classid)
+  end
+
+  def buy_info
+    as_json(only: [:market_hash_name, :goo_value], methods: [:price_per_goo])
   end
 end
