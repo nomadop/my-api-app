@@ -78,6 +78,8 @@ class Market
     end
 
     def handle_search_result(result, game_name = nil)
+      return if result['total_count'] == 0
+
       doc = Nokogiri::HTML(result['results_html'])
       rows = doc.search('.market_listing_row_link')
 
