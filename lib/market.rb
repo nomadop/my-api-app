@@ -213,5 +213,38 @@ class Market
       Authentication.update_cookie(response)
       JSON.parse(response.body)
     end
+
+    def cancel_buy_order(buy_order_id)
+      cookie = Authentication.cookie
+      session_id = Authentication.session_id
+
+      option = {
+          method: :post,
+          url: 'http://steamcommunity.com/market/cancelbuyorder/',
+          headers: {
+              :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'http://steamcommunity.com/market/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          },
+          payload: {
+              sessionid: session_id,
+              buy_orderid: buy_order_id,
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      Authentication.update_cookie(response)
+      JSON.parse(response.body)
+    end
   end
 end
