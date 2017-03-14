@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170313091652) do
+ActiveRecord::Schema.define(version: 20170314024130) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -141,6 +141,18 @@ ActiveRecord::Schema.define(version: 20170313091652) do
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false
     t.index ["item_nameid"], name: "index_order_histograms_on_item_nameid", unique: true, using: :btree
+  end
+
+  create_table "steam_apps", force: :cascade do |t|
+    t.string   "type"
+    t.string   "name"
+    t.integer  "steam_appid"
+    t.boolean  "is_free"
+    t.json     "categories"
+    t.json     "genres"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["steam_appid"], name: "index_steam_apps_on_steam_appid", unique: true, using: :btree
   end
 
 end
