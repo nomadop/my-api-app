@@ -1,9 +1,16 @@
 class CreateBuyOrderJob < ApplicationJob
   queue_as :create_buy_order
 
-  def perform(classid)
+  def perform(classid, method)
     market_asset = MarketAsset.find(classid)
-    market_asset.quick_create_buy_order
+    case method
+      when 'quick_create_buy_order'
+        market_asset.quick_create_buy_order
+      when 'quick_buy'
+        market_asset.quick_buy
+      else
+        return
+    end
   end
 
   rescue_from(RestClient::Forbidden) do |exception|
