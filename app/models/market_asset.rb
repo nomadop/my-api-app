@@ -22,6 +22,13 @@ class MarketAsset < ApplicationRecord
 
   after_create :load_order_histogram, :load_goo_value
 
+  class << self
+    def quick_buy(market_hash_name)
+      market_asset = find_by(market_hash_name: market_hash_name)
+      market_asset.quick_buy
+    end
+  end
+
   def load_order_histogram
     return false if item_nameid.nil?
 
@@ -48,7 +55,15 @@ class MarketAsset < ApplicationRecord
 
   def create_buy_order(price, quantity)
     result = Market.create_buy_order(market_hash_name, price, quantity)
-    BuyOrder.create(result.merge(market_hash_name: market_hash_name, price: price)) if result['success'] == 1
+    case result['success']
+      when 1
+        BuyOrder.create(result.merge(market_hash_name: market_hash_name, price: price))
+      when 8
+        Authentication.refresh
+        create_buy_order(price, quantity)
+      else
+        return
+    end
   end
 
   def quick_buy
