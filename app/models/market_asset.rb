@@ -16,8 +16,8 @@ class MarketAsset < ApplicationRecord
   scope :booster_pack, -> { where(type: 'Booster Pack') }
   scope :with_my_listing, -> { joins(:my_listing).distinct }
   scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }
-  scope :buyable, -> { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value < 0.55') }
-  scope :orderable, -> { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < 0.525') }
+  scope :buyable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg) }
+  scope :orderable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg) }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
 
   after_create :load_order_histogram, :load_goo_value
@@ -72,7 +72,7 @@ class MarketAsset < ApplicationRecord
 
   def quick_buy
     order_histogram.refresh
-    graphs = order_histogram.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= 0.525}
+    graphs = order_histogram.reload.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= 0.525}
     graphs.each { |g| create_buy_order(g.price, g.amount) }
   end
 
