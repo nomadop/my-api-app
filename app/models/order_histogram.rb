@@ -13,11 +13,7 @@ class OrderHistogram < ApplicationRecord
     end
   end
 
-  class OrderGraph < Struct.new(:price, :amount)
-    def initialize(graph)
-      super((graph[0] * 100).to_i, graph[1])
-    end
-  end
+  class OrderGraph < Struct.new(:price, :amount); end
 
   def proportion
     1.0 * highest_buy_order / lowest_sell_order
@@ -39,11 +35,23 @@ class OrderHistogram < ApplicationRecord
     ApplicationJob.perform_unique(LoadOrderHistogramJob, item_nameid)
   end
 
+  def buy_order_graphs
+    buy_order_graph.reduce([]) do |result, graph|
+      result.push(OrderGraph.new((graph[0] * 100).to_i, graph[1] - result.sum(&:amount)))
+    end
+  end
+
+  def sell_order_graphs
+    sell_order_graph.reduce([]) do |result, graph|
+      result.push(OrderGraph.new((graph[0] * 100).to_i, graph[1] - result.sum(&:amount)))
+    end
+  end
+
   def highest_buy_order_graph
-    OrderGraph.new(buy_order_graph.first)
+    buy_order_graphs.first
   end
 
   def lowest_sell_order_graph
-    OrderGraph.new(sell_order_graph.first)
+    sell_order_graphs.first
   end
 end
