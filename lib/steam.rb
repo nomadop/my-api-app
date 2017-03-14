@@ -11,7 +11,8 @@ class Steam
       detail = request_app_detail(appid)
       return if detail.nil?
 
-      SteamApp.create(detail.slice('type', 'name', 'steam_appid', 'is_free', 'categories', 'genres'))
+      detail_slice = detail.slice('type', 'name', 'steam_appid', 'is_free', 'categories', 'genres')
+      SteamApp.create(detail_slice) if SteamApp.where(steam_appid: detail['steam_appid']).empty?
     end
   end
 end
