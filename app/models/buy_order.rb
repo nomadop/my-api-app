@@ -3,6 +3,8 @@ class BuyOrder < ApplicationRecord
 
   belongs_to :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name
 
+  scope :active, -> { where(active: 1) }
+
   def refresh_status
     status = Market.get_buy_order_status(buy_orderid)
     update(status)
