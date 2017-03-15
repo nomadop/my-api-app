@@ -78,7 +78,7 @@ class MarketAsset < ApplicationRecord
   end
 
   def quick_buy_later
-    ApplicationJob.perform_unique(CreateBuyOrderJob, classid, 'quick_buy')
+    CreateBuyOrderJob.perform_later(classid, 'quick_buy')
   end
 
   def quick_create_buy_order
