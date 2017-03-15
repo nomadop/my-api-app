@@ -1,6 +1,6 @@
 class OrderHistogram < ApplicationRecord
   belongs_to :market_asset, primary_key: :item_nameid, foreign_key: :item_nameid
-  has_one :my_listing, through: :market_asset
+  has_many :my_listings, through: :market_asset
 
   scope :with_my_listing, -> { find(joins(:my_listing).distinct.pluck(:id)) }
   scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }

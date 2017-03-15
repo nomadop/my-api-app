@@ -4,8 +4,8 @@ class MarketAsset < ApplicationRecord
   self.inheritance_column = nil
   self.primary_key = :classid
 
-  belongs_to :steam_app, primary_key: :steam_appid, foreign_key: :market_fee_app
-  has_one :my_listing, foreign_key: :classid
+  belongs_to :steam_app, primary_key: :steam_appid, foreign_key: :market_fee_app, optional: true
+  has_many :my_listings, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_one :inventory_description, foreign_key: :classid
   has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :buy_orders, primary_key: :market_hash_name, foreign_key: :market_hash_name
