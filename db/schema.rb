@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170315031207) do
+ActiveRecord::Schema.define(version: 20170315035206) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -138,8 +138,8 @@ ActiveRecord::Schema.define(version: 20170315031207) do
     t.string   "item_nameid"
     t.integer  "highest_buy_order"
     t.integer  "lowest_sell_order"
-    t.json     "buy_order_graph"
-    t.json     "sell_order_graph"
+    t.jsonb    "buy_order_graph"
+    t.jsonb    "sell_order_graph"
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false
     t.index ["item_nameid"], name: "index_order_histograms_on_item_nameid", unique: true, using: :btree
