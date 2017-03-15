@@ -1,10 +1,24 @@
 class Steam
   class << self
+    def request_app_list
+      response = RestClient.get('http://api.steampowered.com/ISteamApps/GetAppList/v0002/')
+      JSON.parse(response.body)
+    end
+
     def request_app_detail(appid)
       response = RestClient.get('http://store.steampowered.com/api/appdetails/', {
-          params: { appids: appid }
+          params: {appids: appid}
       })
       JSON.parse(response.body)[appid.to_s]['data']
+    end
+
+    def load_app_list
+      result = request_app_list
+      apps = result['applist']['apps']
+      appids = apps.map { |app| app['appid'] }
+      exist_appids = SteamApp.pluck(:steam_appid)
+
+      (appids - exist_appids).each { |appid| CreateSteamAppJob.perform_later(appid) }
     end
 
     def create_app(appid)
