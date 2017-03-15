@@ -74,7 +74,10 @@ class MarketAsset < ApplicationRecord
   def quick_buy
     order_histogram.refresh
     graphs = order_histogram.reload.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= 0.525}
-    graphs.each { |g| create_buy_order(g.price, g.amount) }
+    graphs.each do |g|
+      create_buy_order(g.price, g.amount)
+      sleep 1
+    end
   end
 
   def quick_buy_later
