@@ -37,13 +37,13 @@ class OrderHistogram < ApplicationRecord
 
   def buy_order_graphs
     buy_order_graph.reduce([]) do |result, graph|
-      result.push(OrderGraph.new((graph[0] * 100).to_i, graph[1] - result.sum(&:amount)))
+      result.push(OrderGraph.new((graph[0] * 100).round, graph[1] - result.sum(&:amount)))
     end
   end
 
   def sell_order_graphs
     sell_order_graph.reduce([]) do |result, graph|
-      result.push(OrderGraph.new((graph[0] * 100).to_i, graph[1] - result.sum(&:amount)))
+      result.push(OrderGraph.new((graph[0] * 100).round, graph[1] - result.sum(&:amount)))
     end
   end
 
