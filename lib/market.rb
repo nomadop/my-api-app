@@ -131,15 +131,21 @@ class Market
     end
 
     def handle_my_listing_result(result)
-      assets = result['assets']['753']['6'].values
-      MyListing.destroy_all
-      MyListing.create(assets.map do |asset|
-        {
-            listingid: asset['id'],
-            classid: asset['classid'],
-            market_hash_name: asset['market_hash_name'],
-        }
-      end)
+      doc = Nokogiri::HTML(result['results_html'])
+      rows = doc.search('.market_listing_row')
+      my_listings = rows.map do |row|
+        listingid = row.attr(:id).match(/mylisting_(?<id>\d+)/)[:id]
+        name_link = row.search('.market_listing_item_name_link').first
+        market_hash_name = URI.decode(name_link.attr(:href).split('/').last)
+        price_text = row.search('.market_listing_price > span > span:eq(1)').text.strip
+        price = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)[:price].to_f * 100
+        listed_date = row.search('.market_listing_listed_date').text.strip
+        { listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date }
+      end
+      MyListing.transaction do
+        MyListing.truncate
+        MyListing.create(my_listings)
+      end
     end
 
     def load_my_listings
