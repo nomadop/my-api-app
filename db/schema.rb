@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170315035206) do
+ActiveRecord::Schema.define(version: 20170315085538) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -35,9 +35,10 @@ ActiveRecord::Schema.define(version: 20170315035206) do
     t.integer  "quantity_remaining"
     t.integer  "success"
     t.string   "market_hash_name"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
     t.integer  "price"
+    t.text     "purchase_amount_text"
     t.index ["buy_orderid"], name: "index_buy_orders_on_buy_orderid", unique: true, using: :btree
   end
 
