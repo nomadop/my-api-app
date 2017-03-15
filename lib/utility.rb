@@ -6,8 +6,12 @@ class Utility
       JSON.parse(match[1])
     end
 
+    def vat(price, rate)
+      [(price * rate).floor, 1].max
+    end
+
     def exclude_val(price)
-      (1..price).bsearch { |p| p + (p * 0.1).floor + (p * 0.05).floor >= price }
+      (1..price).bsearch { |p| p + vat(p, 0.1) + vat(p, 0.05) >= price }
     end
 
     def unescapeHTML(string)
