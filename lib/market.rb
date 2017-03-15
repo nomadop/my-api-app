@@ -6,6 +6,10 @@ class Market
   ]
 
   class << self
+    def get_url(market_hash_name)
+      "http://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}"
+    end
+
     def load_asset(response)
       html = response.body
       assets = Utility.match_json_var('g_rgAssets', html)
@@ -37,7 +41,7 @@ class Market
     end
 
     def load_asset_by_hash_name(market_hash_name)
-      response = RestClient.get("http://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}")
+      response = RestClient.get(get_url(market_hash_name))
       load_asset(response)
     end
 
@@ -143,7 +147,7 @@ class Market
         { listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date }
       end
       MyListing.transaction do
-        MyListing.truncate
+        MyListing.destroy_all
         MyListing.create(my_listings)
       end
     end
@@ -251,6 +255,37 @@ class Market
       response = RestClient::Request.execute(option)
       Authentication.update_cookie(response)
       JSON.parse(response.body)
+    end
+
+    def cancel_my_listing(listingid)
+      cookie = Authentication.cookie
+      session_id = Authentication.session_id
+
+      option = {
+          method: :post,
+          url: "http://steamcommunity.com/market/removelisting/#{listingid}",
+          headers: {
+              :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'http://steamcommunity.com/market/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          },
+          payload: {
+              sessionid: session_id,
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      Authentication.update_cookie(response)
     end
   end
 end
