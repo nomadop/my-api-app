@@ -1,7 +1,7 @@
 class Utility
   class << self
     def match_json_var(identity, code)
-      regex = %r(var #{identity} = (.*);)
+      regex = %r(var #{identity}\s*=\s*(.*);)
       match = regex.match(code)
       JSON.parse(match[1])
     end
