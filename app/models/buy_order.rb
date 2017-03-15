@@ -1,4 +1,6 @@
 class BuyOrder < ApplicationRecord
+  Include ActAsListable
+
   after_create :refresh_status_later
 
   belongs_to :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name

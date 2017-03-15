@@ -1,4 +1,6 @@
 class MyListing < ApplicationRecord
+  include ActAsListable
+
   after_create :load_market_asset_later
 
   has_one :market_asset, primary_key: :classid, foreign_key: :classid
