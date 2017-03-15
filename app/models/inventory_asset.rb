@@ -44,7 +44,9 @@ class InventoryAsset < ApplicationRecord
   end
 
   def quick_sell
-    sell(order_histogram.lowest_sell_order_exclude_vat)
+    price = order_histogram.lowest_sell_order_exclude_vat
+    price = price - 1 if price > 100
+    sell(price)
   end
 
   def quick_sell_later
