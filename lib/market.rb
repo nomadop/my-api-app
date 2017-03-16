@@ -10,8 +10,35 @@ class Market
       "http://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}"
     end
 
-    def load_asset(response)
-      html = response.body
+    def request_asset(url, with_authentication = false)
+      option = {
+          method: :get,
+          url: url,
+          proxy: 'http://localhost:8888',
+      }
+      if with_authentication
+        cookie = Authentication.cookie
+        option[:headers] = {
+            :Accept => '*/*',
+            :'Accept-Encoding' => 'gzip, deflate, br',
+            :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+            :'Cache-Control' => 'no-cache',
+            :'Connection' => 'keep-alive',
+            :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+            :'Cookie' => cookie,
+            :'Host' => 'steamcommunity.com',
+            :'Origin' => 'http://steamcommunity.com',
+            :'Pragma' => 'no-cache',
+            :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        }
+        option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
+      end
+      response = RestClient::Request.execute(option)
+      Authentication.update_cookie(response) if with_authentication
+      response.body
+    end
+
+    def load_asset(html)
       assets = Utility.match_json_var('g_rgAssets', html)
       app_asset = assets&.values&.[](0)
       asset = if app_asset.is_a?(Array)
@@ -31,18 +58,13 @@ class Market
     end
 
     def load_asset_by_url(url)
-      option = {
-          method: :get,
-          url: url,
-          proxy: 'http://localhost:8888',
-      }
-      response = RestClient::Request.execute(option)
-      load_asset(response)
+      html = request_asset(url)
+      load_asset(html)
     end
 
     def load_asset_by_hash_name(market_hash_name)
-      response = RestClient.get(get_url(market_hash_name))
-      load_asset(response)
+      html = request_asset(get_url(market_hash_name))
+      load_asset(html)
     end
 
     def load_order_histogram(item_nameid)
@@ -144,7 +166,7 @@ class Market
         price_text = row.search('.market_listing_price > span > span:eq(1)').text.strip
         price = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)[:price].to_f * 100
         listed_date = row.search('.market_listing_listed_date').text.strip
-        { listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date }
+        {listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date}
       end
       MyListing.transaction do
         MyListing.destroy_all
