@@ -57,9 +57,7 @@ class InventoryAsset < ApplicationRecord
   def grind_into_goo
     account = Authentication.account
     cookie = Authentication.cookie
-    scanner = HTTP::Cookie::Scanner.new(cookie)
-    scanner.skip_until(/sessionid=/)
-    sessionid = scanner.scan_value
+    sessionid = Authentication.session_id
 
     option = {
         method: :post,
