@@ -19,19 +19,20 @@ class Market
       if with_authentication
         cookie = Authentication.cookie
         option[:headers] = {
-            :Accept => '*/*',
-            :'Accept-Encoding' => 'gzip, deflate, br',
+            :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            :'Accept-Encoding' => 'gzip, deflate, sdch',
             :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
             :'Cache-Control' => 'no-cache',
             :'Connection' => 'keep-alive',
             :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
             :'Cookie' => cookie,
             :'Host' => 'steamcommunity.com',
-            :'Origin' => 'http://steamcommunity.com',
             :'Pragma' => 'no-cache',
+            :'Upgrade-Insecure-Requests' => 1,
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         }
         option[:proxy] = 'http://localhost:8888'
+        option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
       end
       response = RestClient::Request.execute(option)
       Authentication.update_cookie(response) if with_authentication
