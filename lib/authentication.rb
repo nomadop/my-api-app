@@ -42,17 +42,25 @@ class Authentication
       cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new, &:add)
     end
 
-    def session_id
-      cookie = cookie_jar.find { |cookie| cookie.name == 'sessionid' }
+    def get_cookie(name)
+      cookie = cookie_jar.find { |cookie| cookie.name == name.to_s }
       cookie.value
     end
 
-    def session_id=(session_id)
+    def set_cookie(name, value)
       jar = cookie_jar.tap do |jar|
-        cookie = jar.parse("sessionid=#{session_id}", URI('http://store.steampowered.com'))[0]
+        cookie = jar.parse("#{name}=#{value}", URI('http://store.steampowered.com'))[0]
         jar.add(cookie)
       end
       self.cookie = jar.cookies.join(';')
+    end
+
+    def session_id
+      get_cookie(:sessionid)
+    end
+
+    def session_id=(session_id)
+      set_cookie(:sessionid, session_id)
     end
 
     def update_cookie(response)
