@@ -54,4 +54,9 @@ class OrderHistogram < ApplicationRecord
   def lowest_sell_order_graph
     sell_order_graphs.first
   end
+
+  def sell_rate(price)
+    lowers = sell_order_graphs.select { |graph| graph.price <= price }
+    1.0 * lowers.sum(&:amount) / sell_order_graphs.sum(&:amount)
+  end
 end

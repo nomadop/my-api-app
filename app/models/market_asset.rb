@@ -108,4 +108,15 @@ class MarketAsset < ApplicationRecord
       self.sell_histories = Market.request_sell_history(listing_url)
     end
   end
+
+  def sell_balance(price, with_in: 1.week)
+    sell_histories.with_in(with_in).sell_rate(price) - order_histogram.sell_rate(price)
+  end
+
+  def find_sell_balance(with_in: 1.week, balance: 0)
+    graphs = order_histogram.sell_order_graphs
+    from = graphs.first.price - 1
+    to = graphs.last.price
+    from.upto(to).to_a.reverse.bsearch { |price| sell_balance(price, with_in: with_in) > balance }
+  end
 end

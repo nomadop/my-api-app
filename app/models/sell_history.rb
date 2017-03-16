@@ -2,7 +2,7 @@ class SellHistory < ApplicationRecord
   belongs_to :market_asset, primary_key: :classid, foreign_key: :classid
 
   scope :with_in, ->(duration) { where('datetime > ?', duration.ago) }
-  scope :higher_than, ->(price) { where('price > ?', price) }
+  scope :higher_than, ->(price) { where('price >= ?', price) }
 
   class << self
     def total_amount
