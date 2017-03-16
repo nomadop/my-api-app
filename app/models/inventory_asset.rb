@@ -5,6 +5,11 @@ class InventoryAsset < ApplicationRecord
   has_one :market_asset, primary_key: :classid, foreign_key: :classid
   has_one :order_histogram, through: :market_asset
 
+  scope :marketable, -> { joins(:description).where(inventory_descriptions: { marketable: 1 }) }
+  scope :unmarketable, -> { joins(:description).where(inventory_descriptions: { marketable: 0 }) }
+
+  delegate :marketable?, to: :description
+
   def sell(price)
     account = Authentication.account
     cookie = Authentication.cookie
