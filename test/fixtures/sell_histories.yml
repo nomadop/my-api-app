@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  classid: MyString
+  datetime: 2017-03-16 11:37:30
+  price: 9.99
+  amount: 1
+
+two:
+  classid: MyString
+  datetime: 2017-03-16 11:37:30
+  price: 9.99
+  amount: 1

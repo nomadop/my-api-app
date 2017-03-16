@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170315085538) do
+ActiveRecord::Schema.define(version: 20170316033730) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -144,6 +144,16 @@ ActiveRecord::Schema.define(version: 20170315085538) do
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false
     t.index ["item_nameid"], name: "index_order_histograms_on_item_nameid", unique: true, using: :btree
+  end
+
+  create_table "sell_histories", force: :cascade do |t|
+    t.string   "classid"
+    t.datetime "datetime"
+    t.float    "price"
+    t.integer  "amount"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["classid", "datetime"], name: "index_sell_histories_on_classid_and_datetime", unique: true, using: :btree
   end
 
   create_table "steam_apps", force: :cascade do |t|

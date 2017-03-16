@@ -1,0 +1,2 @@
+class SellHistory < ApplicationRecord
+end
