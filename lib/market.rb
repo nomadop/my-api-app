@@ -14,7 +14,7 @@ class Market
       option = {
           method: :get,
           url: url,
-          proxy: 'http://localhost:8888',
+          proxy: 'http://localhost:1087',
       }
       if with_authentication
         cookie = Authentication.cookie
@@ -31,11 +31,17 @@ class Market
             :'Pragma' => 'no-cache',
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         }
-        option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
+        option[:proxy] = 'http://localhost:8888'
       end
       response = RestClient::Request.execute(option)
       Authentication.update_cookie(response) if with_authentication
       response.body
+    end
+
+    def request_sell_history(url)
+      html = request_asset(url, true)
+      histories = Utility.match_json_var('line1', html)
+      histories.map { |history| SellHistory.new(datetime: history[0], price: (history[1] * 100).round(1), amount: history[2]) }
     end
 
     def load_asset(html)

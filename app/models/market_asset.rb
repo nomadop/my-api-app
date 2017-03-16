@@ -101,4 +101,11 @@ class MarketAsset < ApplicationRecord
   def buy_info
     as_json(only: [:market_hash_name, :goo_value], methods: [:price_per_goo])
   end
+
+  def load_sell_histories
+    SellHistory.transaction do
+      SellHistory.where(classid: classid).delete_all
+      self.sell_histories = Market.request_sell_history(listing_url)
+    end
+  end
 end
