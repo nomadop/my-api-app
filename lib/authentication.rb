@@ -64,7 +64,11 @@ class Authentication
     end
 
     def update_cookie(response)
-      jar = response.cookie_jar.cookies.reduce(cookie_jar, &:add)
+      jar = response.cookie_jar.cookies.reduce(cookie_jar) do |jar, cookie|
+        cookie = jar.parse(cookie.to_s, URI('http://store.steampowered.com'))[0]
+        jar.add(cookie)
+        jar
+      end
       self.cookie = jar.cookies.join(';')
     end
 
