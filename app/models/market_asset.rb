@@ -20,6 +20,7 @@ class MarketAsset < ApplicationRecord
   scope :buyable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg) }
   scope :orderable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg) }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
+  scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
   after_create :load_order_histogram, :load_goo_value
 

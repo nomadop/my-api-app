@@ -7,8 +7,16 @@ class InventoryAsset < ApplicationRecord
 
   scope :marketable, -> { joins(:description).where(inventory_descriptions: { marketable: 1 }) }
   scope :unmarketable, -> { joins(:description).where(inventory_descriptions: { marketable: 0 }) }
+  scope :with_order_histogram, -> { joins(:order_histogram).distinct }
+  scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
   delegate :marketable?, to: :description
+  delegate :price_per_goo, to: :market_asset, allow_nil: true
+  delegate :price_per_goo_exclude_vat, to: :market_asset, allow_nil: true
+
+  def refresh_price
+    order_histogram.refresh
+  end
 
   def sell(price)
     account = Authentication.account
