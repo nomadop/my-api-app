@@ -44,3 +44,5 @@ gem 'sidekiq'
 gem 'redis', '~>3.2'
 gem 'rest-client'
 gem 'nokogiri'
+
+gem 'composite_primary_keys', '~> 9.0.4'

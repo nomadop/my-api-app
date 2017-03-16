@@ -41,6 +41,8 @@ GEM
     arel (7.1.4)
     builder (3.2.3)
     byebug (9.0.6)
+    composite_primary_keys (9.0.6)
+      activerecord (~> 5.0.0)
     concurrent-ruby (1.0.4)
     connection_pool (2.2.1)
     domain_name (0.5.20161129)
@@ -141,6 +143,7 @@ PLATFORMS
 
 DEPENDENCIES
   byebug
+  composite_primary_keys (~> 9.0.4)
   listen (~> 3.0.5)
   nokogiri
   pg (~> 0.18)
