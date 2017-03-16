@@ -50,25 +50,21 @@ class Inventory
     end
 
     def auto_sell
-      inventory_assets = InventoryAsset.includes(:order_histogram).select { |asset| asset.description&.marketable? }
-      order_histograms = inventory_assets.map(&:order_histogram).compact
-      order_histograms.each(&:refresh)
+      inventory_assets = InventoryAsset.with_order_histogram.marketable
+      inventory_assets.each(&:refresh_price)
 
       prepare = inventory_assets.select do |asset|
-        price = asset.market_asset&.price_per_goo_exclude_vat || 0
-        price > 0.6
+        (asset.price_per_goo_exclude_vat || 0) > 0.6
       end
       prepare.each(&:quick_sell_later)
     end
 
     def auto_grind
-      inventory_assets = InventoryAsset.includes(:order_histogram).select { |asset| asset.description&.marketable? }
-      order_histograms = inventory_assets.map(&:order_histogram).compact
-      order_histograms.each(&:refresh)
+      inventory_assets = InventoryAsset.with_order_histogram.marketable
+      inventory_assets.each(&:refresh_price)
 
       prepare = inventory_assets.select do |asset|
-        price = asset.market_asset&.price_per_goo_exclude_vat || Float::INFINITY
-        price <= 0.6
+        (asset.price_per_goo_exclude_vat || Float::INFINITY) <= 0.6
       end
       prepare.each(&:grind_into_goo)
     end
@@ -107,6 +103,11 @@ class Inventory
           model.update(booster)
         end
       end
+    end
+
+    def total_goo_value
+      assets = InventoryAsset.all
+      assets.reduce(0) { |result, asset| result + (asset.description&.market_asset&.goo_value || 0) }
     end
   end
 end
