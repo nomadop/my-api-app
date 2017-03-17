@@ -31,8 +31,8 @@ class MarketAsset < ApplicationRecord
       market_asset.quick_buy
     end
 
-    def quick_buy_orderable
-      orderable.find_each(&:quick_buy_later)
+    def quick_buy_orderable(ppg)
+      orderable(ppg).find_each(&:quick_buy_later)
     end
   end
 
