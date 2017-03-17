@@ -28,7 +28,11 @@ class MyListing < ApplicationRecord
 
   def cancelable?
     price > order_histogram.lowest_sell_order ||
-        (price == order_histogram.lowest_sell_order && order_histogram.sell_order_graph[0][1] > 1)
+        (price > 100 && price == order_histogram.lowest_sell_order && order_histogram.sell_order_graph[0][1] > 1)
+  end
+
+  def sell_balance(with_in: 1.week)
+    market_asset.sell_balance(price, with_in: with_in)
   end
 
   def cancel
