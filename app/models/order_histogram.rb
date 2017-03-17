@@ -35,16 +35,21 @@ class OrderHistogram < ApplicationRecord
     ApplicationJob.perform_unique(LoadOrderHistogramJob, item_nameid)
   end
 
-  def buy_order_graphs
-    buy_order_graph.reduce([]) do |result, graph|
-      result.push(OrderGraph.new((graph[0] * 100).round, graph[1] - result.sum(&:amount)))
+  def get_order_graphs(graph_data)
+    my_listing_count = my_listings.group(:price).count
+    graph_data.reduce([]) do |result, graph|
+      price = (graph[0] * 100).round
+      amount = graph[1] - result.sum(&:amount) - (my_listing_count[price] || 0)
+      amount > 0 ? result.push(OrderGraph.new(price, amount)) : result
     end
   end
 
+  def buy_order_graphs
+    get_order_graphs(buy_order_graph)
+  end
+
   def sell_order_graphs
-    sell_order_graph.reduce([]) do |result, graph|
-      result.push(OrderGraph.new((graph[0] * 100).round, graph[1] - result.sum(&:amount)))
-    end
+    get_order_graphs(sell_order_graph)
   end
 
   def highest_buy_order_graph
