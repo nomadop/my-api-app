@@ -109,6 +109,10 @@ class MarketAsset < ApplicationRecord
     end
   end
 
+  def load_sell_histories_later
+    ApplicationJob.perform_unique(LoadSellHistoriesJob, classid)
+  end
+
   def sell_balance(price, with_in: 1.week)
     sell_histories.with_in(with_in).sell_rate(price) - order_histogram.sell_rate(price)
   end
