@@ -8,7 +8,7 @@ class MyListing < ApplicationRecord
 
   scope :cancelable, -> { joins(:order_histogram).where('price > order_histograms.lowest_sell_order OR (price > 100 AND price = order_histograms.lowest_sell_order AND CAST(order_histograms.sell_order_graph->0->>1 AS int) - (SELECT COUNT(*) FROM "my_listings" INNER JOIN "market_assets" ON "my_listings"."market_hash_name" = "market_assets"."market_hash_name" WHERE "market_assets"."item_nameid" = order_histograms.item_nameid) > 0)') }
 
-  delegate :load_order_histogram, to: :market_asset
+  delegate :load_order_histogram, :find_sell_balance, to: :market_asset
   delegate :lowest_sell_order, to: :order_histogram
 
   class << self
