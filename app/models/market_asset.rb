@@ -78,7 +78,7 @@ class MarketAsset < ApplicationRecord
     graphs = order_histogram.reload.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= 0.525}
     graphs.each do |g|
       create_buy_order(g.price, g.amount)
-      sleep 1
+      sleep 3
     end
   end
 
