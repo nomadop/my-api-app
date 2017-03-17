@@ -121,6 +121,8 @@ class MarketAsset < ApplicationRecord
     graphs = order_histogram.sell_order_graphs
     from = graphs.first.price - 1
     to = graphs.last.price
-    from.upto(to).to_a.reverse.bsearch { |price| sell_balance(price, with_in: with_in) > balance }
+    prices = from.upto(to).to_a
+    balance = prices.reverse.bsearch { |price| sell_balance(price, with_in: with_in) > balance }
+    balance || prices.first
   end
 end
