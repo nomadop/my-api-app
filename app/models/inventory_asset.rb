@@ -11,7 +11,7 @@ class InventoryAsset < ApplicationRecord
   scope :with_order_histogram, -> { joins(:order_histogram).distinct }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
-  delegate :marketable?, :market_hash_name, :load_market_asset, to: :description
+  delegate :marketable?, :market_hash_name, :load_market_asset, :marketable_date, to: :description
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance, to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, to: :order_histogram
 

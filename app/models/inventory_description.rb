@@ -15,6 +15,14 @@ class InventoryDescription < ApplicationRecord
     ApplicationJob.perform_unique(LoadMarketAssetJob, nil, market_hash_name)
   end
 
+  def marketable_date
+    matches = owner_descriptions&.map do |description|
+      match = description['value'].match(/\[date\](?<timestamp>\d+)\[\/date\]后可交易、可出售/)
+      match && Time.at(match[:timestamp].to_i).to_date
+    end
+    matches && matches.compact.first
+  end
+
   def marketable?
     marketable == 1
   end
