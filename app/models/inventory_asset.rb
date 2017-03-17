@@ -5,14 +5,15 @@ class InventoryAsset < ApplicationRecord
   has_one :market_asset, primary_key: :classid, foreign_key: :classid
   has_one :order_histogram, through: :market_asset
 
-  scope :marketable, -> { joins(:description).where(inventory_descriptions: { marketable: 1 }) }
-  scope :unmarketable, -> { joins(:description).where(inventory_descriptions: { marketable: 0 }) }
+  scope :marketable, -> { joins(:description).where(inventory_descriptions: {marketable: 1}) }
+  scope :unmarketable, -> { joins(:description).where(inventory_descriptions: {marketable: 0}) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {classid: nil}) }
   scope :with_order_histogram, -> { joins(:order_histogram).distinct }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
   delegate :marketable?, :market_hash_name, :load_market_asset, to: :description
-  delegate :price_per_goo, :price_per_goo_exclude_vat, to: :market_asset, allow_nil: true
+  delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance, to: :market_asset, allow_nil: true
+  delegate :lowest_sell_order, to: :order_histogram
 
   def refresh_price
     order_histogram.refresh
@@ -56,8 +57,12 @@ class InventoryAsset < ApplicationRecord
   end
 
   def quick_sell
-    price = order_histogram.lowest_sell_order_exclude_vat
-    price = price - 1 if price > 100
+    price = if market_asset&.sell_histories.with_in(1.week).exists?
+              Utility.exclude_val(find_sell_balance(with_in: 1.week, balance: 0.8))
+            else
+              lowest = order_histogram.lowest_sell_order_exclude_vat
+              lowest > 100 ? lowest - 1 : lowest
+            end
     sell(price)
   end
 
