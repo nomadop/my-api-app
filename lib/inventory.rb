@@ -106,8 +106,7 @@ class Inventory
     end
 
     def total_goo_value
-      assets = InventoryAsset.all
-      assets.reduce(0) { |result, asset| result + (asset.description&.market_asset&.goo_value || 0) }
+      InventoryAsset.joins(:market_asset).sum(:goo_value)
     end
   end
 end
