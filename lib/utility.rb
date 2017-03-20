@@ -11,6 +11,7 @@ class Utility
     end
 
     def exclude_val(price)
+      return nil if price.nil? || price < 1
       (1..price).bsearch { |p| p + vat(p, 0.1) + vat(p, 0.05) >= price }
     end
 
