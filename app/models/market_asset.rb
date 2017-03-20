@@ -36,8 +36,8 @@ class MarketAsset < ApplicationRecord
       market_asset.quick_buy
     end
 
-    def quick_buy_orderable(ppg)
-      orderable(ppg).find_each(&:quick_buy_later)
+    def quick_buy_orderable(ppg = 0.525)
+      orderable(ppg).buyable(1).find_each { |asset| asset.quick_buy_later(ppg) }
     end
   end
 
@@ -78,17 +78,17 @@ class MarketAsset < ApplicationRecord
     end
   end
 
-  def quick_buy
+  def quick_buy(ppg)
     order_histogram.refresh
-    graphs = order_histogram.reload.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= 0.525}
+    graphs = order_histogram.reload.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
     graphs.each do |g|
       create_buy_order(g.price, g.amount)
       sleep 3
     end
   end
 
-  def quick_buy_later
-    CreateBuyOrderJob.perform_later(classid, 'quick_buy')
+  def quick_buy_later(ppg)
+    CreateBuyOrderJob.perform_later(classid, 'quick_buy', ppg)
   end
 
   def quick_create_buy_order

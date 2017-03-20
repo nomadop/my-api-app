@@ -1,13 +1,13 @@
 class CreateBuyOrderJob < ApplicationJob
   queue_as :create_buy_order
 
-  def perform(classid, method)
+  def perform(classid, method, *args)
     market_asset = MarketAsset.find(classid)
     case method
       when 'quick_create_buy_order'
         market_asset.quick_create_buy_order
       when 'quick_buy'
-        market_asset.quick_buy
+        market_asset.quick_buy(*args)
       else
         return
     end
