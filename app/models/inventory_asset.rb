@@ -15,6 +15,12 @@ class InventoryAsset < ApplicationRecord
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance, :price_per_goo_exclude_vat, to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, to: :order_histogram
 
+  class << self
+    def total_goo_value
+      joins(:market_asset).sum(:goo_value)
+    end
+  end
+
   def refresh_price
     order_histogram.refresh
   end
