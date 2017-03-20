@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170316033730) do
+ActiveRecord::Schema.define(version: 20170317140148) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -30,7 +30,7 @@ ActiveRecord::Schema.define(version: 20170316033730) do
     t.string   "buy_orderid"
     t.integer  "active"
     t.integer  "purchased"
-    t.json     "purchases"
+    t.jsonb    "purchases"
     t.integer  "quantity"
     t.integer  "quantity_remaining"
     t.integer  "success"
@@ -92,7 +92,7 @@ ActiveRecord::Schema.define(version: 20170316033730) do
     t.integer  "commodity"
     t.string   "contextid"
     t.integer  "currency"
-    t.json     "descriptions"
+    t.jsonb    "descriptions"
     t.string   "icon_url"
     t.string   "icon_url_large"
     t.string   "instanceid"
@@ -104,22 +104,22 @@ ActiveRecord::Schema.define(version: 20170316033730) do
     t.string   "name"
     t.string   "original_amount"
     t.integer  "owner"
-    t.json     "owner_actions"
+    t.jsonb    "owner_actions"
     t.integer  "status"
     t.integer  "tradable"
     t.string   "type"
     t.string   "item_nameid"
     t.datetime "created_at",                    null: false
     t.datetime "updated_at",                    null: false
-    t.json     "actions"
+    t.jsonb    "actions"
     t.integer  "goo_value"
     t.integer  "market_fee_app"
     t.string   "name_color"
     t.string   "market_fee"
     t.string   "contained_item"
-    t.json     "market_actions"
-    t.json     "tags"
-    t.json     "item_expiration"
+    t.jsonb    "market_actions"
+    t.jsonb    "tags"
+    t.jsonb    "item_expiration"
     t.index ["classid"], name: "index_market_assets_on_classid", unique: true, using: :btree
     t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
     t.index ["market_hash_name"], name: "index_market_assets_on_market_hash_name", using: :btree
