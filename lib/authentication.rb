@@ -1,4 +1,6 @@
 class Authentication
+  ALLOWED_COOKIES = %w(Steam_Language browserid lastagecheckage sessionid steamCountry steamLogin steamLoginSecure steamRememberLogin webTradeEligibility timezoneOffset)
+
   class << self
     attr_reader :redis
 
@@ -39,7 +41,11 @@ class Authentication
     def cookie_jar
       uri = URI('http://store.steampowered.com')
       parse_cookie = Proc.new {|c| HTTP::Cookie.parse(c, uri)}
-      cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new, &:add)
+      cookie
+          .split(';')
+          .flat_map(&parse_cookie)
+          .select { |cookie| cookie.name.in?(ALLOWED_COOKIES) }
+          .reduce(HTTP::CookieJar.new, &:add)
     end
 
     def get_cookie(name)
@@ -50,7 +56,7 @@ class Authentication
     def set_cookie(name, value)
       jar = cookie_jar.tap do |jar|
         cookie = jar.parse("#{name}=#{value}", URI('http://store.steampowered.com'))[0]
-        jar.add(cookie)
+        jar.add(cookie) if cookie.name.in?(ALLOWED_COOKIES)
       end
       self.cookie = jar.cookies.join(';')
     end
@@ -66,7 +72,7 @@ class Authentication
     def update_cookie(response)
       jar = response.cookie_jar.cookies.reduce(cookie_jar) do |jar, cookie|
         cookie = jar.parse(cookie.to_s, URI('http://store.steampowered.com'))[0]
-        jar.add(cookie)
+        jar.add(cookie) if cookie.name.in?(ALLOWED_COOKIES)
         jar
       end
       self.cookie = jar.cookies.join(';')
