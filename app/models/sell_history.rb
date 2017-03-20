@@ -17,6 +17,10 @@ class SellHistory < ApplicationRecord
       total_price / total_amount
     end
 
+    def average_price
+      pluck('SUM(price * amount) / SUM(amount)').first
+    end
+
     def sell_rate(price)
       highers = select { |history| history.price >= price }
       1.0 * highers.sum(&:amount) / total_amount
