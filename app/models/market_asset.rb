@@ -6,7 +6,10 @@ class MarketAsset < ApplicationRecord
 
   belongs_to :steam_app, primary_key: :steam_appid, foreign_key: :market_fee_app, optional: true
   has_many :my_listings, primary_key: :market_hash_name, foreign_key: :market_hash_name
-  has_one :inventory_description, foreign_key: :classid
+  has_many :inventory_description, foreign_key: :classid
+  has_many :marketable_inventory_description, -> { where(marketable: 1) },
+           class_name: 'InventoryDescription', foreign_key: :classid
+  has_many :marketable_inventory_asset, through: :marketable_inventory_description, source: :assets
   has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :buy_orders, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :active_buy_orders, -> { where(active: 1) },
@@ -22,6 +25,8 @@ class MarketAsset < ApplicationRecord
   scope :orderable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg) }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
+  scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
+  scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
 
   after_create :load_order_histogram, :load_goo_value
 
