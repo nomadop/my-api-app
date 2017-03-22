@@ -39,6 +39,10 @@ class MarketAsset < ApplicationRecord
     def quick_buy_orderable(ppg = 0.525)
       orderable(ppg).buyable(1).find_each { |asset| asset.quick_buy_later(ppg) }
     end
+
+    def quick_buy_later(ppg = 0.525)
+      find_each { |asset| asset.quick_buy_later(ppg) }
+    end
   end
 
   def load_order_histogram
