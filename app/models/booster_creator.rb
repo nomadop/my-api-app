@@ -7,6 +7,7 @@ class BoosterCreator < ApplicationRecord
            through: :trading_cards, source: :order_histogram
 
   scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
+  scope :unavailable, -> { where(unavailable: true) }
 
   class << self
     def refresh_price
