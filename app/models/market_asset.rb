@@ -19,14 +19,15 @@ class MarketAsset < ApplicationRecord
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
   scope :trading_card, -> { where('type LIKE \'%Trading Card\'') }
   scope :booster_pack, -> { where(type: 'Booster Pack') }
-  scope :with_my_listing, -> { joins(:my_listing).distinct }
-  scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }
+  scope :with_my_listing, -> { joins(:my_listings).distinct }
+  scope :without_my_listing, -> { left_outer_joins(:my_listings).where(my_listings: {classid: nil}) }
   scope :buyable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg) }
   scope :orderable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg) }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
   scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
   scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
+  scope :with_sell_histories, -> { joins(:sell_histories).distinct }
 
   after_create :load_order_histogram, :load_goo_value
 
@@ -124,6 +125,15 @@ class MarketAsset < ApplicationRecord
 
   def sell_balance(price, with_in: 1.week)
     sell_histories.with_in(with_in).sell_rate(price) - order_histogram.sell_rate(price)
+  end
+
+  def sell_histories_deviation
+    history_average_price = sell_histories.with_in(1.month).average_price
+    history_average_price && {
+        classid: classid,
+        sell_deviation: history_average_price / order_histogram.lowest_sell_order,
+        buy_deviation: history_average_price / order_histogram.highest_buy_order,
+    }
   end
 
   def find_sell_balance(with_in: 1.week, balance: 0)
