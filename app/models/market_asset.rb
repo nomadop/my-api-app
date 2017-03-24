@@ -23,13 +23,20 @@ class MarketAsset < ApplicationRecord
   scope :without_my_listing, -> { left_outer_joins(:my_listings).where(my_listings: {classid: nil}) }
   scope :buyable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg) }
   scope :orderable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg) }
+  scope :with_active_buy_order, -> { joins(:active_buy_orders).distinct }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
   scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
   scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
   scope :with_sell_histories, -> { joins(:sell_histories).distinct }
+  scope :buy_ppg_order, -> {
+    left_outer_joins(:order_histogram)
+        .order('1.0 * order_histograms.highest_buy_order / goo_value')
+  }
 
   after_create :load_order_histogram, :load_goo_value
+
+  delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat, to: :order_histogram, allow_nil: true
 
   class << self
     def quick_buy(market_hash_name)
@@ -58,6 +65,12 @@ class MarketAsset < ApplicationRecord
     ApplicationJob.perform_unique(GetGooValueJob, classid, wait: 3.seconds)
   end
 
+  def buy_price_per_goo
+    return nil if highest_buy_order.nil? || goo_value.nil?
+
+    1.0 * highest_buy_order / goo_value
+  end
+
   def price_per_goo
     return Float::INFINITY if order_histogram&.lowest_sell_order.nil? || goo_value.nil?
 
@@ -65,7 +78,7 @@ class MarketAsset < ApplicationRecord
   end
 
   def price_per_goo_exclude_vat
-    return Float::INFINITY if order_histogram&.lowest_sell_order_exclude_vat.nil? || goo_value.nil?
+    return nil if order_histogram&.lowest_sell_order_exclude_vat.nil? || goo_value.nil?
 
     1.0 * order_histogram.lowest_sell_order_exclude_vat / goo_value
   end
