@@ -18,5 +18,13 @@ class Utility
     def unescapeHTML(string)
       Nokogiri::HTML.fragment(string).text
     end
+
+    def timeout(duration)
+      start = Time.now
+      yield
+      while Time.now - start < duration
+        sleep(0.1)
+      end
+    end
   end
 end
