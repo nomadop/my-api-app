@@ -6,6 +6,8 @@ class BoosterCreator < ApplicationRecord
            primary_key: :trading_card_type, foreign_key: :type
   has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
            through: :trading_cards, source: :order_histogram
+  has_many :listing_trading_cards, class_name: 'MyListing',
+           through: :trading_cards, source: :my_listings
 
   scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
   scope :unavailable, -> { where(unavailable: true) }
@@ -79,8 +81,12 @@ class BoosterCreator < ApplicationRecord
     price_per_goo > 0.6
   end
 
+  def listing_trading_card_count
+    listing_trading_cards.count
+  end
+
   def open_info
-    as_json(only: [:appid, :name, :price], methods: [:price_per_goo, :open_price, :trading_card_prices_proportion, :sell_order_count, :buy_order_count])
+    as_json(only: [:appid, :name, :price], methods: [:price_per_goo, :open_price, :trading_card_prices_proportion, :sell_order_count, :buy_order_count, :listing_trading_card_count])
   end
 
   def scan_market
