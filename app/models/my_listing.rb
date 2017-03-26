@@ -12,13 +12,18 @@ class MyListing < ApplicationRecord
   delegate :lowest_sell_order, to: :order_histogram
 
   class << self
-    def reload!(start = 0, count = 100)
+    def reload(start = 0, count = 100)
       result = Market.request_my_listings(start, count)
       return false unless result['success']
 
       Market.handle_my_listing_result(result)
       tail = start + count
-      reload!(tail, count) if tail < result['total_count']
+      reload(tail, count) if tail < result['total_count']
+    end
+
+    def reload!
+      destroy_all
+      reload
     end
 
     def refresh_order_histogram

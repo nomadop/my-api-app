@@ -173,10 +173,7 @@ class Market
         listed_date = row.search('.market_listing_listed_date').text.strip
         {listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date}
       end
-      MyListing.transaction do
-        MyListing.destroy_all
-        MyListing.create(my_listings)
-      end
+      MyListing.create(my_listings)
     end
 
     def load_my_listings
