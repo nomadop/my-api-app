@@ -51,12 +51,16 @@ class MarketAsset < ApplicationRecord
     def quick_buy_later(ppg = 0.525)
       find_each { |asset| asset.quick_buy_later(ppg) }
     end
+
+    def load_order_histogram
+      find_each(&:load_order_histogram)
+    end
   end
 
   def load_order_histogram
     return false if item_nameid.nil?
 
-    ApplicationJob.perform_unique(LoadOrderHistogramJob, item_nameid)
+    LoadOrderHistogramJob.perform_later(item_nameid)
   end
 
   def load_goo_value
@@ -71,16 +75,24 @@ class MarketAsset < ApplicationRecord
     1.0 * highest_buy_order / goo_value
   end
 
-  def price_per_goo
-    return Float::INFINITY if order_histogram&.lowest_sell_order.nil? || goo_value.nil?
+  def buy_price_per_goo_exclude_vat
+    return nil if goo_value.nil?
+    return 0 if highest_buy_order_exclude_vat.nil?
 
-    1.0 * order_histogram.lowest_sell_order / goo_value
+    1.0 * highest_buy_order_exclude_vat / goo_value
+  end
+
+  def price_per_goo
+    return nil if lowest_sell_order.nil? || goo_value.nil?
+
+    1.0 * lowest_sell_order / goo_value
   end
 
   def price_per_goo_exclude_vat
-    return nil if order_histogram&.lowest_sell_order_exclude_vat.nil? || goo_value.nil?
+    return nil if goo_value.nil?
+    return buy_price_per_goo_exclude_vat if lowest_sell_order_exclude_vat.nil?
 
-    1.0 * order_histogram.lowest_sell_order_exclude_vat / goo_value
+    1.0 * lowest_sell_order_exclude_vat / goo_value
   end
 
   def create_buy_order(price, quantity)
@@ -98,6 +110,7 @@ class MarketAsset < ApplicationRecord
 
   def quick_buy(ppg)
     order_histogram.refresh
+    update(goo_value: get_goo_value)
     graphs = order_histogram.reload.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
     graphs.each do |g|
       create_buy_order(g.price, g.amount)
@@ -111,6 +124,7 @@ class MarketAsset < ApplicationRecord
 
   def quick_create_buy_order
     order_histogram.refresh
+    update(goo_value: get_goo_value)
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
     return if 1.0 * highest_buy_order_graph.price / goo_value > 0.5
 
