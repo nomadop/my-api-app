@@ -69,6 +69,16 @@ class Inventory
       prepare.each(&:grind_into_goo)
     end
 
+    def auto_sell_and_grind
+      inventory_assets = InventoryAsset.with_order_histogram.marketable
+      inventory_assets.each do |asset|
+        asset.refresh_price
+        price = asset.price_per_goo_exclude_vat
+        next if price.nil?
+        price > 0.7 ? asset.quick_sell_later : asset.grind_into_goo
+      end
+    end
+
     def request_booster_creators
       cookie = Authentication.cookie
       option = {
