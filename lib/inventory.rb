@@ -118,5 +118,11 @@ class Inventory
     def total_goo_value
       InventoryAsset.joins(:market_asset).sum(:goo_value)
     end
+
+    def goo_value_by_marketable_date
+      assets = InventoryAsset.includes(:description, :market_asset)
+      groups = assets.group_by(&:marketable_date)
+      groups.update(groups) { |_, values| values.map(&:goo_value).compact.sum }
+    end
   end
 end
