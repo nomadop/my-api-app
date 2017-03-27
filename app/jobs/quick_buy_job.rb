@@ -1,5 +1,5 @@
 class QuickBuyJob < ApplicationJob
-  queue_as :order_histogram
+  queue_as :quick_buy
 
   def perform(classid, ppg)
     market_asset = MarketAsset.find(classid)
