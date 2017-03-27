@@ -4,6 +4,7 @@ class SteamApp < ApplicationRecord
   after_create :scan_market
 
   has_many :market_assets, primary_key: :steam_appid, foreign_key: :market_fee_app
+  has_one :booster_creator, primary_key: :steam_appid, foreign_key: :appid
 
   scope :with_trading_cards, -> { where('categories @> ?', [{id: 29}].to_json) }
   scope :without_trading_cards, -> { where.not('categories @> ?', [{id: 29}].to_json) }
