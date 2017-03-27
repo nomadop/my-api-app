@@ -36,7 +36,8 @@ class MarketAsset < ApplicationRecord
 
   after_create :load_order_histogram, :load_goo_value
 
-  delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat, to: :order_histogram, allow_nil: true
+  delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
+           :sell_order_count, :buy_order_count, to: :order_histogram, allow_nil: true
 
   class << self
     def quick_buy(market_hash_name)
