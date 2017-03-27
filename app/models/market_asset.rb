@@ -11,7 +11,7 @@ class MarketAsset < ApplicationRecord
            class_name: 'InventoryDescription', foreign_key: :classid
   has_many :marketable_inventory_asset, through: :marketable_inventory_description, source: :assets
   has_many :order_histograms, primary_key: :item_nameid, foreign_key: :item_nameid
-  has_one :order_histogram, -> { order(:created_by).last },
+  has_one :order_histogram, -> { order(created_at: :desc) },
           primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :buy_orders, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :active_buy_orders, -> { where(active: 1) },
@@ -111,9 +111,9 @@ class MarketAsset < ApplicationRecord
   end
 
   def quick_buy(ppg)
-    order_histogram.refresh
+    Market.load_order_histogram(item_nameid)
     update(goo_value: get_goo_value)
-    graphs = order_histogram.reload.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
+    graphs = order_histogram.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
     graphs.each { |g| ApplicationJob.perform_unique(CreateBuyOrderJob, classid, g.price, g.amount) }
   end
 
@@ -122,7 +122,7 @@ class MarketAsset < ApplicationRecord
   end
 
   def quick_create_buy_order
-    order_histogram.refresh
+    Market.load_order_histogram(item_nameid)
     update(goo_value: get_goo_value)
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
     return if 1.0 * highest_buy_order_graph.price / goo_value > 0.5
