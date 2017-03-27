@@ -61,6 +61,7 @@ class InventoryAsset < ApplicationRecord
     }
     response = RestClient::Request.execute(option)
     Authentication.update_cookie(response)
+    destroy if JSON.parse(response.body)['success']
   end
 
   def quick_sell
@@ -114,5 +115,6 @@ class InventoryAsset < ApplicationRecord
     }
     response = RestClient::Request.execute(option)
     Authentication.update_cookie(response)
+    destroy if JSON.parse(response.body)['success'] == 1
   end
 end
