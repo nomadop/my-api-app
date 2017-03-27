@@ -9,21 +9,6 @@ class ApplicationJob < ActiveJob::Base
     end
   end
 
-  rescue_from(Exception) do |exception|
-    ps = Sidekiq::ProcessSet.new
-    ps.each do |process|
-      next if process['queues'].exclude? self.class.queue_name
-
-      process.quiet!
-      process.stop!
-    end
-    raise exception
-  end
-
-  rescue_from(SocketError) do
-    retry_job
-  end
-
   rescue_from(RestClient::TooManyRequests) do
     puts '429 Too Many Requests, waiting for 5 minutes...'
     sleep 5.minutes
