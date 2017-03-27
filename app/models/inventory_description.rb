@@ -18,7 +18,7 @@ class InventoryDescription < ApplicationRecord
   def marketable_date
     matches = owner_descriptions&.map do |description|
       match = description['value'].match(/\[date\](?<timestamp>\d+)\[\/date\]后可交易、可出售/)
-      match && Time.at(match[:timestamp].to_i).to_date
+      match && Time.at(match[:timestamp].to_i).to_date.to_s
     end
     matches && matches.compact.first
   end
