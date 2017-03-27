@@ -30,6 +30,10 @@ class MyListing < ApplicationRecord
     def refresh_order_histogram
       includes(:market_asset).find_each(&:load_order_histogram)
     end
+
+    def count_by_app
+      joins(:steam_app).group('steam_apps.name').count
+    end
   end
 
   def cancelable?
