@@ -75,6 +75,8 @@ class Market
     end
 
     def load_order_histogram(item_nameid)
+      order_histogram = OrderHistogram.find_by(item_nameid: item_nameid)
+      return order_histogram if order_histogram && order_histogram.created_at > 5.minutes.ago
       option = {
           method: :get,
           url: 'http://steamcommunity.com/market/itemordershistogram',
@@ -89,9 +91,7 @@ class Market
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
-      order_histogram = OrderHistogram.find_or_create_by(item_nameid: item_nameid)
-      order_histogram.update(result.slice('highest_buy_order', 'lowest_sell_order', 'buy_order_graph', 'sell_order_graph'))
-      order_histogram
+      OrderHistogram.create(result.slice('highest_buy_order', 'lowest_sell_order', 'buy_order_graph', 'sell_order_graph').merge(item_nameid: item_nameid))
     end
 
     def search(appid, start = 0, count = 10)

@@ -10,7 +10,9 @@ class MarketAsset < ApplicationRecord
   has_many :marketable_inventory_description, -> { where(marketable: 1) },
            class_name: 'InventoryDescription', foreign_key: :classid
   has_many :marketable_inventory_asset, through: :marketable_inventory_description, source: :assets
-  has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
+  has_many :order_histograms, primary_key: :item_nameid, foreign_key: :item_nameid
+  has_one :order_histogram, -> { order(:created_by).last },
+          primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :buy_orders, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :active_buy_orders, -> { where(active: 1) },
            class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
@@ -21,11 +23,11 @@ class MarketAsset < ApplicationRecord
   scope :booster_pack, -> { where(type: 'Booster Pack') }
   scope :with_my_listing, -> { joins(:my_listings).distinct }
   scope :without_my_listing, -> { left_outer_joins(:my_listings).where(my_listings: {classid: nil}) }
-  scope :buyable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg) }
-  scope :orderable, ->(ppg = 0.525) { joins(:order_histogram).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg) }
+  scope :buyable, ->(ppg = 0.525) { joins(:order_histograms).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg).distinct }
+  scope :orderable, ->(ppg = 0.525) { joins(:order_histograms).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg).distinct }
   scope :with_active_buy_order, -> { joins(:active_buy_orders).distinct }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
-  scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
+  scope :without_order_histogram, -> { left_outer_joins(:order_histograms).where(order_histograms: {item_nameid: nil}) }
   scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
   scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
   scope :with_sell_histories, -> { joins(:sell_histories).distinct }
