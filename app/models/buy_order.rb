@@ -14,6 +14,12 @@ class BuyOrder < ApplicationRecord
   delegate :load_order_histogram, to: :market_asset
   delegate :lowest_sell_order, to: :order_histogram
 
+  class << self
+    def refresh_status_later
+      find_each(&:refresh_status_later)
+    end
+  end
+
   def refresh_status
     status = Market.get_buy_order_status(buy_orderid)
     update(status)
