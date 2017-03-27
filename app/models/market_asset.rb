@@ -112,14 +112,11 @@ class MarketAsset < ApplicationRecord
     order_histogram.refresh
     update(goo_value: get_goo_value)
     graphs = order_histogram.reload.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
-    graphs.each do |g|
-      create_buy_order(g.price, g.amount)
-      sleep 3
-    end
+    graphs.each { |g| ApplicationJob.perform_unique(CreateBuyOrderJob, classid, g.price, g.amount) }
   end
 
   def quick_buy_later(ppg)
-    CreateBuyOrderJob.perform_later(classid, 'quick_buy', ppg)
+    QuickBuyJob.perform_later(classid, ppg)
   end
 
   def quick_create_buy_order
@@ -129,10 +126,6 @@ class MarketAsset < ApplicationRecord
     return if 1.0 * highest_buy_order_graph.price / goo_value > 0.5
 
     create_buy_order(highest_buy_order_graph.price + 1, 1)
-  end
-
-  def quick_create_buy_order_later
-    ApplicationJob.perform_unique(CreateBuyOrderJob, classid, 'quick_create_buy_order')
   end
 
   def buy_info
