@@ -17,6 +17,7 @@ class MarketAsset < ApplicationRecord
   has_many :active_buy_orders, -> { where(active: 1) },
            class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
+  has_one :booster_creator, primary_key: :market_fee_app, foreign_key: :appid
 
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
   scope :trading_card, -> { where('type LIKE \'%Trading Card\'') }
@@ -33,6 +34,7 @@ class MarketAsset < ApplicationRecord
   scope :with_sell_histories, -> { joins(:sell_histories).distinct }
   scope :buy_ppg_order, -> { left_outer_joins(:order_histogram).order('1.0 * order_histograms.highest_buy_order / goo_value') }
   scope :sell_ppg_order, -> { left_outer_joins(:order_histogram).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
+  scope :with_booster_creator, -> { joins(:booster_creator).distinct }
 
   after_create :load_order_histogram, :load_goo_value
 
@@ -68,6 +70,14 @@ class MarketAsset < ApplicationRecord
     return false if owner_actions.nil?
 
     ApplicationJob.perform_unique(GetGooValueJob, classid, wait: 3.seconds)
+  end
+
+  def booster_pack?
+    type == 'Booster Pack'
+  end
+
+  def goo_value
+    booster_pack? && booster_creator ? booster_creator.price : super
   end
 
   def buy_price_per_goo
