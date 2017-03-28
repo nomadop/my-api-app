@@ -312,12 +312,12 @@ class Market
       Authentication.update_cookie(response)
     end
 
-    def quick_buy_schedule(ppg, cons)
-      cons_size = 3000
-      assets = MarketAsset.buy_ppg_order.first(cons * cons_size)
-      assets.each_cons(cons_size) do |asset_con, index|
-        wait = (index - 1) * 2.hours
-        asset_con.each { |asset| asset.quick_buy_later(ppg, wait: wait) }
+    def quick_buy_schedule(ppg, slices)
+      slice_size = 3000
+      assets = MarketAsset.sell_ppg_order.first(slices * slice_size)
+      assets.each_slice(slice_size).with_index(0) do |asset_slice, index|
+        wait = (index * 2).hours
+        asset_slice.each { |asset| asset.quick_buy_later(ppg, wait: wait) }
       end
     end
 
