@@ -15,8 +15,16 @@ class BuyOrder < ApplicationRecord
   delegate :lowest_sell_order, to: :order_histogram
 
   class << self
+    def refresh_status
+      find_each(&:refresh_status)
+    end
+
     def refresh_status_later
       find_each(&:refresh_status_later)
+    end
+
+    def cancel
+      find_each(&:cancel)
     end
   end
 
@@ -26,7 +34,7 @@ class BuyOrder < ApplicationRecord
   end
 
   def refresh_status_later
-    ApplicationJob.perform_unique(RefreshOrderStatusJob, id, wait: 1.seconds)
+    ApplicationJob.perform_unique(RefreshOrderStatusJob, id, wait: 3.seconds)
   end
 
   def price_per_goo
