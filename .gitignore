@@ -19,3 +19,4 @@
 /config/database.yml
 /config/secrets.yml
 /config/certs/ca_certificate.pem
+GemSources

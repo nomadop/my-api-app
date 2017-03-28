@@ -1,4 +1,5 @@
-source 'https://gems.ruby-china.org'
+sources = File.readlines('GemSources').map(&:strip)
+sources.each { |src| source(src) }
 
 ruby '2.4.0'
 
