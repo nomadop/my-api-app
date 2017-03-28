@@ -39,6 +39,7 @@ class OrderHistogram < ApplicationRecord
 
   def get_order_graphs(graph_data)
     my_listing_count = my_listings.group(:price).count
+    return [] if graph_data.blank?
     graph_data.reduce([]) do |result, graph|
       price = (graph[0] * 100).round
       amount = graph[1] - result.sum(&:amount) - (my_listing_count[price] || 0)
