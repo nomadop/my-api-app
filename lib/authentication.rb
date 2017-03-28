@@ -55,6 +55,16 @@ class Authentication
       self.cookie = jar.cookies.join(';')
     end
 
+    def remove_cookie(name)
+      uri = URI('http://store.steampowered.com')
+      parse_cookie = Proc.new {|c| HTTP::Cookie.parse(c, uri)}
+      jar = cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new) do |jar, cookie|
+        jar.add(cookie) unless cookie.name == name
+        jar
+      end
+      self.cookie = jar.cookies.join(';')
+    end
+
     def session_id
       get_cookie(:sessionid)
     end
@@ -66,7 +76,7 @@ class Authentication
     def update_cookie(response)
       jar = response.cookie_jar.cookies.reduce(cookie_jar) do |jar, cookie|
         cookie = jar.parse(cookie.to_s, URI('http://store.steampowered.com'))[0]
-        jar.add(cookie)
+        jar.add(cookie) unless cookie.name == 'steamRememberLoginError'
         jar
       end
       self.cookie = jar.cookies.join(';')
