@@ -32,8 +32,19 @@ class MarketAsset < ApplicationRecord
   scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
   scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
   scope :with_sell_histories, -> { joins(:sell_histories).distinct }
-  scope :buy_ppg_order, -> { left_outer_joins(:order_histogram).order('1.0 * order_histograms.highest_buy_order / goo_value') }
-  scope :sell_ppg_order, -> { left_outer_joins(:order_histogram).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
+
+  JOIN_LATEST_ORDER_HISTOGRAM_SQL = <<-SQL
+      JOIN order_histograms
+      ON order_histograms.item_nameid = market_assets.item_nameid
+      AND order_histograms.id = (
+        SELECT id FROM order_histograms oh 
+        WHERE oh.item_nameid = market_assets.item_nameid 
+        ORDER BY oh.created_at DESC 
+        LIMIT 1
+      )
+  SQL
+  scope :buy_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).order('1.0 * order_histograms.highest_buy_order / goo_value') }
+  scope :sell_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
   scope :with_booster_creator, -> { joins(:booster_creator).distinct }
 
   after_create :load_order_histogram, :load_goo_value
