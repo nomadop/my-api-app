@@ -311,5 +311,18 @@ class Market
       response = RestClient::Request.execute(option)
       Authentication.update_cookie(response)
     end
+
+    def quick_buy_schedule(ppg, cons)
+      cons_size = 3000
+      assets = MarketAsset.buy_ppg_order.first(cons * cons_size)
+      assets.each_cons(cons_size) do |asset_con, index|
+        wait = (index - 1) * 2.hours
+        asset_con.each { |asset| asset.quick_buy_later(ppg, wait: wait) }
+      end
+    end
+
+    def quick_buy_buyable(ppg)
+      MarketAsset.buyable.quick_buy_later(ppg)
+    end
   end
 end
