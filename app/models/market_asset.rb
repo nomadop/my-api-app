@@ -43,8 +43,8 @@ class MarketAsset < ApplicationRecord
         LIMIT 1
       )
   SQL
-  scope :buy_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).order('1.0 * order_histograms.highest_buy_order / goo_value') }
-  scope :sell_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
+  scope :buy_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).where.not(goo_value: nil).order('1.0 * order_histograms.highest_buy_order / goo_value') }
+  scope :sell_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).where.not(goo_value: nil).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
   scope :with_booster_creator, -> { joins(:booster_creator).distinct }
 
   after_create :load_order_histogram, :load_goo_value
@@ -88,6 +88,7 @@ class MarketAsset < ApplicationRecord
   end
 
   def goo_value
+    return 1000 if market_hash_name == '753-Sack of Gems'
     booster_pack? && booster_creator ? booster_creator.price : super
   end
 
@@ -131,8 +132,9 @@ class MarketAsset < ApplicationRecord
   end
 
   def quick_buy(ppg)
+    return if booster_pack?
     Market.load_order_histogram(item_nameid)
-    update(goo_value: get_goo_value)
+    update(goo_value: get_goo_value) if Time.now - updated_at > 1.day
     graphs = order_histogram.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
     graphs.each { |g| ApplicationJob.perform_unique(CreateBuyOrderJob, classid, g.price, g.amount) }
   end
