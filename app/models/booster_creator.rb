@@ -13,14 +13,28 @@ class BoosterCreator < ApplicationRecord
 
   scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
   scope :unavailable, -> { where(unavailable: true) }
-  scope :ppg_order, -> { joins(:trading_card_order_histograms).group('booster_creators.id').order('1.0 * SUM(order_histograms.lowest_sell_order) / COUNT(order_histograms.id) * 3 / price desc') }
+  scope :ppg_order, -> do
+    joins(
+        <<-SQL
+      INNER JOIN "market_assets" 
+      ON "market_assets"."type" = "booster_creators"."trading_card_type" 
+      INNER JOIN "order_histograms" 
+      ON "order_histograms"."item_nameid" = "market_assets"."item_nameid"
+      AND "order_histograms"."id" = (
+        SELECT oh.id FROM order_histograms oh
+        WHERE oh.item_nameid = market_assets.item_nameid
+        ORDER BY oh.created_at DESC LIMIT 1
+      )
+    SQL
+    ).group('booster_creators.id').order('1.0 * SUM(order_histograms.lowest_sell_order) / COUNT(order_histograms.id) * 3 / price desc')
+  end
 
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
            :sell_order_count, :buy_order_count, to: :booster_pack
 
   class << self
     def refresh_price
-      includes(:trading_card_order_histograms).find_each(&:refresh_price_later)
+      find_each(&:refresh_price_later)
     end
 
     def scan_all
@@ -28,7 +42,7 @@ class BoosterCreator < ApplicationRecord
     end
 
     def creatable
-      includes(:trading_card_order_histograms).to_a.select do |booster_creator|
+      to_a.select do |booster_creator|
         booster_creator.price_per_goo(false) > 0.6
       end
     end
