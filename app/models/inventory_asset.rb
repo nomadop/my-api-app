@@ -13,7 +13,7 @@ class InventoryAsset < ApplicationRecord
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
   delegate :marketable?, :market_hash_name, :load_market_asset, :marketable_date, to: :description
-  delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance, :price_per_goo_exclude_vat, :goo_value, to: :market_asset, allow_nil: true
+  delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance, :price_per_goo_exclude_vat, :goo_value, :booster_pack?, to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, :sell_order_count, to: :order_histogram
 
   class << self
@@ -116,5 +116,18 @@ class InventoryAsset < ApplicationRecord
     response = RestClient::Request.execute(option)
     Authentication.update_cookie(response)
     destroy if JSON.parse(response.body)['success'] == 1
+  end
+
+  def auto_sell_and_grind
+    refresh_price
+    ppg = booster_pack? ? 1 : reload.price_per_goo_exclude_vat
+    return if ppg.nil?
+    quick_sell if ppg > 0.7 && marketable?
+    grind_into_goo if ppg <= 0.7 && !booster_pack?
+  end
+
+  def auto_sell_and_grind_later
+    return if market_asset.nil?
+    ApplicationJob.perform_unique(AutoSellAndGrindJob, id)
   end
 end
