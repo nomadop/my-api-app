@@ -61,6 +61,10 @@ class MyListing < ApplicationRecord
     def cancel
       find_each(&:cancel)
     end
+
+    def cancel_later
+      find_each(&:cancel_later)
+    end
   end
 
   def cancelable?
@@ -84,6 +88,10 @@ class MyListing < ApplicationRecord
 
   def cancel
     Market.cancel_my_listing(listingid)
+  end
+
+  def cancel_later
+    ApplicationJob.perform_unique(CancelMyListingJob, id)
   end
 
   def market_asset_type
