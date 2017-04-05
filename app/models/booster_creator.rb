@@ -99,13 +99,17 @@ class BoosterCreator < ApplicationRecord
     1.0 * sell_price / price
   end
 
-  def createable?
-    (price_per_goo > 0.6 && sell_order_count > 20) ||
-        (open_price_per_goo > 0.6 && open_sell_order_count > 20)
+  def createable?(ppg = 0.6)
+    (price_per_goo > ppg && sell_order_count > 20) ||
+        (open_price_per_goo > ppg && open_sell_order_count > 20)
   end
 
   def listing_trading_card_count
     listing_trading_cards.count
+  end
+
+  def sell_proportion
+    booster_pack.order_histogram.proportion
   end
 
   def booster_pack_info
@@ -113,7 +117,8 @@ class BoosterCreator < ApplicationRecord
         only: [:appid, :name, :price],
         methods: [
             :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
-            :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :sell_order_count, :buy_order_count
+            :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count,
+            :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion,
         ]
     )
   end
