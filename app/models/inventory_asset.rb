@@ -6,6 +6,7 @@ class InventoryAsset < ApplicationRecord
   has_one :order_histogram, through: :market_asset
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
 
+  scope :booster_pack, -> { joins(:market_asset).where(market_assets: { type: 'Booster Pack' }) }
   scope :marketable, -> { joins(:description).where(inventory_descriptions: {marketable: 1}) }
   scope :unmarketable, -> { joins(:description).where(inventory_descriptions: {marketable: 0}) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {classid: nil}) }
@@ -19,6 +20,10 @@ class InventoryAsset < ApplicationRecord
   class << self
     def total_goo_value
       joins(:market_asset).sum(:goo_value)
+    end
+
+    def auto_sell_and_grind_later
+      find_each &:auto_sell_and_grind_later
     end
   end
 
@@ -116,6 +121,9 @@ class InventoryAsset < ApplicationRecord
     response = RestClient::Request.execute(option)
     Authentication.update_cookie(response)
     destroy if JSON.parse(response.body)['success'] == 1
+  rescue RestClient::Forbidden => e
+    Authentication.refresh
+    raise e
   end
 
   def auto_sell_and_grind
