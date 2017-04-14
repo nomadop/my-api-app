@@ -132,7 +132,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def refresh_price_later
-    trading_card_order_histograms.each(&:refresh_later)
+    trading_cards.each(&:load_order_histogram)
   end
 
   def set_trading_card_type
