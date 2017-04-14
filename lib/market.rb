@@ -87,7 +87,7 @@ class Market
                   item_nameid: item_nameid,
               }
           },
-          proxy: 'http://localhost:1087/'
+          proxy: 'http://localhost:3213/'
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
