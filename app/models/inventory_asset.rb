@@ -6,9 +6,13 @@ class InventoryAsset < ApplicationRecord
   has_one :order_histogram, through: :market_asset
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
 
-  scope :booster_pack, -> { joins(:market_asset).where(market_assets: { type: 'Booster Pack' }) }
+  scope :booster_pack, -> { joins(:market_asset).where(market_assets: {type: 'Booster Pack'}) }
+  scope :non_booster_pack, -> { joins(:market_asset).where.not(market_assets: {type: 'Booster Pack'}) }
   scope :marketable, -> { joins(:description).where(inventory_descriptions: {marketable: 1}) }
   scope :unmarketable, -> { joins(:description).where(inventory_descriptions: {marketable: 0}) }
+  scope :tradable, -> { joins(:description).where(inventory_descriptions: {tradable: 1}) }
+  scope :gems, -> { where(classid: 667924416) }
+  scope :sacks_of_gem, -> { joins(:market_asset).where(market_assets: { market_fee_app: 753 }) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {classid: nil}) }
   scope :with_order_histogram, -> { joins(:order_histogram).distinct.includes(:order_histogram) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
@@ -124,6 +128,50 @@ class InventoryAsset < ApplicationRecord
     response = RestClient::Request.execute(option)
     Authentication.update_cookie(response)
     destroy if JSON.parse(response.body)['success'] == 1
+  rescue RestClient::Forbidden => e
+    Authentication.refresh
+    raise e
+  end
+
+  def exchange_goo(amount)
+    account = Authentication.account
+    cookie = Authentication.cookie
+    sessionid = Authentication.session_id
+
+    option = {
+        method: :post,
+        url: "http://steamcommunity.com/id/#{account}/ajaxexchangegoo/",
+        headers: {
+            :Accept => '*/*',
+            :'Accept-Encoding' => 'gzip, deflate',
+            :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+            :'Cache-Control' => 'no-cache',
+            :'Connection' => 'keep-alive',
+            :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+            :'Cookie' => cookie,
+            :'Host' => 'steamcommunity.com',
+            :'Origin' => 'http://steamcommunity.com',
+            :'Pragma' => 'no-cache',
+            :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+            :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+            :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: {
+            sessionid: sessionid,
+            appid: appid,
+            assetid: assetid,
+            goo_denomination_in: 1,
+            goo_amount_in: amount * 1000,
+            goo_denomination_out: 1000,
+            goo_amount_out_expected: amount,
+        },
+        proxy: 'http://127.0.0.1:8888',
+    }
+    response = RestClient::Request.execute(option)
+    if JSON.parse(response.body)['success'] == 1
+      remain_amount = self.amount.to_i - amount * 1000
+      remain_amount > 0 ? update(amount: remain_amount) : destroy
+    end
   rescue RestClient::Forbidden => e
     Authentication.refresh
     raise e
