@@ -31,7 +31,7 @@ class InventoryAsset < ApplicationRecord
     order_histogram.refresh
   end
 
-  def sell(price)
+  def sell(price, amount = self.amount.to_i)
     account = Authentication.account
     cookie = Authentication.cookie
     sessionid = Authentication.session_id
@@ -66,7 +66,10 @@ class InventoryAsset < ApplicationRecord
     }
     response = RestClient::Request.execute(option)
     Authentication.update_cookie(response)
-    destroy if JSON.parse(response.body)['success']
+    if JSON.parse(response.body)['success']
+      remain_amount = self.amount.to_i - amount
+      remain_amount > 0 ? update(amount: remain_amount) : destroy
+    end
   end
 
   def quick_sell
