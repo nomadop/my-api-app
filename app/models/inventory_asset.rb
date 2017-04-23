@@ -181,8 +181,8 @@ class InventoryAsset < ApplicationRecord
     refresh_price
     ppg = booster_pack? ? 1 : reload.price_per_goo_exclude_vat
     return if ppg.nil?
-    quick_sell if ppg > 0.7 && marketable?
-    grind_into_goo if ppg <= 0.7 && !booster_pack?
+    quick_sell if ppg > 1 && marketable?
+    grind_into_goo if ppg <= 1 && !booster_pack?
   end
 
   def auto_sell_and_grind_later
