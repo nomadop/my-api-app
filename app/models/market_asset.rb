@@ -66,6 +66,10 @@ class MarketAsset < ApplicationRecord
       find_each { |asset| asset.quick_buy_later(ppg, **options) }
     end
 
+    def quick_order_later
+      find_each { |asset| asset.quick_order_later }
+    end
+
     def load_order_histogram
       find_each(&:load_order_histogram)
     end
@@ -143,13 +147,22 @@ class MarketAsset < ApplicationRecord
     QuickBuyJob.set(options).perform_later(classid, ppg)
   end
 
-  def quick_create_buy_order
+  def quick_order
+    return if booster_pack?
+    return if active_buy_orders.exists?
     Market.load_order_histogram(item_nameid)
-    update(goo_value: get_goo_value)
+    update(goo_value: get_goo_value) if Time.now - updated_at > 1.day
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
-    return if 1.0 * highest_buy_order_graph.price / goo_value > 0.5
+    lowest_price = (goo_value * 0.4).ceil
+    highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
+    return if 1.0 * highest_buy_order_graph_price / goo_value >= 0.5
 
-    create_buy_order(highest_buy_order_graph.price + 1, 1)
+    order_price = [lowest_price, highest_buy_order_graph_price].max
+    ApplicationJob.perform_unique(CreateBuyOrderJob, classid, order_price, 1)
+  end
+
+  def quick_order_later
+    QuickOrderJob.perform_later(classid)
   end
 
   def buy_info
