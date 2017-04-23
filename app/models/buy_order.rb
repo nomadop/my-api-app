@@ -50,6 +50,14 @@ class BuyOrder < ApplicationRecord
       find_each(&:cancel)
     end
 
+    def cancel_later
+      find_each(&:cancel_later)
+    end
+
+    def rebuy_later
+      find_each(&:rebuy_later)
+    end
+
     def refresh_active_orders
       doc = Nokogiri::HTML(Market.request_market)
       listing_rows = doc.search('.market_listing_row.market_recent_listing_row')
@@ -85,6 +93,27 @@ class BuyOrder < ApplicationRecord
 
   def cancel
     result = Market.cancel_buy_order(buy_orderid)
-    update(active: 0) if result['success'] == 1
+    case result['success']
+      when 1
+        update(active: 0)
+        return true
+      when 8
+        Authentication.refresh
+        return cancel
+      else
+        return false
+    end
+  end
+
+  def cancel_later
+    ApplicationJob.perform_unique(CancelBuyorderJob, id)
+  end
+
+  def rebuy
+    cancel && market_asset.quick_order
+  end
+
+  def rebuy_later
+    ApplicationJob.perform_unique(CancelBuyorderJob, id, true)
   end
 end
