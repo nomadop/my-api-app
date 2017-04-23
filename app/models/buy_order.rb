@@ -49,6 +49,19 @@ class BuyOrder < ApplicationRecord
     def cancel
       find_each(&:cancel)
     end
+
+    def refresh_active_orders
+      doc = Nokogiri::HTML(Market.request_market)
+      listing_rows = doc.search('.market_listing_row.market_recent_listing_row')
+      order_rows = listing_rows.select { |row| /mybuyorder_\d+/ =~ row.attr(:id) }
+      return if order_rows.blank?
+
+      order_ids = order_rows.map { |row| row.attr(:id).match(/\d+/)[0] }
+      transaction do
+        active.update(active: 0)
+        unscoped.where(buy_orderid: order_ids).update(success: 1, active: 1)
+      end
+    end
   end
 
   def refresh_status

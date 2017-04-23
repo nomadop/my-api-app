@@ -324,5 +324,28 @@ class Market
     def quick_buy_buyable(ppg)
       MarketAsset.buyable.quick_buy_later(ppg)
     end
+
+    def request_market
+      cookie = Authentication.cookie
+
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/market/',
+          headers: {
+              :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+              :'Accept-Encoding' => 'gzip, deflate, sdch',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      response = RestClient::Request.execute(option)
+      response.body
+    end
   end
 end
