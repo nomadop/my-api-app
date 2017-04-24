@@ -48,7 +48,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload!
-      destroy_all
+      truncate
       reload
     end
 

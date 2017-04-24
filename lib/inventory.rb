@@ -33,7 +33,7 @@ class Inventory
       result = load_all
       assets = result['assets']
       InventoryAsset.transaction do
-        InventoryAsset.destroy_all
+        InventoryAsset.truncate
         InventoryAsset.create(assets)
       end
       descriptions = result['descriptions']
