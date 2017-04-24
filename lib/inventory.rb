@@ -34,7 +34,7 @@ class Inventory
       assets = result['assets']
       InventoryAsset.transaction do
         InventoryAsset.truncate
-        InventoryAsset.create(assets)
+        InventoryAsset.import(assets)
       end
       descriptions = result['descriptions']
       InventoryDescription.transaction do
