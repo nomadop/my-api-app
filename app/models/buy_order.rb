@@ -67,7 +67,10 @@ class BuyOrder < ApplicationRecord
       order_ids = order_rows.map { |row| row.attr(:id).match(/\d+/)[0] }
       transaction do
         active.update(active: 0)
-        unscoped.where(buy_orderid: order_ids).update(success: 1, active: 1)
+        order_ids.each do |id|
+          buy_order = unscoped.find_or_initialize_by(buy_orderid: id)
+          buy_order.update(success: 1, active: 1)
+        end
       end
     end
   end

@@ -140,6 +140,9 @@ class MarketAsset < ApplicationRecord
     Market.load_order_histogram(item_nameid)
     update(goo_value: get_goo_value) if Time.now - updated_at > 1.day
     graphs = order_histogram.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
+    return if graphs.blank?
+
+    active_buy_orders.cancel_later if active_buy_orders.exists?
     graphs.each { |g| ApplicationJob.perform_unique(CreateBuyOrderJob, classid, g.price, g.amount) }
   end
 
