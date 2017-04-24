@@ -37,16 +37,10 @@ class Inventory
         InventoryAsset.import(assets)
       end
       descriptions = result['descriptions']
-      InventoryDescription.transaction do
-        descriptions.each do |json|
-          description = InventoryDescription.find_or_create_by(
-              classid: json['classid'],
-              instanceid: json['instanceid']
-          )
-          description.update(json)
-          description.load_market_asset if description.market_asset.nil?
-        end
-      end
+      InventoryDescription.import(descriptions, on_duplicate_key_update: {
+          conflict_target: [:classid, :instanceid],
+          columns: [:actions, :marketable, :owner_actions, :tradable],
+      })
     end
 
     def auto_sell
