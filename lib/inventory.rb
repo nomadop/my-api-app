@@ -118,5 +118,17 @@ class Inventory
       groups = assets.group_by(&:marketable_date)
       groups.update(groups) { |_, values| values.map(&:goo_value).compact.sum }
     end
+
+    def gem_amount_info
+      query_result = InventoryAsset.gems
+                         .joins(:description)
+                         .group('inventory_descriptions.tradable')
+                         .sum('CAST(amount AS int)')
+      {
+          total: query_result[0] + query_result[1],
+          tradable: query_result[1],
+          untradable: query_result[0],
+      }
+    end
   end
 end

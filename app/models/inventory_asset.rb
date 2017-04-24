@@ -11,6 +11,7 @@ class InventoryAsset < ApplicationRecord
   scope :marketable, -> { joins(:description).where(inventory_descriptions: {marketable: 1}) }
   scope :unmarketable, -> { joins(:description).where(inventory_descriptions: {marketable: 0}) }
   scope :tradable, -> { joins(:description).where(inventory_descriptions: {tradable: 1}) }
+  scope :untradable, -> { joins(:description).where(inventory_descriptions: {tradable: 0}) }
   scope :gems, -> { where(classid: 667924416) }
   scope :sacks_of_gem, -> { joins(:market_asset).where(market_assets: { market_fee_app: 753 }) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {classid: nil}) }
