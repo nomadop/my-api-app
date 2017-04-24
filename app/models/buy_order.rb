@@ -8,7 +8,6 @@ class BuyOrder < ApplicationRecord
 
   scope :success, -> { where(success: 1) }
   scope :active, -> { where(active: 1) }
-  scope :cancelable, ->(ppg = 0.5) { joins(:market_asset).where('active = 1 AND 1.0 * price / market_assets.goo_value > ?', ppg) }
   default_scope { where(success: 1) }
 
   scope :cancelable, -> do
@@ -66,11 +65,9 @@ class BuyOrder < ApplicationRecord
 
       order_ids = order_rows.map { |row| row.attr(:id).match(/\d+/)[0] }
       transaction do
-        active.update(active: 0)
-        order_ids.each do |id|
-          buy_order = unscoped.find_or_initialize_by(buy_orderid: id)
-          buy_order.update(success: 1, active: 1)
-        end
+        active.update_all(active: 0)
+        existed_orders = unscoped.where(buy_orderid: order_ids)
+        existed_orders.update_all(success: 1, active: 1)
       end
     end
   end
