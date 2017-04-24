@@ -63,12 +63,15 @@ class BuyOrder < ApplicationRecord
       order_rows = listing_rows.select { |row| /mybuyorder_\d+/ =~ row.attr(:id) }
       return if order_rows.blank?
 
-      order_ids = order_rows.map { |row| row.attr(:id).match(/\d+/)[0] }
-      transaction do
-        active.update_all(active: 0)
-        existed_orders = unscoped.where(buy_orderid: order_ids)
-        existed_orders.update_all(success: 1, active: 1)
+      orders = order_rows.map do |row|
+        buy_orderid = row.attr(:id).match(/\d+/)[0]
+        { buy_orderid: buy_orderid, success: 1, active: 1 }
       end
+      active.update_all(active: 0)
+      import(orders, on_duplicate_key_update: {
+          conflict_target: [:buy_orderid],
+          columns: [:success, :active],
+      })
     end
   end
 
