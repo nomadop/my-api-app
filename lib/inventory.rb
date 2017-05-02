@@ -114,9 +114,20 @@ class Inventory
     end
 
     def goo_value_by_marketable_date
-      assets = InventoryAsset.includes(:description, :market_asset)
-      groups = assets.group_by(&:marketable_date)
-      groups.update(groups) { |_, values| values.map(&:goo_value).compact.sum }
+      group_sql = <<-SQL.strip_heredoc
+              to_char(
+                to_timestamp(
+                  substring(
+                    inventory_descriptions.owner_descriptions->0->>'value' from '\\d+'
+                  )::int
+                ), 
+                'YYYY-MM-DD'
+              )
+      SQL
+      InventoryAsset
+          .joins(:description, :market_asset)
+          .group(group_sql)
+          .sum('market_assets.goo_value')
     end
 
     def gem_amount_info
@@ -129,6 +140,23 @@ class Inventory
           tradable: query_result[1],
           untradable: query_result[0],
       }
+    end
+
+    def gem_amount_by_marketable_date
+      group_sql = <<-SQL.strip_heredoc
+              to_char(
+                to_timestamp(
+                  substring(
+                    inventory_descriptions.owner_descriptions->0->>'value' from '\\d+'
+                  )::int
+                ), 
+                'YYYY-MM-DD'
+              )
+      SQL
+      InventoryAsset.gems
+          .joins(:description)
+          .group(group_sql)
+          .sum('amount::int')
     end
   end
 end
