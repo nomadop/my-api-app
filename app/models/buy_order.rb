@@ -87,7 +87,7 @@ class BuyOrder < ApplicationRecord
   end
 
   def refresh_order_histogram_later
-    market_asset.load_order_histogram
+    market_asset.load_order_histogram unless market_asset.nil?
   end
 
   def price_per_goo
@@ -97,14 +97,13 @@ class BuyOrder < ApplicationRecord
   end
 
   def cancel
+    return true if active == 0
+
     result = Market.cancel_buy_order(buy_orderid)
     case result['success']
       when 1
         update(active: 0)
         return true
-      when 8
-        Authentication.refresh
-        return cancel
       else
         return false
     end
