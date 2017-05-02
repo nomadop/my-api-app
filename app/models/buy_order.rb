@@ -65,7 +65,9 @@ class BuyOrder < ApplicationRecord
 
       orders = order_rows.map do |row|
         buy_orderid = row.attr(:id).match(/\d+/)[0]
-        { buy_orderid: buy_orderid, success: 1, active: 1 }
+        market_url = row.search('.market_listing_item_name_link').attr('href').to_s
+        market_hash_name = URI.decode(market_url.split('/').last)
+        {buy_orderid: buy_orderid, market_hash_name: market_hash_name, success: 1, active: 1}
       end
       active.update_all(active: 0)
       import(orders, on_duplicate_key_update: {
