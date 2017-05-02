@@ -55,7 +55,7 @@ class MarketAsset < ApplicationRecord
   class << self
     def quick_buy(market_hash_name)
       market_asset = find_by(market_hash_name: market_hash_name)
-      market_asset.quick_buy
+      market_asset.quick_buy(0.525)
     end
 
     def quick_buy_orderable(ppg = 0.525)
@@ -162,7 +162,7 @@ class MarketAsset < ApplicationRecord
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
     lowest_price = (goo_value * 0.4).ceil
     highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
-    return if 1.0 * highest_buy_order_graph_price / goo_value >= 0.5
+    return if 1.0 * highest_buy_order_graph_price / goo_value > 0.525
 
     order_price = [lowest_price, highest_buy_order_graph_price].max
     ApplicationJob.perform_unique(CreateBuyOrderJob, classid, order_price, 1)
