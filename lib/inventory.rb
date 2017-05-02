@@ -39,7 +39,7 @@ class Inventory
       descriptions = result['descriptions']
       InventoryDescription.import(descriptions, on_duplicate_key_update: {
           conflict_target: [:classid, :instanceid],
-          columns: [:actions, :marketable, :owner_actions, :tradable],
+          columns: [:actions, :marketable, :owner_actions, :tradable, :owner_descriptions],
       })
     end
 
