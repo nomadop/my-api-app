@@ -46,6 +46,9 @@ class MarketAsset < ApplicationRecord
   scope :buy_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).where.not(goo_value: nil).order('1.0 * order_histograms.highest_buy_order / goo_value') }
   scope :sell_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).where.not(goo_value: nil).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
   scope :with_booster_creator, -> { joins(:booster_creator).distinct }
+  scope :joins_latest_order_histogram, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL) }
+  scope :proportion_more_than, ->(proportion) { where('1.0 * (order_histograms.lowest_sell_order - 1) / (order_histograms.highest_buy_order + 1) > ?', proportion) }
+  scope :sell_count_more_than, ->(count) { where('CAST(order_histograms.sell_order_graph->(jsonb_array_length(order_histograms.sell_order_graph) - 1)->>1 AS int) > ?', count) }
 
   after_create :load_order_histogram, :load_goo_value
 
