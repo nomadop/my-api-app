@@ -87,6 +87,10 @@ class MarketAsset < ApplicationRecord
     ApplicationJob.perform_unique(GetGooValueJob, classid, wait: 3.seconds)
   end
 
+  def refresh_goo_value
+    update(goo_value: get_goo_value) if Time.now - updated_at > 1.day
+  end
+
   def booster_pack?
     type == 'Booster Pack'
   end
@@ -138,7 +142,7 @@ class MarketAsset < ApplicationRecord
   def quick_buy(ppg)
     return if booster_pack?
     Market.load_order_histogram(item_nameid)
-    update(goo_value: get_goo_value) if Time.now - updated_at > 1.day
+    refresh_goo_value
     graphs = order_histogram.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
     return if graphs.blank?
 
@@ -154,7 +158,7 @@ class MarketAsset < ApplicationRecord
     return if booster_pack?
     return if active_buy_orders.exists?
     Market.load_order_histogram(item_nameid)
-    update(goo_value: get_goo_value) if Time.now - updated_at > 1.day
+    refresh_goo_value
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
     lowest_price = (goo_value * 0.4).ceil
     highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
