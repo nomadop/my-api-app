@@ -19,7 +19,9 @@ class InventoryAsset < ApplicationRecord
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
   delegate :marketable?, :market_hash_name, :load_market_asset, :marketable_date, to: :description
-  delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance, :price_per_goo_exclude_vat, :goo_value, :booster_pack?, to: :market_asset, allow_nil: true
+  delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance,
+           :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value,
+           to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, :sell_order_count, to: :order_histogram
 
   class << self
@@ -180,7 +182,8 @@ class InventoryAsset < ApplicationRecord
 
   def auto_sell_and_grind
     refresh_price
-    ppg = booster_pack? ? 1 : reload.price_per_goo_exclude_vat
+    refresh_goo_value
+    ppg = booster_pack? ? 2 : reload.price_per_goo_exclude_vat
     return if ppg.nil?
     quick_sell if ppg > 1 && marketable?
     grind_into_goo if ppg <= 1 && !booster_pack?
