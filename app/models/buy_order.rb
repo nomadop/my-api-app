@@ -9,11 +9,19 @@ class BuyOrder < ApplicationRecord
   scope :success, -> { where(success: 1) }
   scope :active, -> { where(active: 1) }
   scope :purchased, -> { where(purchased: 1) }
+  scope :without_active, -> do
+    joins_sql = <<-SQL
+        LEFT OUTER JOIN "buy_orders" bo
+        ON "bo"."market_hash_name" = "buy_orders"."market_hash_name"
+        AND "bo"."active" = 1 
+        AND "bo"."success" = 1
+    SQL
+    joins(joins_sql).where(bo: { market_hash_name: nil })
+  end
   default_scope { where(success: 1) }
 
   scope :cancelable, -> do
-    joins(:order_histogram).where(
-        <<-SQL
+    joins(:order_histogram).where <<-SQL
         (price < order_histograms.highest_buy_order OR (
           price = order_histograms.highest_buy_order AND 
           CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
@@ -27,7 +35,6 @@ class BuyOrder < ApplicationRecord
           )
         ) AND ( buy_orders.active = 1 )
     SQL
-    )
   end
 
   delegate :load_order_histogram, to: :market_asset

@@ -10,8 +10,7 @@ class MyListing < ApplicationRecord
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
   scope :cancelable, -> do
-    joins(:order_histogram).where(
-      <<-SQL
+    joins(:order_histogram).where <<-SQL
         (price > order_histograms.lowest_sell_order OR (
           price > 100 AND 
           price = order_histograms.lowest_sell_order AND 
@@ -30,8 +29,7 @@ class MyListing < ApplicationRecord
             ORDER BY oh.created_at DESC LIMIT 1
           )
         )
-      SQL
-    )
+    SQL
   end
 
   delegate :load_order_histogram, :find_sell_balance, :goo_value, to: :market_asset
