@@ -8,6 +8,7 @@ class BuyOrder < ApplicationRecord
 
   scope :success, -> { where(success: 1) }
   scope :active, -> { where(active: 1) }
+  scope :purchased, -> { where(purchased: 1) }
   default_scope { where(success: 1) }
 
   scope :cancelable, -> do
@@ -57,7 +58,7 @@ class BuyOrder < ApplicationRecord
       find_each(&:rebuy_later)
     end
 
-    def refresh_active_orders
+    def refresh
       doc = Nokogiri::HTML(Market.request_market)
       listing_rows = doc.search('.market_listing_row.market_recent_listing_row')
       order_rows = listing_rows.select { |row| /mybuyorder_\d+/ =~ row.attr(:id) }
@@ -67,12 +68,12 @@ class BuyOrder < ApplicationRecord
         buy_orderid = row.attr(:id).match(/\d+/)[0]
         market_url = row.search('.market_listing_item_name_link').attr('href').to_s
         market_hash_name = URI.decode(market_url.split('/').last)
-        {buy_orderid: buy_orderid, market_hash_name: market_hash_name, success: 1, active: 1}
+        {buy_orderid: buy_orderid, market_hash_name: market_hash_name, success: 1, active: 1, purchased: 0}
       end
-      active.update_all(active: 0)
+      active.update_all(active: 0, purchased: 1)
       import(orders, on_duplicate_key_update: {
           conflict_target: [:buy_orderid],
-          columns: [:success, :active],
+          columns: [:success, :active, :purchased],
       })
     end
   end
@@ -121,7 +122,7 @@ class BuyOrder < ApplicationRecord
   end
 
   def rebuy
-    cancel && market_asset.quick_order
+    cancel && market_asset.quick_order_later
   end
 
   def rebuy_later
