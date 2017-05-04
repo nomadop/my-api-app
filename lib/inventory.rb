@@ -1,6 +1,6 @@
 class Inventory
   class << self
-    def load_all
+    def reload
       steam_id = Authentication.steam_id
       cookie = Authentication.cookie
       option = {
@@ -29,7 +29,7 @@ class Inventory
       }
     end
 
-    def load_all!
+    def reload!
       result = load_all
       assets = result['assets']
       InventoryAsset.transaction do
