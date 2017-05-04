@@ -30,7 +30,7 @@ class Inventory
     end
 
     def reload!
-      result = load_all
+      result = reload
       assets = result['assets']
       InventoryAsset.transaction do
         InventoryAsset.truncate
