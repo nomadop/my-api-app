@@ -104,6 +104,13 @@ class BuyOrder < ApplicationRecord
       when 1
         update(active: 0)
         return true
+      when 8
+        if result['error'] == 'Token is required but was not set.'
+          Authentication.refresh
+          raise 'Token is required but was not set.'
+        end
+
+        return false
       else
         return false
     end
