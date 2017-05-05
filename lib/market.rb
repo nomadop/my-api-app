@@ -110,6 +110,20 @@ class Market
       JSON.parse(response.body)
     end
 
+    def search_by_query(query, start = 0, count = 10)
+      response = RestClient.get('http://steamcommunity.com/market/search/render/', {
+          params: {
+              query: query,
+              start: start,
+              count: count,
+              search_descriptions: 0,
+              sort_column: 'default',
+              sort_dir: 'desc',
+          },
+      })
+      JSON.parse(response.body)
+    end
+
     def handle_search_result(result, game_name = nil)
       return if result['total_count'] == 0
 
@@ -131,6 +145,10 @@ class Market
 
     def scan(appid)
       ScanMarketJob.perform_later(appid, 0, 100)
+    end
+
+    def scan_by_query(query)
+      ScanMarketByQueryJob.perform_later(query, 0, 100)
     end
 
     def request_my_listings(start, count)
