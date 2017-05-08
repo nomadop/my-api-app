@@ -125,7 +125,7 @@ class BuyOrder < ApplicationRecord
   end
 
   def rebuy
-    cancel && market_asset.quick_order_later
+    cancel && market_asset.quick_order_later(true)
   end
 
   def rebuy_later
