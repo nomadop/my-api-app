@@ -158,5 +158,41 @@ class Inventory
           .group(group_sql)
           .sum('amount::int')
     end
+
+    def create_booster(appid, series)
+      cookie = Authentication.cookie
+      sessionid = Authentication.session_id
+
+      option = {
+          method: :post,
+          url: 'http://steamcommunity.com/tradingcards/ajaxcreatebooster/',
+          headers: {
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'http://steamcommunity.com/tradingcards/boostercreator/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Requested-With' => 'XMLHttpRequest',
+          },
+          payload: {
+              sessionid: sessionid,
+              appid: appid,
+              series: series,
+              tradability_preference: 1,
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      RestClient::Request.execute(option)
+    rescue RestClient::Forbidden => e
+      Authentication.refresh
+      raise e
+    end
   end
 end

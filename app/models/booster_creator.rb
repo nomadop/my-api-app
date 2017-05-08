@@ -100,7 +100,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def createable?(ppg = 0.6)
-    (price_per_goo > ppg && sell_order_count > 20) ||
+    (booster_pack && (price_per_goo > ppg && sell_order_count > 20)) ||
         (open_price_per_goo > ppg && open_sell_order_count > 20)
   end
 
@@ -133,9 +133,14 @@ class BoosterCreator < ApplicationRecord
 
   def refresh_price_later
     trading_cards.each(&:load_order_histogram)
+    booster_pack&.load_order_histogram
   end
 
   def set_trading_card_type
     self.trading_card_type = "#{name} Trading Card"
+  end
+
+  def create
+    Inventory.create_booster(appid, series)
   end
 end
