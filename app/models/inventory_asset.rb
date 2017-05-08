@@ -18,7 +18,7 @@ class InventoryAsset < ApplicationRecord
   scope :with_order_histogram, -> { joins(:order_histogram).distinct.includes(:order_histogram) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
-  delegate :marketable?, :market_hash_name, :load_market_asset, :marketable_date, to: :description
+  delegate :marketable?, :unmarketable?, :market_hash_name, :load_market_asset, :marketable_date, to: :description
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance,
            :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value,
            to: :market_asset, allow_nil: true
@@ -180,7 +180,46 @@ class InventoryAsset < ApplicationRecord
     raise e
   end
 
+  def unpack_booster
+    account = Authentication.account
+    cookie = Authentication.cookie
+    sessionid = Authentication.session_id
+
+    option = {
+        method: :post,
+        url: "http://steamcommunity.com/id/#{account}/ajaxunpackbooster/",
+        headers: {
+            :Accept => '*/*',
+            :'Accept-Encoding' => 'gzip, deflate',
+            :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+            :'Cache-Control' => 'no-cache',
+            :'Connection' => 'keep-alive',
+            :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+            :'Cookie' => cookie,
+            :'Host' => 'steamcommunity.com',
+            :'Origin' => 'http://steamcommunity.com',
+            :'Pragma' => 'no-cache',
+            :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+            :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+            :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: {
+            sessionid: sessionid,
+            appid: appid,
+            communityitemid: assetid,
+        },
+        proxy: 'http://127.0.0.1:8888',
+    }
+    response = RestClient::Request.execute(option)
+    destroy if JSON.parse(response.body)['success'] == 1
+  rescue RestClient::Forbidden => e
+    Authentication.refresh
+    raise e
+  end
+
   def auto_sell_and_grind
+    return if price_per_goo_exclude_vat > 1 && unmarketable?
+
     refresh_price
     refresh_goo_value
     ppg = booster_pack? ? 2 : reload.price_per_goo_exclude_vat
