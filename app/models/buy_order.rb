@@ -5,19 +5,15 @@ class BuyOrder < ApplicationRecord
 
   belongs_to :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_one :order_histogram, through: :market_asset
+  has_many :other_orders, class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
+  has_one :active_order, -> { where(active: 1) },
+          class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
 
   scope :success, -> { where(success: 1) }
   scope :active, -> { where(active: 1) }
   scope :purchased, -> { where(purchased: 1) }
-  scope :without_active, -> do
-    joins_sql = <<-SQL
-        LEFT OUTER JOIN "buy_orders" bo
-        ON "bo"."market_hash_name" = "buy_orders"."market_hash_name"
-        AND "bo"."active" = 1 
-        AND "bo"."success" = 1
-    SQL
-    joins(joins_sql).where(bo: { market_hash_name: nil })
-  end
+  scope :without_active, -> { left_outer_joins(:active_order).where(active_orders_buy_orders: {market_hash_name: nil}) }
+
   default_scope { where(success: 1) }
 
   scope :cancelable, -> do
