@@ -137,6 +137,8 @@ class MarketAsset < ApplicationRecord
       when 8
         Authentication.refresh
         create_buy_order(price, quantity)
+      when 16
+        raise result['message']
       else
         return
     end
