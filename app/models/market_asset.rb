@@ -148,7 +148,7 @@ class MarketAsset < ApplicationRecord
     return if booster_pack?
     Market.load_order_histogram(item_nameid)
     refresh_goo_value
-    graphs = order_histogram.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg}
+    graphs = order_histogram.sell_order_graphs.select { |g| 1.0 * g.price / goo_value <= ppg }
     return if graphs.blank?
 
     active_buy_orders.cancel_later if active_buy_orders.exists?
@@ -173,8 +173,10 @@ class MarketAsset < ApplicationRecord
     ApplicationJob.perform_unique(CreateBuyOrderJob, classid, order_price, 1)
   end
 
-  def quick_order_later
-    QuickOrderJob.perform_later(classid)
+  def quick_order_later(unique = false)
+    unique ?
+        QuickOrderJob.perform_later(classid) :
+        ApplicationJob.perform_unique(QuickOrderJob, classid)
   end
 
   def buy_info
