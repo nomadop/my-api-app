@@ -18,7 +18,7 @@ class BuyOrder < ApplicationRecord
 
   scope :cancelable, -> do
     joins(:order_histogram).where <<-SQL
-        (price < order_histograms.highest_buy_order OR (
+        (quantity_remaining < quantity OR price < order_histograms.highest_buy_order OR (
           price = order_histograms.highest_buy_order AND 
           CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
         )) AND (
@@ -71,12 +71,21 @@ class BuyOrder < ApplicationRecord
         buy_orderid = row.attr(:id).match(/\d+/)[0]
         market_url = row.search('.market_listing_item_name_link').attr('href').to_s
         market_hash_name = URI.decode(market_url.split('/').last)
-        {buy_orderid: buy_orderid, market_hash_name: market_hash_name, success: 1, active: 1, purchased: 0}
+        quantity = row.search('.market_listing_buyorder_qty .market_listing_price').inner_text.strip
+        {
+            buy_orderid: buy_orderid,
+            market_hash_name: market_hash_name,
+            success: 1,
+            active: 1,
+            purchased: 0,
+            quantity: quantity,
+            quantity_remaining: quantity,
+        }
       end
-      active.update_all(active: 0, purchased: 1)
+      active.update_all(active: 0, purchased: 1, quantity_remaining: 0)
       import(orders, on_duplicate_key_update: {
           conflict_target: [:buy_orderid],
-          columns: [:success, :active, :purchased],
+          columns: [:success, :active, :purchased, :quantity_remaining],
       })
     end
   end
