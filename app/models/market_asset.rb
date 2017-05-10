@@ -133,11 +133,11 @@ class MarketAsset < ApplicationRecord
     result = Market.create_buy_order(market_hash_name, price, quantity)
     case result['success']
       when 1
-        BuyOrder.create(result.merge(market_hash_name: market_hash_name, price: price))
+        BuyOrder.create(result.merge(market_hash_name: market_hash_name, price: price, quantity: quantity))
       when 8
         Authentication.refresh
         create_buy_order(price, quantity)
-      when 16
+      when 16, 40
         raise result['message']
       else
         return
