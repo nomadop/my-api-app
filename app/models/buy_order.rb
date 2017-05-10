@@ -88,6 +88,17 @@ class BuyOrder < ApplicationRecord
           columns: [:success, :active, :purchased, :quantity_remaining],
       })
     end
+
+    def rebuy_purchased
+      Authentication.refresh
+      3.times do
+        break if BuyOrder.refresh
+      end
+      market_hash_names = BuyOrder.purchased.without_active.distinct.pluck(:market_hash_name)
+      MarketAsset.where(market_hash_name: market_hash_names).quick_order_later
+      market_hash_names.size
+    end
+  end
   end
 
   def refresh_status
