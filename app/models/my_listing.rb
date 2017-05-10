@@ -10,7 +10,7 @@ class MyListing < ApplicationRecord
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
   scope :cancelable, -> do
-    joins(:order_histogram).where <<-SQL
+    joins(:order_histogram).where <<~SQL
         (price > order_histograms.lowest_sell_order OR (
           price > 100 AND 
           price = order_histograms.lowest_sell_order AND 
@@ -64,6 +64,10 @@ class MyListing < ApplicationRecord
 
     def cancel_later
       find_each(&:cancel_later)
+    end
+
+    def cancel_cancelable
+      MyListing.non_sack_of_gems.cancelable.cancel_later
     end
   end
 
