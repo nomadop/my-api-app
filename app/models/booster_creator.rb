@@ -37,6 +37,13 @@ class BoosterCreator < ApplicationRecord
       find_each(&:refresh_price_later)
     end
 
+    def refresh_by_ppg_order(limit)
+      BoosterCreator.ppg_order
+          .includes(trading_cards: :order_histogram, booster_pack: :order_histogram)
+          .first(limit)
+          .each(&:refresh_price_later)
+    end
+
     def scan_all
       find_each(&:scan_market)
     end
