@@ -149,5 +149,19 @@ class BoosterCreator < ApplicationRecord
 
   def create
     Inventory.create_booster(appid, series)
+    response = create
+    raise 'failed to create booster' unless response.code == 200
+    result = JSON.parse(response.body)
+    result['purchase_result']['communityitemid']
+  end
+
+  def create_and_sell
+    assetid = create
+    Inventory.sell(assetid, lowest_sell_order - 1, 1)
+  end
+
+  def create_and_unpack
+    assetid = create
+    Inventory.unpack_booster(assetid)
   end
 end
