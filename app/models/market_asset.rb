@@ -170,13 +170,16 @@ class MarketAsset < ApplicationRecord
     return if 1.0 * highest_buy_order_graph_price / goo_value > 0.525
 
     order_price = [lowest_price, highest_buy_order_graph_price].max
-    ApplicationJob.perform_unique(CreateBuyOrderJob, classid, order_price, 1)
+    quantity = BuyOrder.purchased.where(market_hash_name: market_hash_name).count
+    quantity = 1 if quantity < 1
+    quantity = 3 if quantity > 3
+    ApplicationJob.perform_unique(CreateBuyOrderJob, classid, order_price, quantity)
   end
 
   def quick_order_later(unique = false)
     unique ?
-        QuickOrderJob.perform_later(classid) :
-        ApplicationJob.perform_unique(QuickOrderJob, classid)
+        ApplicationJob.perform_unique(QuickOrderJob, classid) :
+        QuickOrderJob.perform_later(classid)
   end
 
   def buy_info
