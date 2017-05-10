@@ -27,6 +27,9 @@ class Inventory
           'assets' => [],
           'descriptions' => [],
       }
+    rescue RestClient::Forbidden => _
+      Authentication.refresh
+      reload
     end
 
     def reload!
@@ -43,34 +46,9 @@ class Inventory
       })
     end
 
-    def auto_sell
-      inventory_assets = InventoryAsset.with_order_histogram.marketable
-      inventory_assets.each(&:refresh_price)
-
-      prepare = inventory_assets.select do |asset|
-        (asset.price_per_goo_exclude_vat || 0) > 0.6
-      end
-      prepare.each(&:quick_sell_later)
-    end
-
-    def auto_grind
-      inventory_assets = InventoryAsset.with_order_histogram.marketable
-      inventory_assets.each(&:refresh_price)
-
-      prepare = inventory_assets.select do |asset|
-        (asset.price_per_goo_exclude_vat || Float::INFINITY) <= 0.6
-      end
-      prepare.each(&:grind_into_goo)
-    end
-
     def auto_sell_and_grind
-      inventory_assets = InventoryAsset.with_order_histogram.marketable
-      inventory_assets.each do |asset|
-        asset.refresh_price
-        price = asset.price_per_goo_exclude_vat
-        next if price.nil?
-        price > 0.7 ? asset.quick_sell_later : asset.grind_into_goo
-      end
+      Inventory.reload!
+      InventoryAsset.auto_sell_and_grind_later
     end
 
     def request_booster_creators
@@ -186,6 +164,78 @@ class Inventory
               appid: appid,
               series: series,
               tradability_preference: 1,
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      RestClient::Request.execute(option)
+    rescue RestClient::Forbidden => e
+      Authentication.refresh
+      raise e
+    end
+
+    def sell(assetid, price, amount)
+      account = Authentication.account
+      cookie = Authentication.cookie
+      sessionid = Authentication.session_id
+
+      option = {
+          method: :post,
+          url: 'https://steamcommunity.com/market/sellitem/',
+          headers: {
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, br',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          },
+          payload: {
+              sessionid: sessionid,
+              appid: 753,
+              contextid: 6,
+              assetid: assetid,
+              amount: amount,
+              price: price,
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      RestClient::Request.execute(option)
+    end
+
+    def unpack_booster(assetid)
+      account = Authentication.account
+      cookie = Authentication.cookie
+      sessionid = Authentication.session_id
+
+      option = {
+          method: :post,
+          url: "http://steamcommunity.com/id/#{account}/ajaxunpackbooster/",
+          headers: {
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Requested-With' => 'XMLHttpRequest',
+          },
+          payload: {
+              sessionid: sessionid,
+              appid: 753,
+              communityitemid: assetid,
           },
           proxy: 'http://127.0.0.1:8888',
       }
