@@ -137,10 +137,10 @@ class MarketAsset < ApplicationRecord
       when 8
         Authentication.refresh
         create_buy_order(price, quantity)
-      when 16, 40
-        raise result['message']
-      else
+      when 29
         return
+      else
+        raise result['message']
     end
   end
 
@@ -167,6 +167,7 @@ class MarketAsset < ApplicationRecord
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
     lowest_price = (goo_value * 0.4).ceil
     highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
+    highest_buy_order_graph_price = highest_buy_order_graph_price - 1 if 1.0 * highest_buy_order_graph_price / goo_value > 0.525
     return if 1.0 * highest_buy_order_graph_price / goo_value > 0.525
 
     order_price = [lowest_price, highest_buy_order_graph_price].max
