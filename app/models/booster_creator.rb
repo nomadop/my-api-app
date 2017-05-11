@@ -13,6 +13,7 @@ class BoosterCreator < ApplicationRecord
 
   scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
   scope :unavailable, -> { where(unavailable: true) }
+  scope :available, -> { where(unavailable: false) }
   scope :ppg_order, -> do
     joins(
         <<-SQL
@@ -37,10 +38,13 @@ class BoosterCreator < ApplicationRecord
       find_each(&:refresh_price_later)
     end
 
-    def refresh_by_ppg_order(limit)
-      BoosterCreator.ppg_order
-          .includes(trading_cards: :order_histogram, booster_pack: :order_histogram)
-          .first(limit)
+    def first_ppg_order(limit)
+      ppg_order.first(limit)
+    end
+
+    def refresh_by_ppg_order(limit = 100)
+      includes(trading_cards: :order_histogram, booster_pack: :order_histogram)
+          .first_ppg_order(limit)
           .each(&:refresh_price_later)
     end
 
@@ -49,9 +53,10 @@ class BoosterCreator < ApplicationRecord
     end
 
     def creatable
-      to_a.select do |booster_creator|
-        booster_creator.price_per_goo(false) > 0.6
-      end
+      includes(:trading_card_order_histograms, booster_pack: :order_histogram)
+          .available
+          .first_ppg_order(100)
+          .to_a.select(&:createable?)
     end
   end
 
@@ -148,8 +153,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def create
-    Inventory.create_booster(appid, series)
-    response = create
+    response = Inventory.create_booster(appid, series)
     raise 'failed to create booster' unless response.code == 200
     result = JSON.parse(response.body)
     result['purchase_result']['communityitemid']
