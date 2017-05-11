@@ -48,7 +48,12 @@ class Inventory
 
     def auto_sell_and_grind
       Inventory.reload!
-      InventoryAsset.auto_sell_and_grind_later
+      InventoryAsset.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later
+    end
+
+    def auto_sell_and_grind_marketable
+      Inventory.reload!
+      InventoryAsset.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
     end
 
     def request_booster_creators
