@@ -78,13 +78,13 @@ class Inventory
 
     def load_booster_creators
       boosters = request_booster_creators
-      boosters.each do |booster|
-        booster['name'] = Utility.unescapeHTML(booster['name'])
+      BoosterCreator.transaction do
+        boosters.each do |booster|
+          model = BoosterCreator.find_or_initialize_by(appid: booster['appid'])
+          booster['name'] = Utility.unescapeHTML(booster['name'])
+          model.update(booster)
+        end
       end
-      BoosterCreator.import(boosters, on_duplicate_key_update: {
-          conflict_target: [:appid],
-          columns: [:name, :price, :available_at_time],
-      })
     end
 
     def total_goo_value
