@@ -54,7 +54,6 @@ class BoosterCreator < ApplicationRecord
 
     def creatable
       includes(:trading_card_order_histograms, booster_pack: :order_histogram)
-          .available
           .first_ppg_order(100)
           .to_a.select(&:createable?)
     end
