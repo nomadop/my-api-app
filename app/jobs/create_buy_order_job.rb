@@ -4,7 +4,7 @@ class CreateBuyOrderJob < ApplicationJob
   def perform(classid, price, amount)
     market_asset = MarketAsset.find(classid)
     market_asset.create_buy_order(price, amount)
-    sleep(3)
+    sleep(2)
   end
 
   rescue_from(RestClient::Forbidden) do |exception|
