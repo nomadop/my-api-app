@@ -324,10 +324,8 @@ class Market
               sessionid: session_id,
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
-      response = RestClient::Request.execute(option)
-      Authentication.update_cookie(response)
+      RestClient::Request.execute(option)
     end
 
     def quick_buy_schedule(ppg, slices)
@@ -364,6 +362,42 @@ class Market
       }
       response = RestClient::Request.execute(option)
       response.body
+    end
+
+    def send_trade(profile, account_id, offer, message = '')
+      cookie = Authentication.cookie
+      session_id = Authentication.session_id
+
+      option = {
+          method: :post,
+          url: 'https://steamcommunity.com/tradeoffer/new/send',
+          headers: {
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, br',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'https://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => "https://steamcommunity.com/tradeoffer/new/?partner=#{profile}",
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          },
+          payload: {
+              sessionid: session_id,
+              serverid: 1,
+              partner: account_id,
+              tradeoffermessage: message,
+              json_tradeoffer: offer,
+              captcha: '',
+              trade_offer_create_params: {},
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      RestClient::Request.execute(option)
     end
   end
 end
