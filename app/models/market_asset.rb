@@ -76,6 +76,10 @@ class MarketAsset < ApplicationRecord
     def load_order_histogram
       find_each(&:load_order_histogram)
     end
+
+    def quick_buy_by_ppg(limit, ppg = 0.525)
+      sell_ppg_order.first(limit).each {|ma| ma.quick_buy_later(ppg)}
+    end
   end
 
   def load_order_histogram
