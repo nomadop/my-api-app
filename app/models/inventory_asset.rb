@@ -33,6 +33,10 @@ class InventoryAsset < ApplicationRecord
     def auto_sell_and_grind_later
       find_each &:auto_sell_and_grind_later
     end
+
+    def find_biggest_tradable_gem
+      gems.tradable.order('amount::int').last
+    end
   end
 
   def refresh_price
