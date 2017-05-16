@@ -46,8 +46,10 @@ class MyListing < ApplicationRecord
     end
 
     def reload!
-      truncate
-      reload
+      transaction do
+        truncate
+        reload
+      end
     end
 
     def refresh_order_histogram
