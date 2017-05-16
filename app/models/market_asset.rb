@@ -1,6 +1,7 @@
 class MarketAsset < ApplicationRecord
   include ActAsGooItem
   include ActAsListable
+  include ActAsBoosterPack
   self.inheritance_column = nil
   self.primary_key = :classid
 

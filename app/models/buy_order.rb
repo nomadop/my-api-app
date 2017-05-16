@@ -116,7 +116,6 @@ class BuyOrder < ApplicationRecord
       cancelable.rebuy_later
     end
   end
-  end
 
   def refresh_status
     status = Market.get_buy_order_status(buy_orderid)
