@@ -61,13 +61,17 @@ class Steam
     def load_friends
       response = request_friends
       doc = Nokogiri::HTML(response)
-      doc.search('.friendBlock').map do |div|
+      friends = doc.search('.friendBlock').map do |div|
         mini_profile = div.attr('data-miniprofile')
         profile_link = div.search('.friendBlockLinkOverlay').attr('href').value
         account_id = profile_link.split('/').last
         account_name = div.search('.friendBlockContent').children.first.inner_text.strip
         { profile: mini_profile, account_id: account_id, account_name: account_name }
       end
+      Friend.import(friends, on_duplicate_key_update: {
+          conflict_target: [:profile],
+          columns: [:account_id, :account_name],
+      })
     end
   end
 end
