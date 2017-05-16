@@ -69,6 +69,12 @@ class MyListing < ApplicationRecord
     def cancel_cancelable
       MyListing.non_sack_of_gems.cancelable.cancel_later
     end
+
+    def reload_and_fresh
+      Authentication.refresh
+      MyListing.reload!
+      MyListing.refresh_order_histogram
+    end
   end
 
   def cancelable?
