@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170424035224) do
+ActiveRecord::Schema.define(version: 20170515090805) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,15 @@ ActiveRecord::Schema.define(version: 20170424035224) do
     t.integer  "price"
     t.text     "purchase_amount_text"
     t.index ["buy_orderid"], name: "index_buy_orders_on_buy_orderid", unique: true, using: :btree
+  end
+
+  create_table "friends", force: :cascade do |t|
+    t.string   "profile"
+    t.string   "account_id"
+    t.string   "account_name"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["profile"], name: "index_friends_on_profile", unique: true, using: :btree
   end
 
   create_table "inventory_assets", force: :cascade do |t|
