@@ -16,9 +16,10 @@ class BuyOrder < ApplicationRecord
 
   default_scope { where(success: 1) }
 
+  scope :part_purchased, -> { where('quantity_remaining < quantity AND active = 1') }
   scope :cancelable, -> do
     joins(:order_histogram).where <<-SQL
-        (quantity_remaining < quantity OR price < order_histograms.highest_buy_order OR (
+        (price < order_histograms.highest_buy_order OR (
           price = order_histograms.highest_buy_order AND 
           CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
         )) AND (
