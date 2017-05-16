@@ -33,8 +33,8 @@ class BuyOrder < ApplicationRecord
     SQL
   end
 
-  delegate :load_order_histogram, to: :market_asset
-  delegate :lowest_sell_order, to: :order_histogram
+  delegate :load_order_histogram, :goo_value, to: :market_asset
+  delegate :lowest_sell_order, :highest_buy_order, to: :order_histogram
 
   class << self
     def refresh_order_histogram_later
@@ -109,7 +109,11 @@ class BuyOrder < ApplicationRecord
         break if BuyOrder.refresh
       end
       MarketAsset.orderable(0.5).buyable(2).without_active_buy_order.quick_order_later
-      BuyOrder.cancelable.rebuy_later
+      cancelable = BuyOrder
+          .cancelable
+          .includes(:market_asset, :order_histogram)
+          .reject { |buy_order| buy_order.highest_buy_order >= buy_order.goo_value * 0.525 }
+      cancelable.rebuy_later
     end
   end
   end
