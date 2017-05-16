@@ -13,8 +13,8 @@ class InventoryAsset < ApplicationRecord
   scope :tradable, -> { joins(:description).where(inventory_descriptions: {tradable: 1}) }
   scope :untradable, -> { joins(:description).where(inventory_descriptions: {tradable: 0}) }
   scope :gems, -> { where(classid: 667924416) }
-  scope :sacks_of_gem, -> { joins(:market_asset).where(market_assets: { market_fee_app: 753 }) }
-  scope :non_sacks_of_gem, -> { joins(:market_asset).where.not(market_assets: { market_fee_app: 753 }) }
+  scope :sacks_of_gem, -> { joins(:market_asset).where(market_assets: {market_fee_app: 753}) }
+  scope :non_sacks_of_gem, -> { joins(:market_asset).where.not(market_assets: {market_fee_app: 753}) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {classid: nil}) }
   scope :with_order_histogram, -> { joins(:order_histogram).distinct.includes(:order_histogram) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
@@ -49,11 +49,11 @@ class InventoryAsset < ApplicationRecord
 
   def quick_sell
     price = if sell_order_count && sell_order_count > 50 && market_asset&.sell_histories.with_in(1.week).exists?
-              Utility.exclude_val(find_sell_balance(with_in: 1.week, balance: 0.8))
-            else
-              lowest = order_histogram.lowest_sell_order_exclude_vat
-              lowest > 50 ? lowest - 1 : lowest
-            end
+      Utility.exclude_val(find_sell_balance(with_in: 1.week, balance: 0.8))
+    else
+      lowest = order_histogram.lowest_sell_order_exclude_vat
+      lowest > 50 ? lowest - 1 : lowest
+    end
     sell(price)
   end
 
@@ -167,5 +167,23 @@ class InventoryAsset < ApplicationRecord
   def auto_sell_and_grind_later
     return if market_asset.nil?
     ApplicationJob.perform_unique(AutoSellAndGrindJob, id)
+  end
+
+  def generate_trade_offer(amount)
+    offer = {
+        newversion: true,
+        version: 2,
+        me: {
+            assets: [{appid: 753, contextid: 6, amount: amount, assetid: assetid}],
+            currency: [],
+            ready: false,
+        },
+        them: {assets: [], currency: [], ready: false},
+    }
+    offer.to_json
+  end
+
+  def send_offer_to(friend, amount = 1)
+    Market.send_trade(friend.profile, friend.account_id, generate_trade_offer(amount))
   end
 end
