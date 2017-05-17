@@ -1,6 +1,12 @@
 class Authentication
   class << self
-    def refresh(cookie)
+    attr_reader :default_account
+    delegate :account_name, :account_id, :cookie, :session_id, :refresh, to: :default_account
+
+    alias_method :account, :account_name
+    alias_method :steam_id, :account_id
+
+    def check_login(cookie)
       option = {
           method: :get,
           url: 'https://store.steampowered.com/login/checkstoredlogin/?redirectURL=0',
@@ -23,4 +29,6 @@ class Authentication
       RestClient::Request.execute(option)
     end
   end
+
+  @default_account = Account.take
 end

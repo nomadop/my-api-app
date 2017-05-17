@@ -46,7 +46,7 @@ class Account < ApplicationRecord
   end
 
   def refresh
-    response = Authentication.refresh(cookie)
+    response = Authentication.check_login(cookie)
     update_cookie(response)
   end
 end

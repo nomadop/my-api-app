@@ -35,7 +35,6 @@ class Market
         option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
       end
       response = RestClient::Request.execute(option)
-      Authentication.update_cookie(response) if with_authentication
       response.body
     end
 
@@ -231,7 +230,6 @@ class Market
           ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
-      Authentication.update_cookie(response)
       JSON.parse(response.body)
     end
 
@@ -259,10 +257,8 @@ class Market
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
-      Authentication.update_cookie(response)
       JSON.parse(response.body)
     end
 
@@ -292,10 +288,8 @@ class Market
               buy_orderid: buy_order_id,
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
-      Authentication.update_cookie(response)
       JSON.parse(response.body)
     end
 
