@@ -99,6 +99,7 @@ class BuyOrder < ApplicationRecord
       3.times do
         break if BuyOrder.refresh
       end
+      BuyOrder.part_purchased.rebuy_later
       market_hash_names = BuyOrder.purchased.without_active.distinct.pluck(:market_hash_name)
       MarketAsset.where(market_hash_name: market_hash_names).quick_order_later
       market_hash_names.size
@@ -110,11 +111,23 @@ class BuyOrder < ApplicationRecord
         break if BuyOrder.refresh
       end
       MarketAsset.orderable(0.5).buyable(2).without_active_buy_order.quick_order_later
+      rebuy_cancelable
+    end
+
+    def rebuy_cancelable
       cancelable = BuyOrder
           .cancelable
           .includes(:market_asset, :order_histogram)
           .reject { |buy_order| buy_order.highest_buy_order >= buy_order.goo_value * 0.525 }
-      cancelable.rebuy_later
+      cancelable.each(&:rebuy_later)
+    end
+
+    def remaining_price
+      sum('price * quantity_remaining')
+    end
+
+    def purchased_price
+      sum('price * (quantity - quantity_remaining)')
     end
   end
 
