@@ -1,11 +1,13 @@
 class Inventory
   class << self
-    def reload
-      steam_id = Authentication.steam_id
-      cookie = Authentication.cookie
+    attr_reader :default_account
+
+    def reload(account)
+      account_id = account.account_id
+      cookie = account.cookie
       option = {
           method: :get,
-          url: "http://steamcommunity.com/inventory/#{steam_id}/753/6?l=schinese",
+          url: "http://steamcommunity.com/inventory/#{account_id}/753/6?l=schinese",
           headers: {
               :Accept => '*/*',
               :'Accept-Encoding' => 'gzip, deflate, sdch',
@@ -21,22 +23,23 @@ class Inventory
           ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
-      Authentication.update_cookie(response)
+      account.update_cookie(response)
 
       response.code == 200 ? JSON.parse(response.body) : {
           'assets' => [],
           'descriptions' => [],
       }
     rescue RestClient::Forbidden => _
-      Authentication.refresh
-      reload
+      account.refresh
+      reload(account)
     end
 
-    def reload!
-      result = reload
+    def reload!(account = default_account)
+      result = reload(account)
       assets = result['assets']
+      assets.each { |asset| asset['account_id'] = account.id }
       InventoryAsset.transaction do
-        InventoryAsset.truncate
+        account.inventory_assets.destroy_all
         InventoryAsset.import(assets)
       end
       descriptions = result['descriptions']
@@ -46,18 +49,18 @@ class Inventory
       })
     end
 
-    def auto_sell_and_grind
-      Inventory.reload!
-      InventoryAsset.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later
+    def auto_sell_and_grind(account = default_account)
+      account.reload_inventory
+      account.inventory_assets.reload.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later
     end
 
-    def auto_sell_and_grind_marketable
-      Inventory.reload!
-      InventoryAsset.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
+    def auto_sell_and_grind_marketable(account = default_account)
+      account.reload_inventory
+      account.inventory_assets.reload.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
     end
 
-    def request_booster_creators
-      cookie = Authentication.cookie
+    def request_booster_creators(account)
+      cookie = account.cookie
       option = {
           method: :get,
           url: 'http://steamcommunity.com/tradingcards/boostercreator/',
@@ -73,16 +76,14 @@ class Inventory
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
-      Authentication.update_cookie(response)
       regexp = /CBoosterCreatorPage.Init\(\s+(.*),\s+parseFloat/
       JSON.parse(regexp.match(response.body)[1])
     end
 
-    def load_booster_creators
-      boosters = request_booster_creators
+    def load_booster_creators(account = default_account)
+      boosters = request_booster_creators(account)
       BoosterCreator.transaction do
         boosters.each do |booster|
           model = BoosterCreator.find_or_initialize_by(appid: booster['appid'])
@@ -142,9 +143,9 @@ class Inventory
           .sum('amount::int')
     end
 
-    def create_booster(appid, series)
-      cookie = Authentication.cookie
-      sessionid = Authentication.session_id
+    def create_booster(appid, series, account = default_account)
+      cookie = account.cookie
+      sessionid = account.session_id
 
       option = {
           method: :post,
@@ -174,14 +175,14 @@ class Inventory
       }
       RestClient::Request.execute(option)
     rescue RestClient::Forbidden => e
-      Authentication.refresh
+      account.refresh
       raise e
     end
 
-    def sell(assetid, price, amount)
-      account = Authentication.account
-      cookie = Authentication.cookie
-      sessionid = Authentication.session_id
+    def sell(assetid, price, amount, account = default_account)
+      account_name = account.account_name
+      cookie = account.cookie
+      sessionid = account.session_id
 
       option = {
           method: :post,
@@ -197,7 +198,7 @@ class Inventory
               :'Host' => 'steamcommunity.com',
               :'Origin' => 'http://steamcommunity.com',
               :'Pragma' => 'no-cache',
-              :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+              :'Referer' => "http://steamcommunity.com/id/#{account_name}/inventory/",
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           payload: {
@@ -214,14 +215,14 @@ class Inventory
       RestClient::Request.execute(option)
     end
 
-    def unpack_booster(assetid)
-      account = Authentication.account
-      cookie = Authentication.cookie
-      sessionid = Authentication.session_id
+    def unpack_booster(assetid, account = default_account)
+      account_name = account.account_name
+      cookie = account.cookie
+      sessionid = account.session_id
 
       option = {
           method: :post,
-          url: "http://steamcommunity.com/id/#{account}/ajaxunpackbooster/",
+          url: "http://steamcommunity.com/id/#{account_name}/ajaxunpackbooster/",
           headers: {
               :Accept => '*/*',
               :'Accept-Encoding' => 'gzip, deflate',
@@ -233,7 +234,7 @@ class Inventory
               :'Host' => 'steamcommunity.com',
               :'Origin' => 'http://steamcommunity.com',
               :'Pragma' => 'no-cache',
-              :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+              :'Referer' => "http://steamcommunity.com/id/#{account_name}/inventory/",
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
               :'X-Requested-With' => 'XMLHttpRequest',
           },
@@ -250,4 +251,6 @@ class Inventory
       raise e
     end
   end
+
+  @default_account = Account.take
 end
