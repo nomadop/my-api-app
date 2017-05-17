@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170517061338) do
+ActiveRecord::Schema.define(version: 20170517062611) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -70,6 +70,7 @@ ActiveRecord::Schema.define(version: 20170517061338) do
     t.string   "instanceid"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer  "account_id"
     t.index ["assetid"], name: "index_inventory_assets_on_assetid", unique: true, using: :btree
   end
 

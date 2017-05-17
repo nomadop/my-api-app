@@ -1,4 +1,6 @@
 class Account < ApplicationRecord
+  has_many :inventory_assets
+
   def cookie_jar
     uri = URI('http://store.steampowered.com')
     parse_cookie = Proc.new {|c| HTTP::Cookie.parse(c, uri)}

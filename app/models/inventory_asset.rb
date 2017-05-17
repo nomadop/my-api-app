@@ -1,4 +1,5 @@
 class InventoryAsset < ApplicationRecord
+  belongs_to :account
   has_one :description, class_name: 'InventoryDescription',
           primary_key: [:classid, :instanceid], foreign_key: [:classid, :instanceid]
 
