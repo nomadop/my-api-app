@@ -99,7 +99,8 @@ class MyListing < ApplicationRecord
   end
 
   def cancel
-    Market.cancel_my_listing(listingid)
+    response =  Market.cancel_my_listing(listingid)
+    destroy if response.code == 200
   end
 
   def cancel_later
