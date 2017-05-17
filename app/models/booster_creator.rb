@@ -10,6 +10,8 @@ class BoosterCreator < ApplicationRecord
            through: :trading_cards, source: :order_histogram
   has_many :listing_trading_cards, class_name: 'MyListing',
            through: :trading_cards, source: :my_listings
+  has_many :account_booster_creators, primary_key: :appid, foreign_key: :appid
+  has_many :accounts, through: :account_booster_creators
 
   scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
   scope :unavailable, -> { where(unavailable: true) }

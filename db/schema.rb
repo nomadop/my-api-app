@@ -10,10 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170517062611) do
+ActiveRecord::Schema.define(version: 20170517082006) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "account_booster_creators", force: :cascade do |t|
+    t.integer  "account_id"
+    t.integer  "appid"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "appid"], name: "index_account_booster_creators_on_account_id_and_appid", unique: true, using: :btree
+  end
 
   create_table "accounts", force: :cascade do |t|
     t.string   "account_name"

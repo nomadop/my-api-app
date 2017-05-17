@@ -1,5 +1,7 @@
 class Account < ApplicationRecord
   has_many :inventory_assets
+  has_many :account_booster_creators
+  has_many :booster_creators, through: :account_booster_creators
 
   def cookie_jar
     uri = URI('http://store.steampowered.com')
@@ -50,5 +52,9 @@ class Account < ApplicationRecord
   def refresh
     response = Authentication.check_login(cookie)
     update_cookie(response)
+  end
+
+  def reload_inventory
+    Inventory.reload!(self)
   end
 end

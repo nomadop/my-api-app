@@ -91,6 +91,10 @@ class Inventory
           model.update(booster)
         end
       end
+      account_booster_creators = boosters.map do |booster|
+        { appid: booster['appid'], account_id: account.id }
+      end
+      AccountBoosterCreator.import(account_booster_creators, on_duplicate_key_ignore: true)
     end
 
     def total_goo_value
