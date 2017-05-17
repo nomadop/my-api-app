@@ -45,7 +45,7 @@ class InventoryAsset < ApplicationRecord
   end
 
   def sell(price, amount = self.amount.to_i)
-    response = Inventory.sell(assetid, price, amount)
+    response = Inventory.sell(assetid, price, amount, account)
     if JSON.parse(response.body)['success']
       remain_amount = self.amount.to_i - amount
       remain_amount > 0 ? update(amount: remain_amount) : destroy
@@ -69,13 +69,13 @@ class InventoryAsset < ApplicationRecord
   end
 
   def grind_into_goo
-    account = Authentication.account
-    cookie = Authentication.cookie
-    sessionid = Authentication.session_id
+    account_name = account.account_name
+    cookie = account.cookie
+    sessionid = account.session_id
 
     option = {
         method: :post,
-        url: "http://steamcommunity.com/id/#{account}/ajaxgrindintogoo/",
+        url: "http://steamcommunity.com/id/#{account_name}/ajaxgrindintogoo/",
         headers: {
             :Accept => '*/*',
             :'Accept-Encoding' => 'gzip, deflate, br',
@@ -87,7 +87,7 @@ class InventoryAsset < ApplicationRecord
             :'Host' => 'steamcommunity.com',
             :'Origin' => 'http://steamcommunity.com',
             :'Pragma' => 'no-cache',
-            :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+            :'Referer' => "http://steamcommunity.com/id/#{account_name}/inventory/",
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
             :'X-Requested-With' => 'XMLHttpRequest',
         },
@@ -102,21 +102,21 @@ class InventoryAsset < ApplicationRecord
         ssl_ca_file: 'config/certs/ca_certificate.pem',
     }
     response = RestClient::Request.execute(option)
-    Authentication.update_cookie(response)
+    account.update_cookie(response)
     destroy if JSON.parse(response.body)['success'] == 1
   rescue RestClient::Forbidden => e
-    Authentication.refresh
+    account.refresh
     raise e
   end
 
   def exchange_goo(amount)
-    account = Authentication.account
-    cookie = Authentication.cookie
-    sessionid = Authentication.session_id
+    account_name = account.account_name
+    cookie = account.cookie
+    sessionid = account.session_id
 
     option = {
         method: :post,
-        url: "http://steamcommunity.com/id/#{account}/ajaxexchangegoo/",
+        url: "http://steamcommunity.com/id/#{account_name}/ajaxexchangegoo/",
         headers: {
             :Accept => '*/*',
             :'Accept-Encoding' => 'gzip, deflate',
@@ -128,7 +128,7 @@ class InventoryAsset < ApplicationRecord
             :'Host' => 'steamcommunity.com',
             :'Origin' => 'http://steamcommunity.com',
             :'Pragma' => 'no-cache',
-            :'Referer' => "http://steamcommunity.com/id/#{account}/inventory/",
+            :'Referer' => "http://steamcommunity.com/id/#{account_name}/inventory/",
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
             :'X-Requested-With' => 'XMLHttpRequest',
         },
@@ -149,12 +149,12 @@ class InventoryAsset < ApplicationRecord
       remain_amount > 0 ? update(amount: remain_amount) : destroy
     end
   rescue RestClient::Forbidden => e
-    Authentication.refresh
+    account.refresh
     raise e
   end
 
   def unpack_booster
-    response = Inventory.unpack_booster(assetid)
+    response = Inventory.unpack_booster(assetid, account)
     destroy if JSON.parse(response.body)['success'] == 1
   end
 
