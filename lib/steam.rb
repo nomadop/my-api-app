@@ -63,15 +63,42 @@ class Steam
       doc = Nokogiri::HTML(response)
       friends = doc.search('.friendBlock').map do |div|
         mini_profile = div.attr('data-miniprofile')
-        profile_link = div.search('.friendBlockLinkOverlay').attr('href').value
-        account_id = profile_link.split('/').last
+        profile_url = div.search('.friendBlockLinkOverlay').attr('href').value
+        account_id = profile_url.split('/').last
         account_name = div.search('.friendBlockContent').children.first.inner_text.strip
-        { profile: mini_profile, account_id: account_id, account_name: account_name }
+        { profile: mini_profile, profile_url: profile_url, account_id: account_id, account_name: account_name }
       end
       Friend.import(friends, on_duplicate_key_update: {
           conflict_target: [:profile],
           columns: [:account_id, :account_name],
       })
+    end
+
+    def request_profile(url)
+      option = {
+          method: :get,
+          url: url,
+          headers: {
+              :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+              :'Accept-Encoding' => 'gzip, deflate, sdch, br',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      RestClient::Request.execute(option)
+    end
+
+    def get_profile_data(url)
+      html = request_profile(url)
+      regexp = /g_rgProfileData = (.*);/i
+      match = regexp.match(html)
+      JSON.parse(match[1])
     end
   end
 end

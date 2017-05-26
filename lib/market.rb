@@ -358,7 +358,7 @@ class Market
       response.body
     end
 
-    def send_trade(profile, account_id, offer, message = '')
+    def send_trade(profile, steamid, offer, message = '')
       cookie = Authentication.cookie
       session_id = Authentication.session_id
 
@@ -382,7 +382,7 @@ class Market
           payload: {
               sessionid: session_id,
               serverid: 1,
-              partner: account_id,
+              partner: steamid,
               tradeoffermessage: message,
               json_tradeoffer: offer,
               captcha: '',

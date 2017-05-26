@@ -191,6 +191,6 @@ class InventoryAsset < ApplicationRecord
   end
 
   def send_offer_to(friend, amount = 1)
-    Market.send_trade(friend.profile, friend.account_id, generate_trade_offer(amount))
+    Market.send_trade(friend.profile, friend.steamid, generate_trade_offer(amount))
   end
 end
