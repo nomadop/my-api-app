@@ -77,6 +77,14 @@ class MyListing < ApplicationRecord
       MyListing.reload!
       MyListing.refresh_order_histogram
     end
+
+    def auto_resell
+      reload_and_fresh
+      sleep(30)
+      cancel_cancelable
+      sleep(30)
+      Inventory.auto_sell_and_grind_marketable
+    end
   end
 
   def cancelable?
