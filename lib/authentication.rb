@@ -30,5 +30,5 @@ class Authentication
     end
   end
 
-  @default_account = Account.take
+  @default_account = Account.take.reload
 end

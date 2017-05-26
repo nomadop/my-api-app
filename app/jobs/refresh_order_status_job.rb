@@ -6,7 +6,7 @@ class RefreshOrderStatusJob < ApplicationJob
     buy_order.refresh_status
   end
 
-  rescue_from(RestClient::BadRequest) do
+  rescue_from(RestClient::SSLCertificateNotVerified) do
     Authentication.refresh
     retry_job
   end
