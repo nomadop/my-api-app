@@ -20,7 +20,8 @@ class InventoryAsset < ApplicationRecord
   scope :with_order_histogram, -> { joins(:order_histogram).distinct.includes(:order_histogram) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
-  delegate :marketable?, :unmarketable?, :market_hash_name, :load_market_asset, :marketable_date, to: :description
+  delegate :marketable?, :unmarketable?, :market_hash_name, :load_market_asset, :marketable_date, :owner_descriptions,
+           to: :description
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance,
            :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value,
            to: :market_asset, allow_nil: true
@@ -192,5 +193,7 @@ class InventoryAsset < ApplicationRecord
 
   def send_offer_to(friend, amount = 1)
     Market.send_trade(friend.profile, friend.steamid, generate_trade_offer(amount))
+    remaining_amount = self.amount - amount
+    remaining_amount > 0 ? update(amount: remaining_amount) : destroy
   end
 end

@@ -110,7 +110,7 @@ class BuyOrder < ApplicationRecord
       3.times do
         break if BuyOrder.refresh
       end
-      MarketAsset.orderable(0.5).buyable(2).without_active_buy_order.quick_order_later
+      MarketAsset.orderable(0.525).buyable(2).without_active_buy_order.quick_order_later
       rebuy_cancelable
     end
 
