@@ -7,6 +7,7 @@ class MyListing < ApplicationRecord
   has_one :order_histogram, through: :market_asset
   has_one :steam_app, through: :market_asset
 
+  scope :booster_pack, -> { where('market_hash_name like ?', '%Booster Pack') }
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
   scope :cancelable, -> do
@@ -19,7 +20,7 @@ class MyListing < ApplicationRecord
             INNER JOIN "market_assets" 
             ON "my_listings"."market_hash_name" = "market_assets"."market_hash_name" 
             WHERE "market_assets"."item_nameid" = order_histograms.item_nameid
-          ) > 0
+          ) > 3
         )) AND (
           order_histograms.id = (
             SELECT id FROM order_histograms oh 
