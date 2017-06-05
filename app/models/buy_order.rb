@@ -12,6 +12,7 @@ class BuyOrder < ApplicationRecord
   scope :success, -> { where(success: 1) }
   scope :active, -> { where(active: 1) }
   scope :purchased, -> { where(purchased: 1) }
+  scope :purchased_active, -> { active.where(market_hash_name: BuyOrder.purchased.distinct.pluck(:market_hash_name)) }
   scope :without_active, -> { left_outer_joins(:active_order).where(active_orders_buy_orders: {market_hash_name: nil}) }
 
   default_scope { where(success: 1) }
@@ -34,7 +35,7 @@ class BuyOrder < ApplicationRecord
     SQL
   end
 
-  delegate :load_order_histogram, :goo_value, to: :market_asset
+  delegate :load_order_histogram, :goo_value, :item_nameid, to: :market_asset
   delegate :lowest_sell_order, :highest_buy_order, to: :order_histogram
 
   class << self
@@ -60,6 +61,10 @@ class BuyOrder < ApplicationRecord
 
     def rebuy_later
       find_each(&:rebuy_later)
+    end
+
+    def auto_rebuy_later
+      find_each(&:auto_rebuy_later)
     end
 
     def refresh
@@ -180,5 +185,18 @@ class BuyOrder < ApplicationRecord
 
   def rebuy_later
     ApplicationJob.perform_unique(CancelBuyorderJob, id, true)
+  end
+
+  def auto_rebuy
+    Market.load_order_histogram(item_nameid)
+    return if price.nil?
+    return if price > highest_buy_order
+    return if 1.0 * (highest_buy_order + 1) / goo_value > 0.525
+
+    rebuy
+  end
+
+  def auto_rebuy_later
+    ApplicationJob.perform_unique(AutoRebuyJob, id)
   end
 end
