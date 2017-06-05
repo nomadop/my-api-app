@@ -166,7 +166,7 @@ class MarketAsset < ApplicationRecord
 
   def quick_order
     return if booster_pack?
-    return if active_buy_orders.exists?
+    return if active_buy_orders.reload.exists?
     Market.load_order_histogram(item_nameid)
     refresh_goo_value
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
@@ -223,5 +223,9 @@ class MarketAsset < ApplicationRecord
     prices = from.upto(to).to_a
     balance = prices.reverse.bsearch { |price| sell_balance(price, with_in: with_in) > balance }
     balance || prices.first
+  end
+
+  def get_order_activity
+    Market.request_order_activity(item_nameid)
   end
 end

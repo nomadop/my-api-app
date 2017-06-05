@@ -393,5 +393,42 @@ class Market
       }
       RestClient::Request.execute(option)
     end
+
+    def request_order_activity(item_nameid)
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/market/itemordersactivity',
+          headers: {
+              params: {
+                  country: :CN,
+                  language: :schinese,
+                  currency: 23,
+                  item_nameid: item_nameid,
+                  two_factor: 0,
+              }
+          },
+          proxy: 'http://localhost:8888/'
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def handle_order_activity(result)
+      return unless result['success'] == 1
+
+      activities = result['activity']
+      activities.each do |activity|
+        next unless /手中购买了这件物品/.match(activity)
+
+        doc = Nokogiri::HTML(activity)
+        purchaser = doc.search('.market_ticker_name').first.inner_text
+        puts purchaser
+      end
+    end
+
+    def pull_order_activity(item_nameid)
+      result = request_order_activity(item_nameid)
+      handle_order_activity(result)
+    end
   end
 end
