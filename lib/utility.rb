@@ -10,9 +10,13 @@ class Utility
       [(price * rate).floor, 1].max
     end
 
+    def include_vat(price)
+      price + vat(price, 0.1) + vat(price, 0.05)
+    end
+
     def exclude_val(price)
       return nil if price.nil? || price < 1
-      (1..price).bsearch { |p| p + vat(p, 0.1) + vat(p, 0.05) >= price }
+      (1..price).bsearch { |p| include_vat(p) >= price }
     end
 
     def unescapeHTML(string)
