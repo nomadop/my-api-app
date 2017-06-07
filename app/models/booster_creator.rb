@@ -6,13 +6,14 @@ class BoosterCreator < ApplicationRecord
           class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :trading_cards, class_name: 'MarketAsset',
            primary_key: :trading_card_type, foreign_key: :type
-  has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
-           through: :trading_cards, source: :order_histogram
+  # has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
+  #          through: :trading_cards, source: :order_histogram
   has_many :listing_trading_cards, class_name: 'MyListing',
            through: :trading_cards, source: :my_listings
   has_many :account_booster_creators, primary_key: :appid, foreign_key: :appid
   has_many :accounts, through: :account_booster_creators
 
+  scope :without_app, -> { left_outer_joins(:steam_app).where({steam_apps: {steam_appid: nil}}) }
   scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
   scope :unavailable, -> { where(unavailable: true) }
   scope :available, -> { where(unavailable: false) }
@@ -50,15 +51,19 @@ class BoosterCreator < ApplicationRecord
           .each(&:refresh_price_later)
     end
 
-    def scan_all
+    def scan_market
       find_each(&:scan_market)
     end
 
     def creatable
-      includes(:trading_card_order_histograms, booster_pack: :order_histogram)
+      includes(booster_pack: :order_histogram)
           .first_ppg_order(100)
           .to_a.select(&:createable?)
     end
+  end
+
+  def trading_card_order_histograms
+    trading_cards.includes(:order_histogram).map(&:order_histogram)
   end
 
   def trading_card_prices
@@ -113,8 +118,17 @@ class BoosterCreator < ApplicationRecord
   end
 
   def createable?(ppg = 0.6)
-    (booster_pack && (price_per_goo > ppg && sell_order_count > 20)) ||
-        (open_price_per_goo > ppg && open_sell_order_count > 20)
+    (booster_pack &&
+        (price_per_goo > ppg &&
+            (sell_order_count > 20 || sell_proportion > 0.9 ||
+                (buy_order_count > 20 && sell_proportion > 0.7)
+            )
+        )
+    ) || (open_price_per_goo > ppg &&
+        (open_sell_order_count > 20 || trading_card_prices_proportion > 0.9 ||
+            (open_buy_order_count > 20 && trading_card_prices_proportion > 0.7)
+        )
+    )
   end
 
   def listing_trading_card_count
@@ -126,6 +140,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def booster_pack_info
+    return nil unless trading_cards.exists?
     as_json(
         only: [:appid, :name, :price],
         methods: [
@@ -153,20 +168,28 @@ class BoosterCreator < ApplicationRecord
     self.trading_card_type = "#{name} Trading Card"
   end
 
-  def create
-    response = Inventory.create_booster(appid, series)
+  def create(account = Account.take)
+    response = Inventory.create_booster(appid, series, account)
     raise 'failed to create booster' unless response.code == 200
     result = JSON.parse(response.body)
     result['purchase_result']['communityitemid']
   end
 
   def create_and_sell
-    assetid = create
-    Inventory.sell(assetid, lowest_sell_order - 1, 1)
+    accounts.reload.each do |account|
+      assetid = create(account)
+      Inventory.sell(assetid, lowest_sell_order_exclude_vat - 1, 1)
+    end
   end
 
   def create_and_unpack
-    assetid = create
-    Inventory.unpack_booster(assetid)
+    accounts.reload.each do |account|
+      assetid = create(account)
+      Inventory.unpack_booster(assetid)
+    end
+  end
+
+  def available_at
+    Time.parse(available_at_time) unless available_at_time.blank?
   end
 end

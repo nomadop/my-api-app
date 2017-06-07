@@ -18,7 +18,7 @@ class OrderHistogram < ApplicationRecord
   def proportion
     1.0 * highest_buy_order / lowest_sell_order
   rescue
-    nil
+    0
   end
 
   def highest_buy_order_exclude_vat
