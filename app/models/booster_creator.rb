@@ -10,6 +10,8 @@ class BoosterCreator < ApplicationRecord
   #          through: :trading_cards, source: :order_histogram
   has_many :listing_trading_cards, class_name: 'MyListing',
            through: :trading_cards, source: :my_listings
+  has_many :listing_booster_packs, class_name: 'MyListing',
+           through: :booster_pack, source: :my_listings
   has_many :account_booster_creators, primary_key: :appid, foreign_key: :appid
   has_many :accounts, through: :account_booster_creators
 
@@ -55,9 +57,9 @@ class BoosterCreator < ApplicationRecord
       find_each(&:scan_market)
     end
 
-    def creatable
+    def creatable(limit = 100)
       includes(booster_pack: :order_histogram)
-          .first_ppg_order(100)
+          .first_ppg_order(limit)
           .to_a.select(&:createable?)
     end
   end
@@ -118,13 +120,13 @@ class BoosterCreator < ApplicationRecord
   end
 
   def createable?(ppg = 0.6)
-    (booster_pack &&
+    (booster_pack && listing_booster_pack_count < 1 &&
         (price_per_goo > ppg &&
             (sell_order_count > 20 || sell_proportion > 0.9 ||
                 (buy_order_count > 20 && sell_proportion > 0.7)
             )
         )
-    ) || (open_price_per_goo > ppg &&
+    ) || (open_price_per_goo > ppg && listing_trading_card_count < 5 && open_price[:coefficient_of_variation] < 0.3 &&
         (open_sell_order_count > 20 || trading_card_prices_proportion > 0.9 ||
             (open_buy_order_count > 20 && trading_card_prices_proportion > 0.7)
         )
@@ -133,6 +135,10 @@ class BoosterCreator < ApplicationRecord
 
   def listing_trading_card_count
     listing_trading_cards.count
+  end
+
+  def listing_booster_pack_count
+    listing_booster_packs.count
   end
 
   def sell_proportion
@@ -145,7 +151,7 @@ class BoosterCreator < ApplicationRecord
         only: [:appid, :name, :price],
         methods: [
             :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
-            :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count,
+            :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :listing_booster_pack_count,
             :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion,
         ]
     )
