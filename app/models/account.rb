@@ -3,6 +3,11 @@ class Account < ApplicationRecord
   has_many :account_booster_creators
   has_many :booster_creators, through: :account_booster_creators
 
+  def cookie
+    reload
+    super
+  end
+
   def cookie_jar
     uri = URI('http://store.steampowered.com')
     parse_cookie = Proc.new {|c| HTTP::Cookie.parse(c, uri)}
