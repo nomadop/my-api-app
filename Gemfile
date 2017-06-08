@@ -48,3 +48,4 @@ gem 'nokogiri'
 
 gem 'composite_primary_keys', '~> 9.0.4'
 gem 'activerecord-import'
+gem 'execjs', require: false

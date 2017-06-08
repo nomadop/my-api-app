@@ -50,6 +50,7 @@ GEM
     domain_name (0.5.20161129)
       unf (>= 0.0.5, < 1.0.0)
     erubis (2.7.0)
+    execjs (2.7.0)
     ffi (1.9.17)
     globalid (0.3.7)
       activesupport (>= 4.1.0)
@@ -147,6 +148,7 @@ DEPENDENCIES
   activerecord-import
   byebug
   composite_primary_keys (~> 9.0.4)
+  execjs
   listen (~> 3.0.5)
   nokogiri
   pg (~> 0.20)
