@@ -7,7 +7,7 @@ class MyListing < ApplicationRecord
   has_one :order_histogram, through: :market_asset
   has_one :steam_app, through: :market_asset
 
-  scope :booster_pack, -> { where('market_hash_name like ?', '%Booster Pack') }
+  scope :booster_pack, -> { where('my_listings.market_hash_name like ?', '%Booster Pack') }
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
   scope :cancelable, -> do
