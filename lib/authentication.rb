@@ -49,7 +49,19 @@ class Authentication
       JSON.parse(response.body)
     end
 
-    def do_login(username, password, rsa_timestamp, two_factory_code = '')
+    def do_login(username, password, rsa_timestamp, **options)
+      payload = {
+          username: username,
+          password: password,
+          emailauth: '',
+          twofactorcode: '',
+          loginfriendlyname: '',
+          captchagid: -1,
+          captcha_text: '',
+          emailsteamid: '',
+          remember_login: true,
+          rsatimestamp: rsa_timestamp,
+      }.merge(options)
       option = {
           method: :post,
           url: 'https://store.steampowered.com/login/dologin',
@@ -57,23 +69,17 @@ class Authentication
               :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
-          payload: {
-              username: username,
-              password: password,
-              emailauth: '',
-              twofactorcode: two_factory_code,
-              loginfriendlyname: '',
-              captchagid: -1,
-              captcha_text: '',
-              emailsteamid: '',
-              remember_login: true,
-              rsatimestamp: rsa_timestamp,
-          },
+          payload: payload,
           proxy: 'http://127.0.0.1:8888',
           ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
-      JSON.parse(response.body)
+      result = JSON.parse(response.body)
+      if result['success'] && result['login_complete']
+        account = Account.find_or_create_by(account_id: result['transfer_parameters']['steamid'])
+        account.update_cookie(response)
+      end
+      result
     end
 
     def login(username, password)
@@ -90,10 +96,16 @@ class Authentication
       JAVASCRIPT
 
       rsa_timestamp = rsa_key['timestamp']
-      do_login(username, encrypted_password, rsa_timestamp)
-      puts 'input two factory code:'
-      two_factory_code = gets.chomp
-      do_login(username, encrypted_password, rsa_timestamp, two_factory_code)
+      result = do_login(username, encrypted_password, rsa_timestamp)
+      if result['requires_twofactor']
+        puts 'input two factory code:'
+        two_factory_code = gets.chomp
+        do_login(username, encrypted_password, rsa_timestamp, twofactorcode: two_factory_code)
+      elsif result['emailauth_needed']
+        puts 'input email auth code:'
+        email_auth = gets.chomp
+        do_login(username, encrypted_password, rsa_timestamp, emailsteamid: result['emailsteamid'], emailauth: email_auth)
+      end
     end
   end
 
