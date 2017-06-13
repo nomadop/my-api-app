@@ -34,7 +34,7 @@ class Inventory
       reload(account)
     end
 
-    def reload!(account = default_account.reload)
+    def reload!(account = default_account)
       result = reload(account)
       assets = result['assets']
       assets.each { |asset| asset['account_id'] = account.id }
@@ -49,12 +49,12 @@ class Inventory
       })
     end
 
-    def auto_sell_and_grind(account = default_account.reload)
+    def auto_sell_and_grind(account = default_account)
       account.reload_inventory
       account.inventory_assets.reload.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later
     end
 
-    def auto_sell_and_grind_marketable(account = default_account.reload)
+    def auto_sell_and_grind_marketable(account = default_account)
       account.reload_inventory
       account.inventory_assets.reload.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
     end
@@ -82,7 +82,7 @@ class Inventory
       JSON.parse(regexp.match(response.body)[1])
     end
 
-    def load_booster_creators(account = default_account.reload)
+    def load_booster_creators(account = default_account)
       boosters = request_booster_creators(account)
       BoosterCreator.transaction do
         boosters.each do |booster|
@@ -147,7 +147,7 @@ class Inventory
           .sum('amount::int')
     end
 
-    def create_booster(appid, series, account = default_account.reload)
+    def create_booster(appid, series, account = default_account)
       cookie = account.cookie
       sessionid = account.session_id
 
@@ -183,7 +183,7 @@ class Inventory
       raise e
     end
 
-    def sell(assetid, price, amount, account = default_account.reload)
+    def sell(assetid, price, amount, account = default_account)
       account_name = account.account_name
       cookie = account.cookie
       sessionid = account.session_id
@@ -219,7 +219,7 @@ class Inventory
       RestClient::Request.execute(option)
     end
 
-    def unpack_booster(assetid, account = default_account.reload)
+    def unpack_booster(assetid, account = default_account)
       account_name = account.account_name
       cookie = account.cookie
       sessionid = account.session_id
@@ -254,7 +254,12 @@ class Inventory
       Authentication.refresh
       raise e
     end
+
+    def load_booster_creators_by_third_party
+      response = RestClient.get('http://steamtradingcards.wikia.com/wiki/Gems_by_Game')
+      doc = Nokogiri::HTML(response.body)
+    end
   end
 
-  @default_account = Account.take
+  @default_account = Account.find_by(account_id: '76561197967991989')
 end

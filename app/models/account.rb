@@ -9,6 +9,8 @@ class Account < ApplicationRecord
   end
 
   def cookie_jar
+    return HTTP::CookieJar.new if cookie.nil?
+
     uri = URI('http://store.steampowered.com')
     parse_cookie = Proc.new {|c| HTTP::Cookie.parse(c, uri)}
     cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new, &:add)

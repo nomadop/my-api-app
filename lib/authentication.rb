@@ -109,5 +109,5 @@ class Authentication
     end
   end
 
-  @default_account = Account.take.reload
+  @default_account = Account.find_by(account_id: '76561197967991989')
 end
