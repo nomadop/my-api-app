@@ -54,9 +54,7 @@ class InventoryAsset < ApplicationRecord
   end
 
   def quick_sell
-    price = if sell_order_count && sell_order_count > 50 && market_asset&.sell_histories.with_in(1.week).exists?
-      Utility.exclude_val(find_sell_balance(with_in: 1.week, balance: 0.8))
-    else
+    price = begin
       lowest = order_histogram.lowest_sell_order_exclude_vat
       lowest > 50 ? lowest - 1 : lowest
     end
