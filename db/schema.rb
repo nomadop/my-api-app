@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170615060024) do
+ActiveRecord::Schema.define(version: 20170615073015) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -177,6 +177,19 @@ ActiveRecord::Schema.define(version: 20170615060024) do
     t.datetime "updated_at",       null: false
     t.integer  "price"
     t.string   "listed_date"
+  end
+
+  create_table "order_activities", force: :cascade do |t|
+    t.string   "item_nameid"
+    t.string   "content"
+    t.string   "user1_name"
+    t.string   "user1_avatar"
+    t.string   "user2_name"
+    t.string   "user2_avatar"
+    t.integer  "price"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["content"], name: "index_order_activities_on_content", unique: true, using: :btree
   end
 
   create_table "order_histograms", force: :cascade do |t|
