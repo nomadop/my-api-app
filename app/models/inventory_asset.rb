@@ -50,6 +50,7 @@ class InventoryAsset < ApplicationRecord
     if JSON.parse(response.body)['success']
       remain_amount = self.amount.to_i - amount
       remain_amount > 0 ? update(amount: remain_amount) : destroy
+      `say sold`
     end
   end
 
