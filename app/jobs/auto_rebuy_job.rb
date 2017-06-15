@@ -1,5 +1,5 @@
 class AutoRebuyJob < ApplicationJob
-  queue_as :cancel_buyorder
+  queue_as :auto_rebuy
 
   def perform(id)
     buy_order = BuyOrder.find(id)
