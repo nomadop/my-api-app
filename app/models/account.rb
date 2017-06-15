@@ -2,6 +2,7 @@ class Account < ApplicationRecord
   has_many :inventory_assets
   has_many :account_booster_creators
   has_many :booster_creators, through: :account_booster_creators
+  has_many :my_histories
 
   def cookie
     reload

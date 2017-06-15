@@ -8,6 +8,10 @@ class MarketAsset < ApplicationRecord
   belongs_to :steam_app, primary_key: :steam_appid, foreign_key: :market_fee_app, optional: true
   has_many :my_listings, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :my_histories, primary_key: :market_hash_name, foreign_key: :market_hash_name
+  has_many :my_buy_histories, -> { where('who_acted_with like ?', '卖家%') },
+           class_name: 'MyHistory', primary_key: :market_hash_name, foreign_key: :market_hash_name
+  has_many :my_sell_histories, -> { where('who_acted_with like ?', '买家%') },
+           class_name: 'MyHistory', primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :inventory_description, foreign_key: :classid
   has_many :marketable_inventory_description, -> { where(marketable: 1) },
            class_name: 'InventoryDescription', foreign_key: :classid
@@ -34,6 +38,8 @@ class MarketAsset < ApplicationRecord
   scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
   scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
   scope :with_sell_histories, -> { joins(:sell_histories).distinct }
+  scope :with_my_buy_histories, -> { joins(:my_buy_histories).distinct }
+  scope :with_my_sell_histories, -> { joins(:my_sell_histories).distinct }
 
   JOIN_LATEST_ORDER_HISTOGRAM_SQL = <<-SQL
       JOIN order_histograms
