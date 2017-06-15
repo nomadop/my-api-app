@@ -431,5 +431,54 @@ class Market
       result = request_order_activity(item_nameid)
       handle_order_activity(result)
     end
+
+    def request_my_history(start, count)
+      cookie = Authentication.cookie
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/market/myhistory/render/',
+          headers: {
+              :params => {
+                  start: start,
+                  count: count,
+              },
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, sdch',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'http://steamcommunity.com/market/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Requested-With' => 'XMLHttpRequest',
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def handle_my_history_result(result)
+      assets = result['assets']['753']['6'].values
+      doc = Nokogiri::HTML(result['results_html'])
+      rows = doc.search('.market_listing_row.market_recent_listing_row')
+      my_history = rows.map do |row|
+        row_id = row.attr(:id)
+        history_id = row_id.match(/history_row_(?<id>.+)/)[:id]
+        who_acted_with = row.search('.market_listing_right_cell.market_listing_whoactedwith').inner_text.strip.gsub(/[\t\r\n]/, '')
+        price_text = row.search('.market_listing_price').text.strip
+        price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
+        price = price_text_match && price_text_match[:price].to_f * 100
+        market_listing_name = row.search('.market_listing_item_name_block .market_listing_item_name').inner_text.strip
+        asset = assets.find { |asset| asset['market_name'] == market_listing_name }
+
+        {history_id: history_id, who_acted_with: who_acted_with, price: price, classid: asset['classid'], market_hash_name: asset['market_hash_name']}
+      end
+      MyHistory.import(my_history, on_duplicate_key_ignore: {
+          conflict_target: :history_id,
+      })
+    end
   end
 end
