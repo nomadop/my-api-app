@@ -414,22 +414,35 @@ class Market
       JSON.parse(response.body)
     end
 
-    def handle_order_activity(result)
+    def handle_order_activity(item_nameid, result)
       return unless result['success'] == 1
 
       activities = result['activity']
-      activities.each do |activity|
-        next unless /手中购买了这件物品/.match(activity)
-
+      activities.map! do |activity|
         doc = Nokogiri::HTML(activity)
-        purchaser = doc.search('.market_ticker_name').first.inner_text
-        puts purchaser
+        content = doc.inner_text.strip
+        user_names = doc.search('.market_ticker_name').map(&:inner_text)
+        user_avatars = doc.search('.market_ticker_avatar img').map { |img| img.attr(:src) }
+        price_text_match = content.match(/¥\s+(?<price>\d+(\.\d+)?)/)
+        price = price_text_match && price_text_match[:price].to_f * 100
+        {
+            item_nameid: item_nameid,
+            content: content,
+            user1_name: user_names[0],
+            user1_avatar: user_avatars[0],
+            user2_name: user_names[1],
+            user2_avatar: user_avatars[1],
+            price: price
+        }
       end
+      OrderActivity.import(activities, on_duplicate_key_ignore: {
+          conflict_target: :content,
+      })
     end
 
     def pull_order_activity(item_nameid)
       result = request_order_activity(item_nameid)
-      handle_order_activity(result)
+      handle_order_activity(item_nameid, result)
     end
 
     def request_my_history(start, count)
