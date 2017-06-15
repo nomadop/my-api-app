@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170526044157) do
+ActiveRecord::Schema.define(version: 20170615032335) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -154,6 +154,18 @@ ActiveRecord::Schema.define(version: 20170526044157) do
     t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
     t.index ["market_hash_name"], name: "index_market_assets_on_market_hash_name", using: :btree
     t.index ["type"], name: "index_market_assets_on_type", using: :btree
+  end
+
+  create_table "my_histories", force: :cascade do |t|
+    t.string   "history_id"
+    t.string   "who_acted_with"
+    t.integer  "price"
+    t.string   "classid"
+    t.string   "market_hash_name"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.index ["history_id"], name: "index_my_histories_on_history_id", unique: true, using: :btree
+    t.index ["market_hash_name"], name: "index_my_histories_on_market_hash_name", using: :btree
   end
 
   create_table "my_listings", force: :cascade do |t|
