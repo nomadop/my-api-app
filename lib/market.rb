@@ -48,10 +48,10 @@ class Market
       assets = Utility.match_json_var('g_rgAssets', html)
       app_asset = assets&.values&.[](0)
       asset = if app_asset.is_a?(Array)
-                app_asset[0][0]
-              else
-                app_asset&.values&.[](0)&.values&.[](0)
-              end
+        app_asset[0][0]
+      else
+        app_asset&.values&.[](0)&.values&.[](0)
+      end
       return nil if asset.nil? or asset.empty?
 
       asset_model = MarketAsset.find_or_initialize_by(classid: asset['classid'])
@@ -471,10 +471,11 @@ class Market
         price_text = row.search('.market_listing_price').text.strip
         price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
         price = price_text_match && price_text_match[:price].to_f * 100
-        market_listing_name = row.search('.market_listing_item_name_block .market_listing_item_name').inner_text.strip
+        market_listing_name = row.search('.market_listing_item_name_block .market_listing_item_name').inner_text
+        market_listing_name = '一袋宝珠' if market_listing_name =~ /\d+ 一袋宝珠/
         asset = assets.find { |asset| asset['market_name'] == market_listing_name }
 
-        {history_id: history_id, who_acted_with: who_acted_with, price: price, classid: asset['classid'], market_hash_name: asset['market_hash_name']}
+        {history_id: history_id, who_acted_with: who_acted_with, price: price, market_listing_name: market_listing_name, classid: asset['classid'], market_hash_name: asset['market_hash_name']}
       end
       MyHistory.import(my_history, on_duplicate_key_ignore: {
           conflict_target: :history_id,
