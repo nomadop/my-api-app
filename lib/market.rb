@@ -186,7 +186,8 @@ class Market
         name_link = row.search('.market_listing_item_name_link').first
         market_hash_name = URI.decode(name_link.attr(:href).split('/').last)
         price_text = row.search('.market_listing_price > span > span:eq(1)').text.strip
-        price = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)[:price].to_f * 100
+        price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
+        price = price_text_match && price_text_match[:price].to_f * 100
         listed_date = row.search('.market_listing_listed_date').text.strip
         {listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date}
       end
