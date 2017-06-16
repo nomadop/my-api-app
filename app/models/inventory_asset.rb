@@ -46,7 +46,7 @@ class InventoryAsset < ApplicationRecord
   end
 
   def sell(price, amount = self.amount.to_i)
-    response = Inventory.sell(assetid, price, amount, account.reload)
+    response = Inventory.sell(assetid, price, amount, account)
     if JSON.parse(response.body)['success']
       remain_amount = self.amount.to_i - amount
       remain_amount > 0 ? update(amount: remain_amount) : destroy
@@ -69,7 +69,6 @@ class InventoryAsset < ApplicationRecord
   end
 
   def grind_into_goo
-    account.reload
     account_name = account.account_name
     cookie = account.cookie
     sessionid = account.session_id
@@ -111,7 +110,6 @@ class InventoryAsset < ApplicationRecord
   end
 
   def exchange_goo(amount)
-    account.reload
     account_name = account.account_name
     cookie = account.cookie
     sessionid = account.session_id
@@ -156,7 +154,7 @@ class InventoryAsset < ApplicationRecord
   end
 
   def unpack_booster
-    response = Inventory.unpack_booster(assetid, account.reload)
+    response = Inventory.unpack_booster(assetid, account)
     destroy if JSON.parse(response.body)['success'] == 1
   end
 
