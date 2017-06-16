@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170615073015) do
+ActiveRecord::Schema.define(version: 20170616023030) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -18,8 +18,10 @@ ActiveRecord::Schema.define(version: 20170615073015) do
   create_table "account_booster_creators", force: :cascade do |t|
     t.integer  "account_id"
     t.integer  "appid"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
+    t.boolean  "unavailable",       default: false
+    t.string   "available_at_time"
     t.index ["account_id", "appid"], name: "index_account_booster_creators_on_account_id_and_appid", unique: true, using: :btree
   end
 
