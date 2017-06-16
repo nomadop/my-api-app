@@ -359,9 +359,9 @@ class Market
       response.body
     end
 
-    def send_trade(profile, steamid, offer, message = '')
-      cookie = Authentication.cookie
-      session_id = Authentication.session_id
+    def send_trade(account, profile, steamid, offer, message = '')
+      cookie = account.cookie
+      session_id = account.session_id
 
       option = {
           method: :post,
