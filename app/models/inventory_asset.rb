@@ -191,8 +191,8 @@ class InventoryAsset < ApplicationRecord
   end
 
   def send_offer_to(friend, amount = 1)
-    Market.send_trade(friend.profile, friend.steamid, generate_trade_offer(amount))
-    remaining_amount = self.amount - amount
+    Market.send_trade(account, friend.profile, friend.steamid, generate_trade_offer(amount))
+    remaining_amount = self.amount.to_i - amount
     remaining_amount > 0 ? update(amount: remaining_amount) : destroy
   end
 end
