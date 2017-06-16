@@ -57,10 +57,10 @@ class BoosterCreator < ApplicationRecord
       find_each(&:scan_market)
     end
 
-    def creatable(limit = 100)
+    def creatable(limit: 100, ppg: 0.6)
       includes(booster_pack: :order_histogram)
           .first_ppg_order(limit)
-          .to_a.select(&:createable?)
+          .to_a.select { |booster_creator| booster_creator.createable?(ppg) }
     end
   end
 
@@ -184,14 +184,14 @@ class BoosterCreator < ApplicationRecord
   def create_and_sell
     accounts.reload.each do |account|
       assetid = create(account)
-      Inventory.sell(assetid, lowest_sell_order_exclude_vat - 1, 1)
+      assetid && Inventory.sell(assetid, lowest_sell_order_exclude_vat - 1, 1)
     end
   end
 
   def create_and_unpack
     accounts.reload.each do |account|
       assetid = create(account)
-      Inventory.unpack_booster(assetid)
+      assetid && Inventory.unpack_booster(assetid)
     end
   end
 
