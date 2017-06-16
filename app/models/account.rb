@@ -65,4 +65,8 @@ class Account < ApplicationRecord
   def reload_inventory
     Inventory.reload!(self)
   end
+
+  def load_booster_creators
+    Inventory.load_booster_creators(self)
+  end
 end

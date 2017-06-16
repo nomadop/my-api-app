@@ -92,7 +92,7 @@ class Inventory
         end
       end
       account_booster_creators = boosters.map do |booster|
-        { appid: booster['appid'], account_id: account.id }
+        { appid: booster['appid'], account_id: account.id, unavailable: booster['unavailable'], available_at_time: booster['available_at_time'] }
       end
       AccountBoosterCreator.import(account_booster_creators, on_duplicate_key_ignore: true)
     end
