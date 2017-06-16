@@ -66,7 +66,7 @@ class Steam
         profile_url = div.search('.friendBlockLinkOverlay').attr('href').value
         account_id = profile_url.split('/').last
         account_name = div.search('.friendBlockContent').children.first.inner_text.strip
-        { profile: mini_profile, profile_url: profile_url, account_id: account_id, account_name: account_name }
+        {profile: mini_profile, profile_url: profile_url, account_id: account_id, account_name: account_name}
       end
       Friend.import(friends, on_duplicate_key_update: {
           conflict_target: [:profile],
@@ -99,6 +99,172 @@ class Steam
       regexp = /g_rgProfileData = (.*);/i
       match = regexp.match(html)
       JSON.parse(match[1])
+    end
+
+    def search_user(query, page = 1)
+      session_id = SecureRandom.hex(12)
+      cookie = "sessionid=#{session_id}; steamCountry=SG%7C93545f6e98fa197ebd322680db9cae25; _ga=GA1.2.694042473.1497528360; _gid=GA1.2.1424724967.1497528360; timezoneOffset=28800,0"
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/search/SearchCommunityAjax',
+          headers: {
+              :params => {
+                  text: query,
+                  filter: :users,
+                  sessionid: session_id,
+                  steamid_user: false,
+                  page: page,
+              },
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, sdch',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'http://steamcommunity.com/search/users/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Requested-With' => 'XMLHttpRequest',
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def handle_search_user_result(result)
+      doc = Nokogiri::HTML(result['html'])
+      rows = doc.search('.search_row')
+      rows.map do |row|
+        name_link = row.search('.searchPersonaInfo .searchPersonaName')
+        account_name = name_link.inner_text
+        profile_url = name_link.attr('href').value
+        account_id = profile_url.split('/').last
+        country_flag_img = row.search('.searchPersonaInfo img')
+        country_match = country_flag_img.any? && country_flag_img.attr('src').value.match(/countryflags\/([^.]+)\.gif$/)
+        country = country_match && country_match[1]
+        avatar_medium_url = row.search('.avatarMedium img').attr('src').value
+        {account_name: account_name, profile_url: profile_url, account_id: account_id, avatar_medium_url: avatar_medium_url, country: country}
+      end
+    end
+
+    def find_user(account_name, avatar_url)
+      search_result = search_user(account_name)
+      search_result_count = search_result['search_result_count']
+      raise 'too many user found' if search_result_count > 100
+
+      page = 1
+      user = nil
+      avatar_name = avatar_url.match(/\/([^\/.]+)\.jpg/)[1]
+      loop do
+        users = handle_search_user_result(search_result)
+        user = users.find do |user|
+          avatar_medium_name = user[:avatar_medium_url].match(/\/([^\/.]+)_medium\.jpg/)[1]
+          user[:account_name] == account_name && avatar_name == avatar_medium_name
+        end
+
+        break unless user.nil?
+        search_result = search_user(account_name, page + 1) if page * 20 + 20 < search_result_count
+      end
+
+      user
+    end
+
+    def set_nickname(user, nickname)
+      url = user.account_id == user.steamid ?
+          "http://steamcommunity.com/profiles/#{user.account_id}/ajaxsetnickname/" :
+          "http://steamcommunity.com/id/#{user.account_id}/ajaxsetnickname/"
+      referer = user.account_id == user.steamid ?
+          "http://steamcommunity.com/profiles/#{user.account_id}" :
+          "http://steamcommunity.com/id/#{user.account_id}"
+      option = {
+          method: :post,
+          url: url,
+          headers: {
+              :Accept => 'application/json, text/javascript, */*; q=0.01',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => Authentication.cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => referer,
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Requested-With' => 'XMLHttpRequest',
+          },
+          payload: {
+              nickname: nickname,
+              sessionid: Authentication.session_id
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def add_friend(user)
+      option = {
+          method: :post,
+          url: 'http://steamcommunity.com/actions/AddFriendAjax',
+          headers: {
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => Authentication.cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => "http://steamcommunity.com/id/#{user.account_id}",
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Requested-With' => 'XMLHttpRequest',
+          },
+          payload: {
+              steamid: user.steamid,
+              sessionID: Authentication.session_id,
+              accept_invite: 0,
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def send_comment(user, comment)
+      option = {
+          method: :post,
+          url: "http://steamcommunity.com/comment/Profile/post/#{user.steamid}/-1/",
+          headers: {
+              :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+              :'Cookie' => Authentication.cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => "http://steamcommunity.com/id/#{user.account_id}",
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Prototype-Version' => 1.7,
+              :'X-Requested-With' => 'XMLHttpRequest',
+          },
+          payload: {
+              comment: comment,
+              sessionid: Authentication.session_id,
+              count: 6,
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
     end
   end
 end
