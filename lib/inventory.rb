@@ -51,12 +51,12 @@ class Inventory
 
     def auto_sell_and_grind(account = default_account)
       account.reload_inventory
-      account.inventory_assets.reload.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later
+      account.inventory_assets.reload.non_gems.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later
     end
 
     def auto_sell_and_grind_marketable(account = default_account)
       account.reload_inventory
-      account.inventory_assets.reload.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
+      account.inventory_assets.reload.non_gems.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
     end
 
     def request_booster_creators(account)
@@ -94,7 +94,10 @@ class Inventory
       account_booster_creators = boosters.map do |booster|
         { appid: booster['appid'], account_id: account.id, unavailable: booster['unavailable'], available_at_time: booster['available_at_time'] }
       end
-      AccountBoosterCreator.import(account_booster_creators, on_duplicate_key_ignore: true)
+      AccountBoosterCreator.import(account_booster_creators, on_duplicate_key_update: {
+          conflict_target: [:account_id, :appid],
+          columns: [:unavailable, :available_at_time],
+      })
     end
 
     def total_goo_value
@@ -118,19 +121,18 @@ class Inventory
           .sum('market_assets.goo_value')
     end
 
-    def gem_amount_info
-      query_result = InventoryAsset.gems
-                         .joins(:description)
-                         .group('inventory_descriptions.tradable')
-                         .sum('CAST(amount AS int)')
+    def gem_amount_info(account = default_account)
+      query_result = account.inventory_assets.gems.joins(:description).group('inventory_descriptions.tradable').sum('CAST(amount AS int)')
+      total = query_result[0] || 0
+      tradable = query_result[1] || 0
       {
-          total: query_result[0] + query_result[1],
-          tradable: query_result[1],
-          untradable: query_result[0],
+          total: total + tradable,
+          tradable: tradable,
+          untradable: total,
       }
     end
 
-    def gem_amount_by_marketable_date
+    def gem_amount_by_marketable_date(account = default_account)
       group_sql = <<-SQL.strip_heredoc
               to_char(
                 to_timestamp(
@@ -141,7 +143,7 @@ class Inventory
                 'YYYY-MM-DD'
               )
       SQL
-      InventoryAsset.gems
+      account.inventory_assets.gems
           .joins(:description)
           .group(group_sql)
           .sum('amount::int')
