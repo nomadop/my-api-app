@@ -429,9 +429,9 @@ class Market
             item_nameid: item_nameid,
             content: content,
             user1_name: user_names[0],
-            user1_avatar: user_avatars[0],
+            user1_avatar: user_avatars[0].match(/\/([^\/.]+)\.jpg/)[1],
             user2_name: user_names[1],
-            user2_avatar: user_avatars[1],
+            user2_avatar: user_avatars[1] && user_avatars[1].match(/\/([^\/.]+)\.jpg/)[1],
             price: price
         }
       end

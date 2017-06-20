@@ -145,24 +145,21 @@ class Steam
         country_match = country_flag_img.any? && country_flag_img.attr('src').value.match(/countryflags\/([^.]+)\.gif$/)
         country = country_match && country_match[1]
         avatar_medium_url = row.search('.avatarMedium img').attr('src').value
-        {account_name: account_name, profile_url: profile_url, account_id: account_id, avatar_medium_url: avatar_medium_url, country: country}
+        avatar_name = avatar_medium_url.match(/\/([^\/.]+)_medium\.jpg/)[1]
+        {account_name: account_name, profile_url: profile_url, account_id: account_id, avatar_name: avatar_name, country: country}
       end
     end
 
-    def find_user(account_name, avatar_url)
+    def find_user(account_name, avatar_name)
       search_result = search_user(account_name)
       search_result_count = search_result['search_result_count']
-      raise 'too many user found' if search_result_count > 100
+      raise 'too many user found' if search_result_count > 300
 
       page = 1
       user = nil
-      avatar_name = avatar_url.match(/\/([^\/.]+)\.jpg/)[1]
       loop do
         users = handle_search_user_result(search_result)
-        user = users.find do |user|
-          avatar_medium_name = user[:avatar_medium_url].match(/\/([^\/.]+)_medium\.jpg/)[1]
-          user[:account_name] == account_name && avatar_name == avatar_medium_name
-        end
+        user = users.find { |user| user[:account_name] == account_name && avatar_name == user[:avatar_name] }
 
         break unless user.nil?
         search_result = search_user(account_name, page + 1) if page * 20 + 20 < search_result_count
