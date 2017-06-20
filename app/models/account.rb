@@ -69,4 +69,12 @@ class Account < ApplicationRecord
   def load_booster_creators
     Inventory.load_booster_creators(self)
   end
+
+  def gem_amount_info
+    Inventory.gem_amount_info(self)
+  end
+
+  def load_friends
+    Steam.load_friends(self)
+  end
 end

@@ -1,5 +1,7 @@
 class Steam
   class << self
+    attr_reader :default_account
+
     def request_app_list
       response = RestClient.get('http://api.steampowered.com/ISteamApps/GetAppList/v0002/')
       JSON.parse(response.body)
@@ -32,9 +34,9 @@ class Steam
       SteamApp.create(detail_slice) if SteamApp.where(steam_appid: detail['steam_appid']).empty?
     end
 
-    def request_friends
-      cookie = Authentication.cookie
-      account = Authentication.account
+    def request_friends(account)
+      cookie = account.cookie
+      account_name = account.account_name
 
       option = {
           method: :get,
@@ -48,7 +50,7 @@ class Steam
               :'Cookie' => cookie,
               :'Host' => 'steamcommunity.com',
               :'Pragma' => 'no-cache',
-              :'Referer' => "https://steamcommunity.com/id/#{account}/tradeoffers/sent/",
+              :'Referer' => "https://steamcommunity.com/id/#{account_name}/tradeoffers/sent/",
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
               :'X-Requested-With' => 'XMLHttpRequest',
           },
@@ -58,8 +60,8 @@ class Steam
       RestClient::Request.execute(option)
     end
 
-    def load_friends
-      response = request_friends
+    def load_friends(account = default_account)
+      response = request_friends(account)
       doc = Nokogiri::HTML(response)
       friends = doc.search('.friendBlock').map do |div|
         mini_profile = div.attr('data-miniprofile')
@@ -264,4 +266,6 @@ class Steam
       JSON.parse(response.body)
     end
   end
+
+  @default_account = Account.find_by(account_id: '76561197967991989')
 end
