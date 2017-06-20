@@ -14,6 +14,7 @@ class InventoryAsset < ApplicationRecord
   scope :tradable, -> { joins(:description).where(inventory_descriptions: {tradable: 1}) }
   scope :untradable, -> { joins(:description).where(inventory_descriptions: {tradable: 0}) }
   scope :gems, -> { where(classid: 667924416) }
+  scope :non_gems, -> { where.not(classid: 667924416) }
   scope :sacks_of_gem, -> { joins(:market_asset).where(market_assets: {market_fee_app: 753}) }
   scope :non_sacks_of_gem, -> { joins(:market_asset).where.not(market_assets: {market_fee_app: 753}) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {classid: nil}) }
@@ -159,8 +160,6 @@ class InventoryAsset < ApplicationRecord
   end
 
   def auto_sell_and_grind
-    return if price_per_goo_exclude_vat > 1 && unmarketable?
-
     refresh_price
     refresh_goo_value
     ppg = reload.price_per_goo_exclude_vat
