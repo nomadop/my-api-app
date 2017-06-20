@@ -5,6 +5,8 @@ class MarketAsset < ApplicationRecord
   self.inheritance_column = nil
   self.primary_key = :classid
 
+  DEFAULT_PPG_VALUE = 0.525
+
   belongs_to :steam_app, primary_key: :steam_appid, foreign_key: :market_fee_app, optional: true
   has_many :my_listings, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :my_histories, primary_key: :market_hash_name, foreign_key: :market_hash_name
@@ -30,8 +32,8 @@ class MarketAsset < ApplicationRecord
   scope :booster_pack, -> { where(type: 'Booster Pack') }
   scope :with_my_listing, -> { joins(:my_listings).distinct }
   scope :without_my_listing, -> { left_outer_joins(:my_listings).where(my_listings: {classid: nil}) }
-  scope :buyable, ->(ppg = 0.525) { joins(:order_histograms).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg).distinct }
-  scope :orderable, ->(ppg = 0.525) { joins(:order_histograms).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg).distinct }
+  scope :buyable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histograms).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg).distinct }
+  scope :orderable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histograms).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg).distinct }
   scope :with_active_buy_order, -> { joins(:active_buy_orders).distinct }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histograms).where(order_histograms: {item_nameid: nil}) }
@@ -64,16 +66,16 @@ class MarketAsset < ApplicationRecord
            :sell_order_count, :buy_order_count, to: :order_histogram, allow_nil: true
 
   class << self
-    def quick_buy(market_hash_name)
+    def quick_buy(market_hash_name, ppg = DEFAULT_PPG_VALUE)
       market_asset = find_by(market_hash_name: market_hash_name)
-      market_asset.quick_buy(0.525)
+      market_asset.quick_buy(ppg)
     end
 
-    def quick_buy_orderable(ppg = 0.525)
+    def quick_buy_orderable(ppg = DEFAULT_PPG_VALUE)
       orderable(ppg).buyable(1).find_each { |asset| asset.quick_buy_later(ppg) }
     end
 
-    def quick_buy_later(ppg = 0.525, **options)
+    def quick_buy_later(ppg = DEFAULT_PPG_VALUE, **options)
       find_each { |asset| asset.quick_buy_later(ppg, **options) }
     end
 
@@ -85,7 +87,8 @@ class MarketAsset < ApplicationRecord
       find_each(&:load_order_histogram)
     end
 
-    def quick_buy_by_ppg(limit, ppg = 0.525)
+    def quick_buy_by_ppg(limit, ppg = DEFAULT_PPG_VALUE)
+      Authentication.refresh
       sell_ppg_order.first(limit).each {|ma| ma.quick_buy_later(ppg)}
     end
   end
@@ -179,8 +182,8 @@ class MarketAsset < ApplicationRecord
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
     lowest_price = (goo_value * 0.4).ceil
     highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
-    highest_buy_order_graph_price = highest_buy_order_graph_price - 1 if 1.0 * highest_buy_order_graph_price / goo_value > 0.525
-    return if 1.0 * highest_buy_order_graph_price / goo_value > 0.525
+    highest_buy_order_graph_price = highest_buy_order_graph_price - 1 if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
+    return if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
 
     order_price = [lowest_price, highest_buy_order_graph_price].max
     quantity = BuyOrder.purchased.where(market_hash_name: market_hash_name).count
@@ -234,5 +237,9 @@ class MarketAsset < ApplicationRecord
 
   def get_order_activity
     Market.request_order_activity(item_nameid)
+  end
+
+  def pull_order_activity
+    ApplicationJob.perform_unique(PullOrderActivityJob, item_nameid)
   end
 end
