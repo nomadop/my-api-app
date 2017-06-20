@@ -6,7 +6,13 @@ class SteamUser < ApplicationRecord
 
   def set_nickname(nickname)
     result = Steam.set_nickname(self, nickname)
-    update(nickname: nickname) if result['success'] == 1
+    case result['success']
+      when 1
+        return update(nickname: nickname)
+      when 8
+        Authentication.refresh
+        return set_nickname(nickname)
+    end
   end
 
   def add_friend
