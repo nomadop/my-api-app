@@ -94,18 +94,24 @@ class Market
     end
 
     def search(appid, start = 0, count = 10)
-      response = RestClient.get('http://steamcommunity.com/market/search/render/', {
-          params: {
-              query: '',
-              start: start,
-              count: count,
-              search_descriptions: 0,
-              sort_column: 'default',
-              sort_dir: 'desc',
-              appid: 753,
-              :'category_753_Game[]' => "tag_app_#{appid}",
+      option = {
+          method: :get,
+          url: 'http://steamcommunity.com/market/search/render/',
+          headers: {
+              :params => {
+                  query: '',
+                  start: start,
+                  count: count,
+                  search_descriptions: 0,
+                  sort_column: 'default',
+                  sort_dir: 'desc',
+                  appid: 753,
+                  :'category_753_Game[]' => "tag_app_#{appid}",
+              },
           },
-      })
+          proxy: 'http://127.0.0.1:8888',
+      }
+      response = RestClient::Request.execute(option)
       JSON.parse(response.body)
     end
 
