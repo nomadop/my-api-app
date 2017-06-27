@@ -84,20 +84,25 @@ class Inventory
 
     def load_booster_creators(account = default_account)
       boosters = request_booster_creators(account)
-      BoosterCreator.transaction do
-        boosters.each do |booster|
-          model = BoosterCreator.find_or_initialize_by(appid: booster['appid'])
-          booster['name'] = Utility.unescapeHTML(booster['name'])
-          model.update(booster)
+      booster_creators = boosters.map do |booster|
+        booster['name'] = Utility.unescapeHTML(booster['name'])
+        booster
+      end
+      BoosterCreator.import(booster_creators, on_duplicate_key_ignore: true)
+      account_booster_creators = boosters.map do |booster|
+        {
+            appid: booster['appid'],
+            account_id: account.id,
+            unavailable: booster['unavailable'],
+            available_at_time: booster['available_at_time'],
+        }
+      end
+      AccountBoosterCreator.transaction do
+        account_booster_creators.each do |account_booster_creator|
+          model = AccountBoosterCreator.find_or_initialize_by(appid: account_booster_creator[:appid], account_id: account.id)
+          model.update(account_booster_creator)
         end
       end
-      account_booster_creators = boosters.map do |booster|
-        { appid: booster['appid'], account_id: account.id, unavailable: booster['unavailable'], available_at_time: booster['available_at_time'] }
-      end
-      AccountBoosterCreator.import(account_booster_creators, on_duplicate_key_update: {
-          conflict_target: [:account_id, :appid],
-          columns: [:unavailable, :available_at_time],
-      })
     end
 
     def total_goo_value
@@ -223,12 +228,20 @@ class Inventory
 
     def unpack_booster(assetid, account = default_account)
       account_name = account.account_name
+      account_id = account.account_id
       cookie = account.cookie
       sessionid = account.session_id
 
+      url = account_name.blank? ?
+          "http://steamcommunity.com/profiles/#{account_id}/ajaxunpackbooster/" :
+          "http://steamcommunity.com/id/#{account_name}/ajaxunpackbooster/"
+      referer = account_name.blank? ?
+          "http://steamcommunity.com/profiles/#{account_id}/inventory/" :
+          "http://steamcommunity.com/id/#{account_name}/inventory/"
+
       option = {
           method: :post,
-          url: "http://steamcommunity.com/id/#{account_name}/ajaxunpackbooster/",
+          url: url,
           headers: {
               :Accept => '*/*',
               :'Accept-Encoding' => 'gzip, deflate',
@@ -240,7 +253,7 @@ class Inventory
               :'Host' => 'steamcommunity.com',
               :'Origin' => 'http://steamcommunity.com',
               :'Pragma' => 'no-cache',
-              :'Referer' => "http://steamcommunity.com/id/#{account_name}/inventory/",
+              :'Referer' => referer,
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
               :'X-Requested-With' => 'XMLHttpRequest',
           },
