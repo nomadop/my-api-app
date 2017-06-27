@@ -5,7 +5,7 @@ class MarketAsset < ApplicationRecord
   self.inheritance_column = nil
   self.primary_key = :classid
 
-  DEFAULT_PPG_VALUE = 0.525
+  DEFAULT_PPG_VALUE = 0.5
 
   belongs_to :steam_app, primary_key: :steam_appid, foreign_key: :market_fee_app, optional: true
   has_many :my_listings, primary_key: :market_hash_name, foreign_key: :market_hash_name
@@ -63,7 +63,8 @@ class MarketAsset < ApplicationRecord
   after_create :load_order_histogram, :load_goo_value
 
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
-           :sell_order_count, :buy_order_count, to: :order_histogram, allow_nil: true
+           :sell_order_count, :buy_order_count, :order_count, to: :order_histogram, allow_nil: true
+  delegate :booster_pack_info, to: :booster_creator, allow_nil: true
 
   class << self
     def quick_buy(market_hash_name, ppg = DEFAULT_PPG_VALUE)
@@ -180,7 +181,7 @@ class MarketAsset < ApplicationRecord
     Market.load_order_histogram(item_nameid)
     refresh_goo_value
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
-    lowest_price = (goo_value * 0.4).ceil
+    lowest_price = (goo_value * 0.3).ceil
     highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
     highest_buy_order_graph_price = highest_buy_order_graph_price - 1 if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
     return if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
@@ -241,5 +242,9 @@ class MarketAsset < ApplicationRecord
 
   def pull_order_activity
     ApplicationJob.perform_unique(PullOrderActivityJob, item_nameid)
+  end
+
+  def refersh
+    ApplicationJob.perform_unique(LoadMarketAssetJob, listing_url)
   end
 end

@@ -116,7 +116,7 @@ class BuyOrder < ApplicationRecord
       3.times do
         break if BuyOrder.refresh
       end
-      MarketAsset.orderable(0.525).buyable(2).without_active_buy_order.quick_order_later
+      MarketAsset.orderable(MarketAsset::DEFAULT_PPG_VALUE).buyable(2).without_active_buy_order.quick_order_later
       rebuy_cancelable
     end
 
@@ -124,7 +124,7 @@ class BuyOrder < ApplicationRecord
       cancelable = BuyOrder
           .cancelable
           .includes(:market_asset, :order_histogram)
-          .reject { |buy_order| buy_order.highest_buy_order >= buy_order.goo_value * 0.525 }
+          .reject { |buy_order| buy_order.highest_buy_order >= buy_order.goo_value * MarketAsset::DEFAULT_PPG_VALUE }
       cancelable.each(&:rebuy_later)
     end
 
@@ -134,6 +134,10 @@ class BuyOrder < ApplicationRecord
 
     def purchased_price
       sum('price * (quantity - quantity_remaining)')
+    end
+
+    def group_by_ppg(precision = 2)
+      joins(:market_asset).group("round(1.0 * price / market_assets.goo_value, #{precision})")
     end
   end
 
@@ -194,9 +198,9 @@ class BuyOrder < ApplicationRecord
     Market.load_order_histogram(item_nameid)
     market_asset.refresh_goo_value
     return rebuy if price.nil?
-    return rebuy if 1.0 * price / goo_value > 0.525
+    return rebuy if 1.0 * price / goo_value > MarketAsset::DEFAULT_PPG_VALUE
     return if price > highest_buy_order
-    return if 1.0 * (highest_buy_order + 1) / goo_value > 0.525
+    return if 1.0 * (highest_buy_order + 1) / goo_value > MarketAsset::DEFAULT_PPG_VALUE
 
     rebuy
   end

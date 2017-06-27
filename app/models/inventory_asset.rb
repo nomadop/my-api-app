@@ -24,7 +24,7 @@ class InventoryAsset < ApplicationRecord
   delegate :marketable?, :unmarketable?, :market_hash_name, :load_market_asset, :marketable_date, :owner_descriptions,
            to: :description
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance,
-           :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value,
+           :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value, :booster_pack_info,
            to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, :sell_order_count, to: :order_histogram
 
@@ -164,7 +164,7 @@ class InventoryAsset < ApplicationRecord
     refresh_goo_value
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
-    quick_sell if (ppg > 2 && marketable?) || (ppg >= 0.59 && booster_pack?)
+    quick_sell if (ppg > 2 && marketable?) || (ppg >= 0.58 && booster_pack?)
     grind_into_goo if ppg <= 2 && !booster_pack?
   end
 
