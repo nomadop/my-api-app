@@ -21,6 +21,10 @@ class OrderHistogram < ApplicationRecord
     0
   end
 
+  def order_count
+    (sell_order_count || 0) + (buy_order_count || 0)
+  end
+
   def highest_buy_order_exclude_vat
     Utility.exclude_val(highest_buy_order)
   end
