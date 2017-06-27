@@ -53,6 +53,11 @@ class BoosterCreator < ApplicationRecord
           .each(&:refresh_price_later)
     end
 
+    def refresh_all
+      includes(trading_cards: :order_histogram, booster_pack: :order_histogram)
+          .each(&:refresh_price_later)
+    end
+
     def scan_market
       find_each(&:scan_market)
     end
@@ -61,6 +66,15 @@ class BoosterCreator < ApplicationRecord
       includes(booster_pack: :order_histogram)
           .first_ppg_order(limit)
           .to_a.select { |booster_creator| booster_creator.createable?(ppg) }
+    end
+
+    def set_trading_card_type
+      transaction do
+        where(trading_card_type: nil).find_each do |booster_creator|
+          booster_creator.set_trading_card_type
+          booster_creator.save
+        end
+      end
     end
   end
 
