@@ -481,6 +481,7 @@ class Market
         row_id = row.attr(:id)
         history_id = row_id.match(/history_row_(?<id>.+)/)[:id]
         who_acted_with = row.search('.market_listing_right_cell.market_listing_whoactedwith').inner_text.strip.gsub(/[\t\r\n]/, '')
+        listed_date = row.search('.market_listing_listed_date_combined').inner_text.strip
         price_text = row.search('.market_listing_price').text.strip
         price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
         price = price_text_match && price_text_match[:price].to_f * 100
@@ -488,11 +489,23 @@ class Market
         market_listing_name = '一袋宝珠' if market_listing_name =~ /\d+ 一袋宝珠/
         asset = assets.find { |asset| asset['market_name'] == market_listing_name }
 
-        {history_id: history_id, who_acted_with: who_acted_with, price: price, market_listing_name: market_listing_name, classid: asset['classid'], market_hash_name: asset['market_hash_name']}
+        {
+            history_id: history_id,
+            who_acted_with: who_acted_with,
+            listed_date: listed_date,
+            price: price,
+            market_listing_name: market_listing_name,
+            classid: asset['classid'],
+            market_hash_name: asset['market_hash_name'],
+        }
       end
       MyHistory.import(my_history, on_duplicate_key_ignore: {
           conflict_target: :history_id,
       })
+    end
+
+    def scan_my_histories
+      LoadMyHistoriesJob.perform_later(0, 100)
     end
   end
 end
