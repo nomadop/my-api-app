@@ -3,7 +3,12 @@ module ActAsBoosterPack
 
   included do
     has_one :booster_creator, primary_key: :market_fee_app, foreign_key: :appid
-    has_many :trading_cards, through: :booster_creator
+    trading_cards_proc = -> do
+      where('type like ?', '%Trading Card')
+          .where.not('type like ?', '%Foil Trading Card')
+    end
+    has_many :trading_cards, trading_cards_proc, class_name: 'MarketAsset',
+             primary_key: :market_fee_app, foreign_key: :market_fee_app
     has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
              through: :trading_cards, source: :order_histogram
     has_many :listing_trading_cards, class_name: 'MyListing',
@@ -57,12 +62,21 @@ module ActAsBoosterPack
     listing_trading_cards.count
   end
 
-  def booster_pack_info
+  def listing_booster_pack_count
+    my_listings.count
+  end
+
+  def sell_proportion
+    order_histogram.proportion
+  end
+
+  def booster_pack_info_without_price
     as_json(
-        only: [:appid, :name, :price],
+        only: [:market_hash_name],
         methods: [
             :open_price, :trading_card_prices_proportion, :open_sell_order_count, :open_buy_order_count,
-            :listing_trading_card_count, :sell_order_count, :buy_order_count
+            :listing_trading_card_count, :listing_booster_pack_count,
+            :sell_order_count, :buy_order_count, :sell_proportion, :highest_buy_order, :lowest_sell_order,
         ]
     )
   end
