@@ -192,32 +192,40 @@ class BoosterCreator < ApplicationRecord
     self.trading_card_type = "#{name} Trading Card"
   end
 
-  def create(account = Account.take)
+  def create(account = Account.find_by(account_id: '76561197967991989'))
     response = Inventory.create_booster(appid, series, account)
     raise 'failed to create booster' unless response.code == 200
     result = JSON.parse(response.body)
     result['purchase_result']['communityitemid']
   end
 
+  def create_all
+    accounts.reload.each do |account|
+      account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
+      next unless account_booster_creator&.available?
+      create(account)
+    end
+  end
+
   def create_and_sell
     accounts.reload.each do |account|
       account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
-      next if account_booster_creator.available?
+      next unless account_booster_creator&.available?
       assetid = create(account)
-      assetid && Inventory.sell(assetid, lowest_sell_order_exclude_vat - 1, 1)
+      assetid && Inventory.sell(assetid, lowest_sell_order_exclude_vat - 1, 1, account)
     end
   end
 
   def create_and_unpack
     accounts.reload.each do |account|
       account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
-      next if account_booster_creator.available?
+      next unless account_booster_creator&.available?
       assetid = create(account)
-      assetid && Inventory.unpack_booster(assetid)
+      assetid && Inventory.unpack_booster(assetid, account)
     end
   end
 
   def available_at
-    Time.parse(available_at_time) unless available_at_time.blank?
+    DateTime.parse(available_at_time) unless available_at_time.blank?
   end
 end
