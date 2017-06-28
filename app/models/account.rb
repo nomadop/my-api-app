@@ -77,4 +77,8 @@ class Account < ApplicationRecord
   def load_friends
     Steam.load_friends(self)
   end
+
+  def create_steam_user(name)
+    SteamUser.create(account_name: name, account_id: account_id, steamid: account_id)
+  end
 end
