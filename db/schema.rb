@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170622073643) do
+ActiveRecord::Schema.define(version: 20170627085924) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -111,6 +111,7 @@ ActiveRecord::Schema.define(version: 20170622073643) do
     t.datetime "updated_at",                    null: false
     t.json     "owner_descriptions"
     t.integer  "market_fee_app"
+    t.string   "item_expiration"
     t.index ["appid"], name: "index_inventory_descriptions_on_appid", using: :btree
     t.index ["classid", "instanceid"], name: "index_inventory_descriptions_on_classid_and_instanceid", unique: true, using: :btree
   end
