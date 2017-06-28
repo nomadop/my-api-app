@@ -42,6 +42,8 @@ module ActAsBoosterPack
 
   def open_price(include_vat = false)
     prices = include_vat ? trading_card_prices : trading_card_prices_exclude_vat
+    return nil if prices.blank?
+
     average = 1.0 * prices.sum / prices.size
     variance = prices.map { |price| (price - average) ** 2 }.sum / prices.size
     standard_variance = variance ** 0.5
