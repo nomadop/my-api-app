@@ -40,6 +40,35 @@ class InventoryAsset < ApplicationRecord
     def find_biggest_tradable_gem
       gems.tradable.order('amount::int').last
     end
+
+    def market_hash_names
+      joins(:market_asset).pluck('market_assets.market_hash_name')
+    end
+
+    def generate_trade_offer
+      assets = find_each.map do |asset|
+        {appid: 753, contextid: 6, amount: asset.amount, assetid: asset.assetid}
+      end
+      offer = {
+          newversion: true,
+          version: 2,
+          me: {
+              assets: assets,
+              currency: [],
+              ready: false,
+          },
+          them: {assets: [], currency: [], ready: false},
+      }
+      offer.to_json
+    end
+
+    def send_offer_to(friend)
+      friend = Friend.find_by(steamid: friend.account_id) if friend.is_a?(Account)
+      accounts = find_each.map(&:account).uniq
+      raise 'assets from different accounts' if accounts.size > 1
+      Market.send_trade(accounts.first, friend.profile, friend.steamid, generate_trade_offer)
+      destroy_all
+    end
   end
 
   def refresh_price
@@ -188,6 +217,7 @@ class InventoryAsset < ApplicationRecord
   end
 
   def send_offer_to(friend, amount = 1)
+    friend = Friend.find_by(steamid: friend.account_id) if friend.is_a?(Account)
     Market.send_trade(account, friend.profile, friend.steamid, generate_trade_offer(amount))
     remaining_amount = self.amount.to_i - amount
     remaining_amount > 0 ? update(amount: remaining_amount) : destroy
