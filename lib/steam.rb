@@ -205,7 +205,10 @@ class Steam
       JSON.parse(response.body)
     end
 
-    def add_friend(user)
+    def add_friend(user, account = default_account)
+      referer = user.account_id == user.steamid ?
+          "http://steamcommunity.com/profiles/#{user.account_id}" :
+          "http://steamcommunity.com/id/#{user.account_id}"
       option = {
           method: :post,
           url: 'http://steamcommunity.com/actions/AddFriendAjax',
@@ -216,17 +219,17 @@ class Steam
               :'Cache-Control' => 'no-cache',
               :'Connection' => 'keep-alive',
               :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-              :'Cookie' => Authentication.cookie,
+              :'Cookie' => account.cookie,
               :'Host' => 'steamcommunity.com',
               :'Origin' => 'http://steamcommunity.com',
               :'Pragma' => 'no-cache',
-              :'Referer' => "http://steamcommunity.com/id/#{user.account_id}",
+              :'Referer' => referer,
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
               :'X-Requested-With' => 'XMLHttpRequest',
           },
           payload: {
               steamid: user.steamid,
-              sessionID: Authentication.session_id,
+              sessionID: account.session_id,
               accept_invite: 0,
           },
           proxy: 'http://127.0.0.1:8888',
