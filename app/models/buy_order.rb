@@ -137,7 +137,7 @@ class BuyOrder < ApplicationRecord
     end
 
     def group_by_ppg(precision = 2)
-      joins(:market_asset).group("round(1.0 * price / market_assets.goo_value, #{precision})")
+      joins(:market_asset).group("round(1.0 * price / market_assets.goo_value, #{precision})").order("round(1.0 * price / market_assets.goo_value, #{precision})")
     end
   end
 
