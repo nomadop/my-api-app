@@ -4,8 +4,8 @@ class BoosterCreator < ApplicationRecord
   has_one :steam_app, primary_key: :appid, foreign_key: :steam_appid
   has_one :booster_pack, -> { where(type: 'Booster Pack') },
           class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
-  has_many :trading_cards, class_name: 'MarketAsset',
-           primary_key: :trading_card_type, foreign_key: :type
+  has_many :trading_cards, -> { where('type like ?', '%Trading Card').where.not('type like ?', '%Foil Trading Card') },
+           class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   # has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
   #          through: :trading_cards, source: :order_histogram
   has_many :listing_trading_cards, class_name: 'MyListing',
@@ -23,7 +23,9 @@ class BoosterCreator < ApplicationRecord
     joins(
         <<-SQL
       INNER JOIN "market_assets" 
-      ON "market_assets"."type" = "booster_creators"."trading_card_type" 
+      ON "market_assets"."market_fee_app" = "booster_creators"."appid"
+      AND ("market_assets"."type" like '%Trading Card')
+      AND (NOT("market_assets"."type" like '%Foil Trading Card'))
       INNER JOIN "order_histograms" 
       ON "order_histograms"."item_nameid" = "market_assets"."item_nameid"
       AND "order_histograms"."id" = (
