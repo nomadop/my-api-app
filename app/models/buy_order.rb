@@ -15,6 +15,7 @@ class BuyOrder < ApplicationRecord
   scope :purchased_active, -> { active.where(market_hash_name: BuyOrder.purchased.distinct.pluck(:market_hash_name)) }
   scope :without_active, -> { left_outer_joins(:active_order).where(active_orders_buy_orders: {market_hash_name: nil}) }
   scope :without_market_asset, -> {left_outer_joins(:market_asset).where(market_assets: { market_hash_name: nil  })}
+  scope :with_in, ->(duration) { where('buy_orders.created_at > ?', duration.ago) }
 
   default_scope { where(success: 1) }
 
