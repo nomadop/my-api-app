@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170627085924) do
+ActiveRecord::Schema.define(version: 20170630074950) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -60,6 +60,20 @@ ActiveRecord::Schema.define(version: 20170627085924) do
     t.integer  "price"
     t.text     "purchase_amount_text"
     t.index ["buy_orderid"], name: "index_buy_orders_on_buy_orderid", unique: true, using: :btree
+  end
+
+  create_table "emails", force: :cascade do |t|
+    t.string   "from"
+    t.string   "to"
+    t.string   "message_id"
+    t.string   "subject"
+    t.text     "body"
+    t.datetime "date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_emails_on_date", using: :btree
+    t.index ["message_id"], name: "index_emails_on_message_id", unique: true, using: :btree
+    t.index ["to"], name: "index_emails_on_to", using: :btree
   end
 
   create_table "friends", force: :cascade do |t|

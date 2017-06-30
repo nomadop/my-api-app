@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  from: MyString
+  to: MyString
+  message_id: MyString
+  subject: MyString
+  body: MyText
+  date: 2017-06-30 15:49:50
+
+two:
+  from: MyString
+  to: MyString
+  message_id: MyString
+  subject: MyString
+  body: MyText
+  date: 2017-06-30 15:49:50
