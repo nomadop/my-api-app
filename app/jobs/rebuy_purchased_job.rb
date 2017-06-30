@@ -3,6 +3,6 @@ class RebuyPurchasedJob < ApplicationJob
 
   def perform()
     BuyOrder.rebuy_purchased
-    RebuyPurchasedJob.set(wait: 30.minutes).perform_later
+    RebuyPurchasedJob.set(wait: 15.minutes).perform_later
   end
 end

@@ -8,6 +8,6 @@ class AutoResellJob < ApplicationJob
     end
 
     MyListing.auto_resell
-    AutoResellJob.set(wait: 15.minutes).perform_later()
+    AutoResellJob.set(wait: 30.minutes).perform_later()
   end
 end

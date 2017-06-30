@@ -146,7 +146,9 @@ class BoosterCreator < ApplicationRecord
                 (buy_order_count > 20 && sell_proportion > 0.3)
             )
         )
-    ) || (open_price_per_goo > ppg && listing_trading_card_count < (open_order_count / 20.0).ceil && open_price[:coefficient_of_variation] < 0.3 &&
+    ) || (open_price_per_goo > ppg &&
+        listing_trading_card_count < (open_order_count / 20.0).ceil &&
+        open_price[:coefficient_of_variation] < 0.3 &&
         (open_sell_order_count > 20 || trading_card_prices_proportion > 0.9 ||
             (open_buy_order_count > 20 && trading_card_prices_proportion > 0.7)
         )
