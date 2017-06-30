@@ -41,7 +41,7 @@ class InventoryAsset < ApplicationRecord
       gems.tradable.order('amount::int').last
     end
 
-    def market_hash_names
+    def names
       joins(:market_asset).pluck('market_assets.market_hash_name')
     end
 
