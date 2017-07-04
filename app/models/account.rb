@@ -83,7 +83,7 @@ class Account < ApplicationRecord
     SteamUser.create(account_name: name, account_id: account_id, steamid: account_id)
   end
 
-  def load_trade_offers
-    Inventory.load_trade_offers(self)
+  def load_trade_offers(history = false)
+    Inventory.load_trade_offers(self, history)
   end
 end

@@ -275,7 +275,7 @@ class Inventory
       doc = Nokogiri::HTML(response.body)
     end
 
-    def request_trade_offers(account)
+    def request_trade_offers(account, history)
       url = account.account_name.nil? ?
           "http://steamcommunity.com/profiles/#{account.account_id}/tradeoffers/" :
           "http://steamcommunity.com/id/#{account.account_name}/tradeoffers/"
@@ -283,6 +283,9 @@ class Inventory
           method: :get,
           url: url,
           headers: {
+              :params => {
+                  history: history ? 1 : 0,
+              },
               :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
               :'Accept-Encoding' => 'gzip, deflate',
               :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
@@ -299,8 +302,8 @@ class Inventory
       RestClient::Request.execute(option)
     end
 
-    def load_trade_offers(account = @default_account)
-      response = request_trade_offers(account)
+    def load_trade_offers(account = @default_account, history = false)
+      response = request_trade_offers(account, history)
       doc = Nokogiri::HTML(response.body)
       trade_offers = doc.search('.tradeoffer').map do |trade_offer|
         id_match = trade_offer.attr('id').match(/tradeofferid_(\d+)/)
@@ -309,12 +312,18 @@ class Inventory
         report_match = report_attr && report_attr.match(/javascript:ReportTradeScam\( '(\d+)', "([^"]+)" \);/)
         partner_id = report_match[1]
         partner_name = report_match[2]
-        { account_id: account.id, trade_offer_id: id, partner_id: partner_id, partner_name: partner_name }
+        status = 0
+        banner = trade_offer.search('.tradeoffer_items_banner').first
+        if banner
+          banner_classes = banner.attr('class').split(' ')
+          status = banner_classes.include?('accepted') ? 1 : 2
+        end
+        { account_id: account.id, trade_offer_id: id, partner_id: partner_id, partner_name: partner_name, status: status }
       end
-      TradeOffer.transaction do
-        account.trade_offers.destroy_all
-        TradeOffer.import(trade_offers, on_duplicate_key_ignore: true)
-      end
+      TradeOffer.import(trade_offers, on_duplicate_key_update: {
+          conflict_target: :trade_offer_id,
+          columns: [:status],
+      })
     end
   end
 
