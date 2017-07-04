@@ -11,6 +11,13 @@ class TradeOffer < ApplicationRecord
   end
 
   def accept
+    return 'Not a pending offer' unless pending?
+    unless gift_offer?
+      puts 'Sure to accept non gift offer?'
+      input = gets.chomp
+      return unless input == 'yes'
+    end
+
     option = {
         method: :post,
         url: "https://steamcommunity.com/tradeoffer/#{trade_offer_id}/accept",
