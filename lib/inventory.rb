@@ -312,13 +312,24 @@ class Inventory
         report_match = report_attr && report_attr.match(/javascript:ReportTradeScam\( '(\d+)', "([^"]+)" \);/)
         partner_id = report_match[1]
         partner_name = report_match[2]
+        offer_item_list = trade_offer.search('.tradeoffer_item_list')
+        their_offer_count = offer_item_list.first.search('.trade_item').size
+        your_offer_count = offer_item_list.last.search('.trade_item').size
         status = 0
         banner = trade_offer.search('.tradeoffer_items_banner').first
         if banner
           banner_classes = banner.attr('class').split(' ')
           status = banner_classes.include?('accepted') ? 1 : 2
         end
-        { account_id: account.id, trade_offer_id: id, partner_id: partner_id, partner_name: partner_name, status: status }
+        {
+            account_id: account.id,
+            trade_offer_id: id,
+            partner_id: partner_id,
+            partner_name: partner_name,
+            your_offer_count: your_offer_count,
+            their_offer_count: their_offer_count,
+            status: status,
+        }
       end
       TradeOffer.import(trade_offers, on_duplicate_key_update: {
           conflict_target: :trade_offer_id,
