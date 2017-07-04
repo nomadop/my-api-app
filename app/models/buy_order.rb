@@ -140,6 +140,10 @@ class BuyOrder < ApplicationRecord
     def group_by_ppg(precision = 2)
       joins(:market_asset).group("round(1.0 * price / market_assets.goo_value, #{precision})").order("round(1.0 * price / market_assets.goo_value, #{precision})")
     end
+
+    def purchased_goo_value
+      sum('market_assets.goo_value * (quantity - quantity_remaining)')
+    end
   end
 
   def refresh_status
@@ -167,7 +171,7 @@ class BuyOrder < ApplicationRecord
     result = Market.cancel_buy_order(buy_orderid)
     case result['success']
       when 1
-        update(active: 0)
+        update(active: 0, purchased: 1)
         return true
       when 8
         if result['error'] == 'Token is required but was not set.'
