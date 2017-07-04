@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170630074950) do
+ActiveRecord::Schema.define(version: 20170704060122) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -254,6 +254,16 @@ ActiveRecord::Schema.define(version: 20170630074950) do
     t.string   "country"
     t.string   "avatar_name"
     t.index ["steamid"], name: "index_steam_users_on_steamid", unique: true, using: :btree
+  end
+
+  create_table "trade_offers", force: :cascade do |t|
+    t.integer  "account_id"
+    t.string   "trade_offer_id"
+    t.string   "partner_id"
+    t.string   "partner_name"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+    t.index ["trade_offer_id"], name: "index_trade_offers_on_trade_offer_id", unique: true, using: :btree
   end
 
 end

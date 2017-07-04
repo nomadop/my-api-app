@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  account_id: 1
+  trade_offer_id: MyString
+  partner_id: MyString
+  parter_name: MyString
+
+two:
+  account_id: 1
+  trade_offer_id: MyString
+  partner_id: MyString
+  parter_name: MyString

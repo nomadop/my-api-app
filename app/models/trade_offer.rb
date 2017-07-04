@@ -1,0 +1,2 @@
+class TradeOffer < ApplicationRecord
+end
