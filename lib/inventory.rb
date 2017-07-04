@@ -274,6 +274,48 @@ class Inventory
       response = RestClient.get('http://steamtradingcards.wikia.com/wiki/Gems_by_Game')
       doc = Nokogiri::HTML(response.body)
     end
+
+    def request_trade_offers(account)
+      url = account.account_name.nil? ?
+          "http://steamcommunity.com/profiles/#{account.account_id}/tradeoffers/" :
+          "http://steamcommunity.com/id/#{account.account_name}/tradeoffers/"
+      option = {
+          method: :get,
+          url: url,
+          headers: {
+              :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => account.cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Upgrade-Insecure-Requests' => 1,
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          },
+          proxy: 'http://127.0.0.1:8888',
+      }
+      RestClient::Request.execute(option)
+    end
+
+    def load_trade_offers(account = @default_account)
+      response = request_trade_offers(account)
+      doc = Nokogiri::HTML(response.body)
+      trade_offers = doc.search('.tradeoffer').map do |trade_offer|
+        id_match = trade_offer.attr('id').match(/tradeofferid_(\d+)/)
+        id = id_match && id_match[1]
+        report_attr = trade_offer.search('.btn_report').attr('href').value
+        report_match = report_attr && report_attr.match(/javascript:ReportTradeScam\( '(\d+)', "([^"]+)" \);/)
+        partner_id = report_match[1]
+        partner_name = report_match[2]
+        { account_id: account.id, trade_offer_id: id, partner_id: partner_id, partner_name: partner_name }
+      end
+      TradeOffer.transaction do
+        account.trade_offers.destroy_all
+        TradeOffer.import(trade_offers, on_duplicate_key_ignore: true)
+      end
+    end
   end
 
   @default_account = Account.find_by(account_id: '76561197967991989')
