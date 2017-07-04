@@ -3,6 +3,7 @@ class Account < ApplicationRecord
   has_many :account_booster_creators
   has_many :booster_creators, through: :account_booster_creators
   has_many :my_histories
+  has_many :trade_offers
 
   def cookie
     reload
@@ -80,5 +81,9 @@ class Account < ApplicationRecord
 
   def create_steam_user(name)
     SteamUser.create(account_name: name, account_id: account_id, steamid: account_id)
+  end
+
+  def load_trade_offers
+    Inventory.load_trade_offers(self)
   end
 end
