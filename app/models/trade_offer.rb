@@ -3,6 +3,13 @@ class TradeOffer < ApplicationRecord
 
   enum status: [:pending, :accepted, :declined]
 
+  scope :gift_offer, -> { where(your_offer_count: 0) }
+  scope :non_gift_offer, -> { where.not(your_offer_count: 0) }
+
+  def gift_offer?
+    your_offer_count == 0
+  end
+
   def accept
     option = {
         method: :post,
