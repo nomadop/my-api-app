@@ -268,6 +268,103 @@ class Steam
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
     end
+
+    def request_account_history(account)
+      option = {
+          method: :get,
+          url: 'https://store.steampowered.com/account/history/',
+          headers: {
+              :':authority' => 'store.steampowered.com',
+              :':method' => 'GET',
+              :':path' => '/account/history/',
+              :':scheme' => 'https',
+              :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+              :'Accept-Encoding' => 'gzip, deflate, br',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Cookie' => account.cookie,
+              :'Pragma' => 'no-cache',
+              :'upgrade-insecure-requests' => 1,
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      cursor = Utility.match_json_var('g_historyCursor', response.body)
+      {cursor: cursor, html: response.body}
+    end
+
+    def request_more_account_history(account, cursor)
+      param_str = <<~PATH
+        cursor[wallet_txnid]=#{cursor['wallet_txnid']}&
+        cursor[timestamp_newest]=#{cursor['timestamp_newest']}&
+        cursor[balance]=#{cursor['balance']}&
+        cursor[currency]=#{cursor['currency']}&
+        sessionid=#{account.session_id}
+      PATH
+      param_str.gsub!(/\s/, '')
+      option = {
+          method: :get,
+          url: "https://store.steampowered.com/account/AjaxLoadMoreHistory/?#{param_str}",
+          headers: {
+              :':authority' => 'store.steampowered.com',
+              :':method' => 'GET',
+              :':path' => "/account/history/?#{param_str}",
+              :':scheme' => 'https',
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, br',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Cookie' => account.cookie,
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'https://store.steampowered.com/account/history/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+              :'X-Requested-With' => 'XMLHttpRequest',
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body).symbolize_keys
+    end
+
+    def load_account_history(account = @default_account, cursor = nil)
+      result = cursor.nil? ? request_account_history(account) : request_more_account_history(account, cursor)
+      doc = Nokogiri::HTML(result[:html])
+      rows = doc.search('.wallet_table_row')
+      account_histories = rows.map do |row|
+        date_text = row.search('.wht_date').inner_text
+        date = Time.strptime(date_text, '%Y年%m月%d日')
+        items = row.search('.wht_items').inner_text.strip
+        type = row.search('.wht_type div:first-child').inner_text
+        payment = row.search('.wht_type .wth_payment').inner_text.gsub(/\s/, '')
+        total_text = row.search('.wht_total').inner_text.strip
+        total_text_match = total_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
+        total = total_text_match && total_text_match[:price].to_f * 100
+        change_text = row.search('.wht_wallet_change').inner_text
+        change_text_match = change_text.match(/(?<type>[+-])¥\s+(?<price>\d+(\.\d+)?)/)
+        change = change_text_match && change_text_match[:price].to_f * 100
+        change = -change if change_text_match && change_text_match[:type] == '-'
+        balance_text = row.search('.wht_wallet_balance').inner_text.strip
+        balance_text_match = balance_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
+        balance = balance_text_match && balance_text_match[:price].to_f * 100
+        {
+            account_id: account.id,
+            date: date,
+            items: items,
+            type: type,
+            payment: payment,
+            total: total,
+            change: change,
+            balance: balance,
+        }
+      end
+      AccountHistory.transaction do
+        account_histories.each { |account_history| AccountHistory.find_or_create_by(account_history) }
+      end
+      result[:cursor]
+    end
   end
 
   @default_account = Account.find_by(account_id: '76561197967991989')
