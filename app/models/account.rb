@@ -4,6 +4,7 @@ class Account < ApplicationRecord
   has_many :booster_creators, through: :account_booster_creators
   has_many :my_histories
   has_many :trade_offers
+  has_many :emails, primary_key: :email_address, foreign_key: :to
 
   def cookie
     reload
