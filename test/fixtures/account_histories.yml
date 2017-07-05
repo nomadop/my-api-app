@@ -1,0 +1,21 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  account_id: 1
+  date: 2017-07-05 14:59:53
+  items: MyString
+  type: 
+  payment: MyString
+  total: 1
+  change: 1
+  balance: 1
+
+two:
+  account_id: 1
+  date: 2017-07-05 14:59:53
+  items: MyString
+  type: 
+  payment: MyString
+  total: 1
+  change: 1
+  balance: 1
