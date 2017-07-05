@@ -133,7 +133,12 @@ class InventoryAsset < ApplicationRecord
     }
     response = RestClient::Request.execute(option)
     account.update_cookie(response)
-    destroy if JSON.parse(response.body)['success'] == 1
+    case JSON.parse(response.body)['success']
+      when 1
+        destroy
+      when 16
+        raise 'unknown error'
+    end
   rescue RestClient::Forbidden => e
     account.refresh
     raise e
