@@ -315,11 +315,11 @@ class Inventory
         offer_item_list = trade_offer.search('.tradeoffer_item_list')
         their_offer_count = offer_item_list.first.search('.trade_item').size
         your_offer_count = offer_item_list.last.search('.trade_item').size
-        status = 0
+        status = TradeOffer.statuses[:pending]
         banner = trade_offer.search('.tradeoffer_items_banner').first
         if banner
           banner_classes = banner.attr('class').split(' ')
-          status = banner_classes.include?('accepted') ? 1 : 2
+          status = banner_classes.include?('accepted') ? TradeOffer.statuses[:accepted] : TradeOffer.statuses[:declined]
         end
         {
             account_id: account.id,
