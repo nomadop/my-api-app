@@ -336,9 +336,9 @@ class Steam
       account_histories = rows.map do |row|
         date_text = row.search('.wht_date').inner_text
         date = Time.strptime(date_text, '%Y年%m月%d日')
-        items = row.search('.wht_items').inner_text.strip
-        type = row.search('.wht_type div:first-child').inner_text
-        payment = row.search('.wht_type .wth_payment').inner_text.gsub(/\s/, '')
+        items = row.search('.wht_items').children.map(&:inner_text).map(&:strip).reject(&:blank?)
+        type = row.search('.wht_type div:first-child').inner_text.gsub(/[\t\r\n]/, '')
+        payment = row.search('.wht_type .wth_payment').inner_text.gsub(/[\t\r\n]/, '')
         total_text = row.search('.wht_total').inner_text.strip
         total_text_match = total_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
         total = total_text_match && total_text_match[:price].to_f * 100
@@ -360,9 +360,7 @@ class Steam
             balance: balance,
         }
       end
-      AccountHistory.transaction do
-        account_histories.each { |account_history| AccountHistory.find_or_create_by(account_history) }
-      end
+      AccountHistory.import(account_histories)
       result[:cursor]
     end
   end
