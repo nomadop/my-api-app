@@ -1,6 +1,8 @@
 class BuyOrder < ApplicationRecord
   include ActAsListable
 
+  PPG_SQL = '1.0 * price / market_assets.goo_value'
+
   after_create :refresh_status_later
 
   belongs_to :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name
@@ -14,7 +16,7 @@ class BuyOrder < ApplicationRecord
   scope :purchased, -> { where(purchased: 1) }
   scope :purchased_active, -> { active.where(market_hash_name: BuyOrder.purchased.distinct.pluck(:market_hash_name)) }
   scope :without_active, -> { left_outer_joins(:active_order).where(active_orders_buy_orders: {market_hash_name: nil}) }
-  scope :without_market_asset, -> {left_outer_joins(:market_asset).where(market_assets: { market_hash_name: nil  })}
+  scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {market_hash_name: nil}) }
   scope :with_in, ->(duration) { where('buy_orders.created_at > ?', duration.ago) }
 
   default_scope { where(success: 1) }
@@ -133,12 +135,16 @@ class BuyOrder < ApplicationRecord
       sum('price * quantity_remaining')
     end
 
+    def purchased_count
+      sum('quantity - quantity_remaining')
+    end
+
     def purchased_price
       sum('price * (quantity - quantity_remaining)')
     end
 
     def group_by_ppg(precision = 2)
-      joins(:market_asset).group("round(1.0 * price / market_assets.goo_value, #{precision})").order("round(1.0 * price / market_assets.goo_value, #{precision})")
+      joins(:market_asset).group("round(#{PPG_SQL}, #{precision})").order("round(#{PPG_SQL}, #{precision})")
     end
 
     def purchased_goo_value
