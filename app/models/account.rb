@@ -87,4 +87,8 @@ class Account < ApplicationRecord
   def load_trade_offers(history = false)
     Inventory.load_trade_offers(self, history)
   end
+
+  def eligibility_check
+    Market.eligibility_check(self)
+  end
 end

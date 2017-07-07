@@ -513,5 +513,31 @@ class Market
     def scan_my_histories
       LoadMyHistoriesJob.perform_later(0, 100)
     end
+
+    def eligibility_check(account)
+      option = {
+          method: :get,
+          url: 'https://steamcommunity.com/market/eligibilitycheck/',
+          headers: {
+              :params => {
+                  goto: 0,
+              },
+              :Accept => 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, image/apng, */*;q=0.8',
+              :'Accept-Encoding' => 'gzip, deflate',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => account.cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Pragma' => 'no-cache',
+              :'Upgrade-Insecure-Requests' => 1,
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      account.update_cookie(response)
+    end
   end
 end
