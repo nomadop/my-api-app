@@ -91,4 +91,9 @@ class Account < ApplicationRecord
   def eligibility_check
     Market.eligibility_check(self)
   end
+
+  def eligibility
+    cookie = get_cookie('webTradeEligibility')
+    JSON.parse(URI.decode(cookie))
+  end
 end
