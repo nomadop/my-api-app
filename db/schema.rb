@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170706060829) do
+ActiveRecord::Schema.define(version: 20170710050134) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -280,6 +280,7 @@ ActiveRecord::Schema.define(version: 20170706060829) do
     t.integer  "status",            default: 0
     t.integer  "your_offer_count"
     t.integer  "their_offer_count"
+    t.string   "status_desc"
     t.index ["trade_offer_id"], name: "index_trade_offers_on_trade_offer_id", unique: true, using: :btree
   end
 
