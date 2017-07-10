@@ -232,4 +232,9 @@ class BoosterCreator < ApplicationRecord
   def available_at
     DateTime.parse(available_at_time) unless available_at_time.blank?
   end
+
+  def unpack_all
+    booster_packs = Account::DEFAULT.inventory_assets.booster_pack.where(market_assets: { market_fee_app: appid })
+    booster_packs.each(&:unpack_booster)
+  end
 end
