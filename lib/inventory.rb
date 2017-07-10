@@ -315,9 +315,14 @@ class Inventory
         your_offer_count = offer_item_list.last.search('.trade_item').size
         status = TradeOffer.statuses[:pending]
         banner = trade_offer.search('.tradeoffer_items_banner').first
+        status_desc = banner.inner_text.strip
         if banner
-          banner_classes = banner.attr('class').split(' ')
-          status = banner_classes.include?('accepted') ? TradeOffer.statuses[:accepted] : TradeOffer.statuses[:declined]
+          status_class = banner.attr('class').from(24)
+          status = case status_class
+            when 'accepted' then TradeOffer.statuses[:accepted]
+            when 'in_escrow' then TradeOffer.statuses[:in_escrow]
+            else TradeOffer.statuses[:declined]
+          end
         end
         {
             account_id: account.id,
@@ -327,11 +332,12 @@ class Inventory
             your_offer_count: your_offer_count,
             their_offer_count: their_offer_count,
             status: status,
+            status_desc: status_desc,
         }
       end
       TradeOffer.import(trade_offers, on_duplicate_key_update: {
           conflict_target: :trade_offer_id,
-          columns: [:status],
+          columns: [:status, :status_desc],
       })
     end
   end

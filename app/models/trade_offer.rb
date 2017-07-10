@@ -1,7 +1,7 @@
 class TradeOffer < ApplicationRecord
   belongs_to :account
 
-  enum status: [:pending, :accepted, :declined]
+  enum status: [:pending, :accepted, :declined, :in_escrow]
 
   scope :gift_offer, -> { where(your_offer_count: 0) }
   scope :non_gift_offer, -> { where.not(your_offer_count: 0) }
