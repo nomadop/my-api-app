@@ -187,7 +187,7 @@ class MarketAsset < ApplicationRecord
     return if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
 
     order_price = [lowest_price, highest_buy_order_graph_price].max
-    quantity = BuyOrder.purchased.where(market_hash_name: market_hash_name).count
+    quantity = BuyOrder.purchased.with_in(3.days).where(market_hash_name: market_hash_name).count
     quantity = 1 if quantity < 1
     quantity = 3 if quantity > 3
     ApplicationJob.perform_unique(CreateBuyOrderJob, classid, order_price, quantity)
