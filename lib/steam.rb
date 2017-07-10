@@ -1,7 +1,5 @@
 class Steam
   class << self
-    attr_reader :default_account
-
     def request_app_list
       response = RestClient.get('http://api.steampowered.com/ISteamApps/GetAppList/v0002/')
       JSON.parse(response.body)
@@ -60,7 +58,7 @@ class Steam
       RestClient::Request.execute(option)
     end
 
-    def load_friends(account = default_account)
+    def load_friends(account = Account::DEFAULT)
       response = request_friends(account)
       doc = Nokogiri::HTML(response)
       friends = doc.search('.friendBlock').map do |div|
@@ -205,7 +203,7 @@ class Steam
       JSON.parse(response.body)
     end
 
-    def add_friend(user, account = default_account)
+    def add_friend(user, account = Account::DEFAULT)
       referer = user.account_id == user.steamid ?
           "http://steamcommunity.com/profiles/#{user.account_id}" :
           "http://steamcommunity.com/id/#{user.account_id}"
@@ -329,7 +327,7 @@ class Steam
       JSON.parse(response.body).symbolize_keys
     end
 
-    def load_account_history(account = @default_account, cursor = nil)
+    def load_account_history(account = Account::DEFAULT, cursor = nil)
       result = cursor.nil? ? request_account_history(account) : request_more_account_history(account, cursor)
       doc = Nokogiri::HTML(result[:html])
       rows = doc.search('.wallet_table_row')
@@ -364,7 +362,7 @@ class Steam
       result[:cursor]
     end
 
-    def get_notification_counts(account = @default_account)
+    def get_notification_counts(account = Account::DEFAULT)
       option = {
           method: :get,
           url: 'https://steamcommunity.com/actions/GetNotificationCounts',
@@ -387,6 +385,4 @@ class Steam
       RestClient::Request.execute(option)
     end
   end
-
-  @default_account = Account.find_by(account_id: '76561197967991989')
 end

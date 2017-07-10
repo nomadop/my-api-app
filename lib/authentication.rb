@@ -2,11 +2,14 @@ require 'execjs'
 
 class Authentication
   class << self
-    attr_reader :default_account
     delegate :account_name, :account_id, :cookie, :session_id, :refresh, to: :default_account
 
     alias_method :account, :account_name
     alias_method :steam_id, :account_id
+
+    def default_account
+      Account::DEFAULT
+    end
 
     def check_login(cookie)
       option = {
@@ -108,6 +111,4 @@ class Authentication
       end
     end
   end
-
-  @default_account = Account.find_by(account_id: '76561197967991989')
 end

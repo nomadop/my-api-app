@@ -1,7 +1,5 @@
 class Inventory
   class << self
-    attr_reader :default_account
-
     def reload(account)
       account_id = account.account_id
       cookie = account.cookie
@@ -34,7 +32,7 @@ class Inventory
       reload(account)
     end
 
-    def reload!(account = default_account)
+    def reload!(account = Account::DEFAULT)
       result = reload(account)
       assets = result['assets']
       assets.each { |asset| asset['account_id'] = account.id }
@@ -49,12 +47,12 @@ class Inventory
       })
     end
 
-    def auto_sell_and_grind(account = default_account)
+    def auto_sell_and_grind(account = Account::DEFAULT)
       account.reload_inventory
       account.inventory_assets.reload.non_gems.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later
     end
 
-    def auto_sell_and_grind_marketable(account = default_account)
+    def auto_sell_and_grind_marketable(account = Account::DEFAULT)
       account.reload_inventory
       account.inventory_assets.reload.non_gems.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
     end
@@ -82,7 +80,7 @@ class Inventory
       JSON.parse(regexp.match(response.body)[1])
     end
 
-    def load_booster_creators(account = default_account)
+    def load_booster_creators(account = Account::DEFAULT)
       boosters = request_booster_creators(account)
       booster_creators = boosters.map do |booster|
         booster['name'] = Utility.unescapeHTML(booster['name'])
@@ -126,7 +124,7 @@ class Inventory
           .sum('market_assets.goo_value')
     end
 
-    def gem_amount_info(account = default_account)
+    def gem_amount_info(account = Account::DEFAULT)
       query_result = account.inventory_assets.gems.joins(:description).group('inventory_descriptions.tradable').sum('CAST(amount AS int)')
       total = query_result[0] || 0
       tradable = query_result[1] || 0
@@ -137,7 +135,7 @@ class Inventory
       }
     end
 
-    def gem_amount_by_marketable_date(account = default_account)
+    def gem_amount_by_marketable_date(account = Account::DEFAULT)
       group_sql = <<-SQL.strip_heredoc
               to_char(
                 to_timestamp(
@@ -154,7 +152,7 @@ class Inventory
           .sum('amount::int')
     end
 
-    def create_booster(appid, series, account = default_account)
+    def create_booster(appid, series, account = Account::DEFAULT)
       cookie = account.cookie
       sessionid = account.session_id
 
@@ -190,7 +188,7 @@ class Inventory
       raise e
     end
 
-    def sell(assetid, price, amount, account = default_account)
+    def sell(assetid, price, amount, account = Account::DEFAULT)
       account_name = account.account_name
       cookie = account.cookie
       sessionid = account.session_id
@@ -226,7 +224,7 @@ class Inventory
       RestClient::Request.execute(option)
     end
 
-    def unpack_booster(assetid, account = default_account)
+    def unpack_booster(assetid, account = Account::DEFAULT)
       account_name = account.account_name
       account_id = account.account_id
       cookie = account.cookie
@@ -302,7 +300,7 @@ class Inventory
       RestClient::Request.execute(option)
     end
 
-    def load_trade_offers(account = @default_account, history = false)
+    def load_trade_offers(account = Account::DEFAULT, history = false)
       response = request_trade_offers(account, history)
       doc = Nokogiri::HTML(response.body)
       trade_offers = doc.search('.tradeoffer').map do |trade_offer|
@@ -337,6 +335,4 @@ class Inventory
       })
     end
   end
-
-  @default_account = Account.find_by(account_id: '76561197967991989')
 end
