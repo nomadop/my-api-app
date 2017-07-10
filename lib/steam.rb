@@ -363,6 +363,29 @@ class Steam
       AccountHistory.import(account_histories)
       result[:cursor]
     end
+
+    def get_notification_counts(account = @default_account)
+      option = {
+          method: :get,
+          url: 'https://steamcommunity.com/actions/GetNotificationCounts',
+          headers: {
+              :Accept => '*/*',
+              :'Accept-Encoding' => 'gzip, deflate, br',
+              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Cache-Control' => 'no-cache',
+              :'Connection' => 'keep-alive',
+              :'Cookie' => account.cookie,
+              :'Host' => 'steamcommunity.com',
+              :'Origin' => 'http://store.steampowered.com',
+              :'Pragma' => 'no-cache',
+              :'Referer' => 'http://store.steampowered.com/',
+              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          },
+          proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      RestClient::Request.execute(option)
+    end
   end
 
   @default_account = Account.find_by(account_id: '76561197967991989')
