@@ -19,7 +19,7 @@ class MarketAsset < ApplicationRecord
            class_name: 'InventoryDescription', foreign_key: :classid
   has_many :marketable_inventory_asset, through: :marketable_inventory_description, source: :assets
   has_many :order_histograms, primary_key: :item_nameid, foreign_key: :item_nameid
-  has_one :order_histogram, -> { order(created_at: :desc) },
+  has_one :order_histogram, -> { where(latest: true) },
           primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :buy_orders, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :active_buy_orders, -> { where(active: 1) },
@@ -64,7 +64,7 @@ class MarketAsset < ApplicationRecord
 
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
            :sell_order_count, :buy_order_count, :order_count, to: :order_histogram, allow_nil: true
-  delegate :booster_pack_info, to: :booster_creator, allow_nil: true
+  delegate :booster_pack_info, :open_price_per_goo, to: :booster_creator, allow_nil: true
 
   class << self
     def quick_buy(market_hash_name, ppg = DEFAULT_PPG_VALUE)
