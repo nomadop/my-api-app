@@ -4,6 +4,7 @@ class OrderHistogram < ApplicationRecord
 
   scope :with_my_listing, -> { find(joins(:my_listing).distinct.pluck(:id)) }
   scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }
+  scope :latest, -> { where(latest: true) }
 
   class << self
     def refresh_all
@@ -14,6 +15,14 @@ class OrderHistogram < ApplicationRecord
   end
 
   class OrderGraph < Struct.new(:price, :amount); end
+
+  def latest!
+    update(latest: true)
+  end
+
+  def overdue!
+    update(latest: false)
+  end
 
   def proportion
     1.0 * highest_buy_order / lowest_sell_order
