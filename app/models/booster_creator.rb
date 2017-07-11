@@ -116,11 +116,14 @@ class BoosterCreator < ApplicationRecord
     variance = prices.map { |price| (price - average) ** 2 }.sum / prices.size
     standard_variance = variance ** 0.5
     coefficient_of_variation = standard_variance / average
+    baseline = self.price * 0.2
+    prices_over_baseline = prices.select { |price| price > baseline }
     {
         total: average * 3,
         variance: variance,
         standard_variance: standard_variance,
         coefficient_of_variation: coefficient_of_variation,
+        over_baseline_rate: 1.0 * prices_over_baseline.size / prices.size
     }
   end
 
@@ -224,7 +227,7 @@ class BoosterCreator < ApplicationRecord
       account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
       next unless account_booster_creator&.available?
       assetid = create(account)
-      assetid && Inventory.unpack_booster(assetid, account)
+      assetid && account == Account::DEFAULT && Inventory.unpack_booster(assetid, account)
     end
   end
 
