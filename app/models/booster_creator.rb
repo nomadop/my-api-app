@@ -6,8 +6,8 @@ class BoosterCreator < ApplicationRecord
           class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :trading_cards, -> { where('type like ?', '%Trading Card').where.not('type like ?', '%Foil Trading Card') },
            class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
-  # has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
-  #          through: :trading_cards, source: :order_histogram
+  has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
+           through: :trading_cards, source: :order_histogram
   has_many :listing_trading_cards, class_name: 'MyListing',
            through: :trading_cards, source: :my_listings
   has_many :listing_booster_packs, class_name: 'MyListing',
@@ -65,7 +65,10 @@ class BoosterCreator < ApplicationRecord
     end
 
     def creatable(limit: 100, ppg: 0.6)
-      includes(booster_pack: :order_histogram)
+      includes(
+          :trading_card_order_histograms,
+          booster_pack: :order_histogram,
+      )
           .first_ppg_order(limit)
           .to_a.select { |booster_creator| booster_creator.createable?(ppg) }
     end
@@ -78,10 +81,6 @@ class BoosterCreator < ApplicationRecord
         end
       end
     end
-  end
-
-  def trading_card_order_histograms
-    trading_cards.includes(:order_histogram).map(&:order_histogram)
   end
 
   def trading_card_prices
@@ -234,7 +233,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def unpack_all
-    booster_packs = Account::DEFAULT.inventory_assets.booster_pack.where(market_assets: { market_fee_app: appid })
+    booster_packs = Account::DEFAULT.inventory_assets.booster_pack.where(market_assets: {market_fee_app: appid})
     booster_packs.each(&:unpack_booster)
   end
 end
