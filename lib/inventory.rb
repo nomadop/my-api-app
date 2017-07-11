@@ -30,6 +30,8 @@ class Inventory
     rescue RestClient::Forbidden => _
       account.refresh
       reload(account)
+    rescue RestClient::InternalServerError => _
+      reload(account)
     end
 
     def reload!(account = Account::DEFAULT)
@@ -315,7 +317,7 @@ class Inventory
         your_offer_count = offer_item_list.last.search('.trade_item').size
         status = TradeOffer.statuses[:pending]
         banner = trade_offer.search('.tradeoffer_items_banner').first
-        status_desc = banner.inner_text.strip
+        status_desc = banner && banner.inner_text.strip
         if banner
           status_class = banner.attr('class').from(24)
           status = case status_class
