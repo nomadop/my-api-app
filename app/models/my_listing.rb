@@ -10,6 +10,7 @@ class MyListing < ApplicationRecord
   scope :booster_pack, -> { where('my_listings.market_hash_name like ?', '%Booster Pack') }
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
+  scope :without_app, -> { left_outer_joins(:steam_app).where(steam_apps: { steam_appid: nil }) }
   scope :cancelable, -> do
     joins(:order_histogram).where <<~SQL
         (price > order_histograms.lowest_sell_order OR (
