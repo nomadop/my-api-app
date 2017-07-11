@@ -90,7 +90,19 @@ class Market
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
-      OrderHistogram.create(result.slice('highest_buy_order', 'lowest_sell_order', 'buy_order_graph', 'sell_order_graph').merge(item_nameid: item_nameid))
+
+      OrderHistogram.where(item_nameid: item_nameid).update_all(latest: false)
+      OrderHistogram.create(
+          result.slice(
+              'highest_buy_order',
+              'lowest_sell_order',
+              'buy_order_graph',
+              'sell_order_graph',
+          ).merge(
+              item_nameid: item_nameid,
+              latest: true,
+          )
+      )
     end
 
     def search(appid, start = 0, count = 10)
