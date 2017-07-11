@@ -6,11 +6,15 @@ class GetNotificationCountsJob < ApplicationJob
       @account = Account.find(account_id)
       Steam.get_notification_counts(@account)
     end
-    ApplicationJob.perform_unique(GetNotificationCountsJob, account_id)
+    GetNotificationCountsJob.perform_later(account_id)
   end
 
   rescue_from(RestClient::Unauthorized) do
     @account.refresh
+    retry_job
+  end
+
+  rescue_from(OpenSSL::SSL::SSLError) do
     retry_job
   end
 end
