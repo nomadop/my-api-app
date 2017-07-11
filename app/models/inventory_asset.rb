@@ -4,6 +4,7 @@ class InventoryAsset < ApplicationRecord
           primary_key: [:classid, :instanceid], foreign_key: [:classid, :instanceid]
 
   has_one :market_asset, primary_key: :classid, foreign_key: :classid
+  has_one :booster_creator, through: :market_asset
   has_one :order_histogram, through: :market_asset
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
 
@@ -25,7 +26,7 @@ class InventoryAsset < ApplicationRecord
            to: :description
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance,
            :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value, :booster_pack_info,
-           to: :market_asset, allow_nil: true
+           :open_price_per_goo, to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, :sell_order_count, to: :order_histogram
 
   class << self
@@ -193,7 +194,7 @@ class InventoryAsset < ApplicationRecord
     refresh_goo_value
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
-    return quick_sell if (ppg > 1 && marketable?) || (ppg >= 0.58 && booster_pack?)
+    return quick_sell if (ppg > 1 && marketable?) || (ppg >= 0.57 && booster_pack?)
     grind_into_goo if ppg <= 2 && !booster_pack?
   end
 
