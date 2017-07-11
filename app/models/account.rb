@@ -7,6 +7,7 @@ class Account < ApplicationRecord
   has_many :my_histories
   has_many :trade_offers
   has_many :emails, primary_key: :email_address, foreign_key: :to
+  has_many :account_histories
 
   def cookie
     reload
