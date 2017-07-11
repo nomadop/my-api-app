@@ -362,6 +362,11 @@ class Steam
       result[:cursor]
     end
 
+    def scan_account_history(account = Account::DEFAULT)
+      account.account_histories.destroy_all
+      LoadAccountHistoryJob.perform_later(account)
+    end
+
     def get_notification_counts(account = Account::DEFAULT)
       option = {
           method: :get,
