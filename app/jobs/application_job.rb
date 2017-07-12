@@ -14,4 +14,8 @@ class ApplicationJob < ActiveJob::Base
     sleep 5.minutes
     retry_job
   end
+
+  rescue_from(ActiveRecord::RecordNotFound) do
+    false
+  end
 end
