@@ -5,12 +5,17 @@ class OrderHistogram < ApplicationRecord
   scope :with_my_listing, -> { find(joins(:my_listing).distinct.pluck(:id)) }
   scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }
   scope :latest, -> { where(latest: true) }
+  scope :sack_of_gems, -> { joins(:market_asset).where(market_assets: { market_hash_name: '753-Sack of Gems' }) }
 
   class << self
     def refresh_all
       find_each do |order_histogram|
         LoadOrderHistogramJob.perform_later(order_histogram.item_nameid)
       end
+    end
+
+    def sog_graphs
+      sack_of_gems.take.refresh.sell_order_graphs
     end
   end
 
