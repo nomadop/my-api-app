@@ -363,7 +363,7 @@ class Steam
     end
 
     def scan_account_history(account = Account::DEFAULT)
-      account.account_histories.destroy_all
+      AccountHistory.truncate
       LoadAccountHistoryJob.perform_later(account)
     end
 
