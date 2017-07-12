@@ -6,6 +6,7 @@ class InventoryAsset < ApplicationRecord
   has_one :market_asset, primary_key: :classid, foreign_key: :classid
   has_one :booster_creator, through: :market_asset
   has_one :order_histogram, through: :market_asset
+  has_one :steam_app, through: :market_asset
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
 
   scope :booster_pack, -> { joins(:market_asset).where(market_assets: {type: 'Booster Pack'}) }
@@ -44,6 +45,10 @@ class InventoryAsset < ApplicationRecord
 
     def names
       joins(:market_asset).pluck('market_assets.market_hash_name')
+    end
+
+    def count_by_app
+      joins(:steam_app).group('steam_apps.name').count
     end
 
     def generate_trade_offer
