@@ -99,4 +99,8 @@ class Account < ApplicationRecord
     cookie = get_cookie('webTradeEligibility')
     JSON.parse(URI.decode(cookie))
   end
+
+  def pull_notification_counts
+    GetNotificationCountsJob.perform_later(id)
+  end
 end
