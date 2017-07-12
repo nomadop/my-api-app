@@ -17,7 +17,7 @@ class BuyOrder < ApplicationRecord
   scope :purchased_active, -> { active.where(market_hash_name: BuyOrder.purchased.distinct.pluck(:market_hash_name)) }
   scope :without_active, -> { left_outer_joins(:active_order).where(active_orders_buy_orders: {market_hash_name: nil}) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {market_hash_name: nil}) }
-  scope :with_in, ->(duration) { where('buy_orders.created_at > ?', duration.ago) }
+  scope :with_in, ->(duration, table_name = :buy_orders) { where("#{table_name}.created_at > ?", duration.ago) }
 
   default_scope { where(success: 1) }
 
@@ -155,6 +155,7 @@ class BuyOrder < ApplicationRecord
   def refresh_status
     status = Market.get_buy_order_status(buy_orderid)
     update(status)
+    rebuy_later if quantity > quantity_remaining
   end
 
   def refresh_status_later
@@ -210,6 +211,7 @@ class BuyOrder < ApplicationRecord
     market_asset.refresh_goo_value
     return rebuy if price.nil?
     return rebuy if 1.0 * price / goo_value > MarketAsset::DEFAULT_PPG_VALUE
+    return rebuy if quantity > BuyOrder.purchased.with_in(3.days).where(market_hash_name: market_hash_name).count
     return if price > highest_buy_order
     return if 1.0 * (highest_buy_order + 1) / goo_value > MarketAsset::DEFAULT_PPG_VALUE
 
