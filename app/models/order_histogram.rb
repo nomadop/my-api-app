@@ -14,8 +14,9 @@ class OrderHistogram < ApplicationRecord
       end
     end
 
-    def sog_graphs
-      sack_of_gems.take.refresh.sell_order_graphs
+    def sog_graphs(split = true)
+      order_histogram = sack_of_gems.take.refresh
+      split ? order_histogram.sell_order_graphs : order_histogram.sell_order_graph
     end
   end
 
