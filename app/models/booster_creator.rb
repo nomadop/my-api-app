@@ -14,11 +14,13 @@ class BoosterCreator < ApplicationRecord
            through: :booster_pack, source: :my_listings
   has_many :account_booster_creators, primary_key: :appid, foreign_key: :appid
   has_many :accounts, through: :account_booster_creators
+  has_many :inventory_assets, -> { where(account_id: 1) }, through: :booster_pack
 
   scope :without_app, -> { left_outer_joins(:steam_app).where({steam_apps: {steam_appid: nil}}) }
   scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
   scope :unavailable, -> { where(unavailable: true) }
   scope :available, -> { where(unavailable: false) }
+  scope :with_inventory_assets, -> { joins(:inventory_assets).distinct }
   scope :ppg_order, -> do
     joins(
         <<-SQL
@@ -95,15 +97,15 @@ class BoosterCreator < ApplicationRecord
     proportions = trading_card_order_histograms.map(&:proportion).compact
     return nil if proportions.blank?
 
-    proportions.sum / proportions.size
+    (proportions.sum / proportions.size).round(3)
   end
 
   def open_sell_order_count
-    1.0 * trading_card_order_histograms.map(&:sell_order_count).sum / trading_card_prices.count
+    (1.0 * trading_card_order_histograms.map(&:sell_order_count).sum / trading_card_prices.count).round(3)
   end
 
   def open_buy_order_count
-    1.0 * trading_card_order_histograms.map(&:buy_order_count).sum / trading_card_prices.count
+    (1.0 * trading_card_order_histograms.map(&:buy_order_count).sum / trading_card_prices.count).round(3)
   end
 
   def open_order_count
@@ -117,13 +119,15 @@ class BoosterCreator < ApplicationRecord
     standard_variance = variance ** 0.5
     coefficient_of_variation = standard_variance / average
     baseline = self.price * 0.2
-    prices_over_baseline = prices.select { |price| price > baseline }
+    prices_over_baseline = prices.select { |price| price >= baseline }
+    prices_over_average = prices.select { |price| price >= average }
     {
-        total: average * 3,
-        variance: variance,
-        standard_variance: standard_variance,
-        coefficient_of_variation: coefficient_of_variation,
-        over_baseline_rate: 1.0 * prices_over_baseline.size / prices.size
+        total: (average * 3).round(3),
+        variance: variance.round(3),
+        standard_variance: standard_variance.round(3),
+        coefficient_of_variation: coefficient_of_variation.round(3),
+        over_baseline_rate: (1.0 * prices_over_baseline.size / prices.size).round(3),
+        over_average_rate: (1.0 * prices_over_average.size / prices.size).round(3),
     }
   end
 
@@ -131,14 +135,14 @@ class BoosterCreator < ApplicationRecord
     prices = include_vat ? trading_card_prices : trading_card_prices_exclude_vat
     return 0 if prices.blank?
 
-    1.0 * prices.sum / prices.size * 3 / price
+    (1.0 * prices.sum / prices.size * 3 / price).round(3)
   end
 
   def price_per_goo(include_vat = false)
     sell_price = include_vat ? lowest_sell_order : lowest_sell_order_exclude_vat
     return 0 if sell_price.nil?
 
-    1.0 * sell_price / price
+    (1.0 * sell_price / price).round(3)
   end
 
   def createable?(ppg = 0.6)
@@ -166,7 +170,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def sell_proportion
-    booster_pack.order_histogram.proportion
+    booster_pack.order_histogram.proportion.round(3)
   end
 
   def booster_pack_info
@@ -198,7 +202,7 @@ class BoosterCreator < ApplicationRecord
     self.trading_card_type = "#{name} Trading Card"
   end
 
-  def create(account = Account.find_by(account_id: '76561197967991989'))
+  def create(account = Account::DEFAULT)
     response = Inventory.create_booster(appid, series, account)
     raise 'failed to create booster' unless response.code == 200
     result = JSON.parse(response.body)
@@ -236,7 +240,10 @@ class BoosterCreator < ApplicationRecord
   end
 
   def unpack_all
-    booster_packs = Account::DEFAULT.inventory_assets.booster_pack.where(market_assets: {market_fee_app: appid})
-    booster_packs.each(&:unpack_booster)
+    inventory_assets.each(&:unpack_booster)
+  end
+
+  def sell_all
+    inventory_assets.each(&:auto_sell_and_grind)
   end
 end

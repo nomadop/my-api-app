@@ -26,6 +26,8 @@ class MarketAsset < ApplicationRecord
            class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
   has_one :booster_creator, primary_key: :market_fee_app, foreign_key: :appid
+  has_many :inventory_assets, -> { where(account_id: 1) },
+           primary_key: :classid, foreign_key: :classid
 
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
