@@ -6,6 +6,12 @@ class TradeOffer < ApplicationRecord
   scope :gift_offer, -> { where(your_offer_count: 0) }
   scope :non_gift_offer, -> { where.not(your_offer_count: 0) }
 
+  class << self
+    def accept
+      find_each(&:accept)
+    end
+  end
+
   def gift_offer?
     your_offer_count == 0
   end
