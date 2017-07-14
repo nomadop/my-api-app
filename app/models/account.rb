@@ -103,4 +103,12 @@ class Account < ApplicationRecord
   def pull_notification_counts
     GetNotificationCountsJob.perform_later(id)
   end
+
+  def send_items_to_default
+    inventory_assets.non_gems.send_offer_to(Account::DEFAULT)
+  end
+
+  def accept_gift_offers
+    trade_offers.gift_offer.pending.accept
+  end
 end
