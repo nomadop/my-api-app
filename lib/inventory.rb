@@ -43,10 +43,21 @@ class Inventory
         InventoryAsset.import(assets)
       end
       descriptions = result['descriptions']
-      InventoryDescription.import(descriptions, on_duplicate_key_update: {
-          conflict_target: [:classid, :instanceid],
-          columns: [:actions, :marketable, :owner_actions, :tradable, :owner_descriptions],
-      })
+      InventoryDescription.transaction do
+        descriptions.each do |description|
+          model = InventoryDescription.find_or_initialize_by(
+              classid: description['classid'],
+              instanceid: description['instanceid']
+          )
+          model.update(description)
+        end
+      end
+    end
+
+    def reload_all!
+      InventoryAsset.truncate
+      InventoryDescription.truncate
+      Account.find_each(&Inventory.method(:reload!))
     end
 
     def auto_sell_and_grind(account = Account::DEFAULT)
@@ -151,6 +162,7 @@ class Inventory
       account.inventory_assets.gems
           .joins(:description)
           .group(group_sql)
+          .order(group_sql)
           .sum('amount::int')
     end
 
@@ -321,9 +333,12 @@ class Inventory
         if banner
           status_class = banner.attr('class').from(24)
           status = case status_class
-            when 'accepted' then TradeOffer.statuses[:accepted]
-            when 'in_escrow' then TradeOffer.statuses[:in_escrow]
-            else TradeOffer.statuses[:declined]
+            when 'accepted' then
+              TradeOffer.statuses[:accepted]
+            when 'in_escrow' then
+              TradeOffer.statuses[:in_escrow]
+            else
+              TradeOffer.statuses[:declined]
           end
         end
         {
