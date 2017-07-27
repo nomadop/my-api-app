@@ -16,6 +16,6 @@ class SteamApp < ApplicationRecord
   end
 
   def scan_market
-    Market.scan(steam_appid) if with_trading_cards?
+    Market.scan(steam_appid)
   end
 end
