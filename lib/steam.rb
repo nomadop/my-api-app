@@ -32,6 +32,10 @@ class Steam
       SteamApp.create(detail_slice) if SteamApp.where(steam_appid: detail['steam_appid']).empty?
     end
 
+    def create_or_scan_app(appid)
+      create_app(appid) || Market.scan(appid)
+    end
+
     def request_friends(account)
       cookie = account.cookie
       account_name = account.account_name
