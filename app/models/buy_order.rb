@@ -155,7 +155,7 @@ class BuyOrder < ApplicationRecord
   def refresh_status
     status = Market.get_buy_order_status(buy_orderid)
     update(status)
-    rebuy_later if quantity > quantity_remaining
+    rebuy_later if (quantity || 1) > (quantity_remaining || 0)
   end
 
   def refresh_status_later
