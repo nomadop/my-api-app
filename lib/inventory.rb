@@ -39,7 +39,7 @@ class Inventory
       assets = result['assets']
       assets.each { |asset| asset['account_id'] = account.id }
       InventoryAsset.transaction do
-        account.inventory_assets.destroy_all
+        account.inventory_assets.delete_all(:delete_all)
         InventoryAsset.import(assets)
       end
       descriptions = result['descriptions']
@@ -109,10 +109,8 @@ class Inventory
         }
       end
       AccountBoosterCreator.transaction do
-        account_booster_creators.each do |account_booster_creator|
-          model = AccountBoosterCreator.find_or_initialize_by(appid: account_booster_creator[:appid], account_id: account.id)
-          model.update(account_booster_creator)
-        end
+        account.account_booster_creators.delete_all(:delete_all)
+        AccountBoosterCreator.import(account_booster_creators)
       end
     end
 
