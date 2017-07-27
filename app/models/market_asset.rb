@@ -5,7 +5,7 @@ class MarketAsset < ApplicationRecord
   self.inheritance_column = nil
   self.primary_key = :classid
 
-  DEFAULT_PPG_VALUE = 0.48
+  DEFAULT_PPG_VALUE = 0.4
 
   has_one :steam_app, primary_key: :market_fee_app, foreign_key: :steam_appid
   has_many :my_listings, primary_key: :market_hash_name, foreign_key: :market_hash_name
@@ -184,16 +184,17 @@ class MarketAsset < ApplicationRecord
     Market.load_order_histogram(item_nameid)
     refresh_goo_value
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
-    lowest_price = (goo_value * 0.3).ceil
+    lowest_price = [(goo_value * 0.1).ceil, 3].max
     highest_price = (goo_value * DEFAULT_PPG_VALUE).floor
     highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
     highest_buy_order_graph_price = highest_price if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
     return if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
 
     order_price = [lowest_price, highest_buy_order_graph_price].max
-    quantity = BuyOrder.purchased.with_in(3.days).where(market_hash_name: market_hash_name).count
-    quantity = 1 if quantity < 1
-    quantity = 3 if quantity > 3
+    # quantity = BuyOrder.purchased.with_in(3.days).where(market_hash_name: market_hash_name).count
+    # quantity = 1 if quantity < 1
+    # quantity = 3 if quantity > 3
+    quantity = 1
     ApplicationJob.perform_unique(CreateBuyOrderJob, classid, order_price, quantity)
   end
 
