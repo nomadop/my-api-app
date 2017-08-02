@@ -30,5 +30,11 @@ class Utility
         sleep(0.1)
       end
     end
+
+    def tor_newnym
+      binary = File.read('/Users/twer/Library/Application Support/TorBrowser-Data/Tor/control_auth_cookie')
+      hex = binary.unpack('H*').first
+      system("expect -f /Users/twer/tor-newnym.exp #{hex}")
+    end
   end
 end
