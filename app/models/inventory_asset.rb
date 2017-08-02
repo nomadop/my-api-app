@@ -17,8 +17,8 @@ class InventoryAsset < ApplicationRecord
   scope :untradable, -> { joins(:description).where(inventory_descriptions: {tradable: 0}) }
   scope :gems, -> { where(classid: 667924416) }
   scope :non_gems, -> { where.not(classid: 667924416) }
-  scope :sacks_of_gem, -> { joins(:market_asset).where(market_assets: {market_fee_app: 753}) }
-  scope :non_sacks_of_gem, -> { joins(:market_asset).where.not(market_assets: {market_fee_app: 753}) }
+  scope :sacks_of_gem, -> { where(classid: 667933237) }
+  scope :non_sacks_of_gem, -> { where.not(classid: 667933237) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {classid: nil}) }
   scope :with_order_histogram, -> { joins(:order_histogram).distinct.includes(:order_histogram) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
@@ -199,7 +199,7 @@ class InventoryAsset < ApplicationRecord
     refresh_goo_value
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
-    return quick_sell if (ppg > 1 && marketable?) || (ppg >= 0.57 && booster_pack?)
+    return quick_sell if (ppg > 1 && marketable?) || (ppg >= 0.56 && booster_pack?)
     grind_into_goo if ppg <= 2 && !booster_pack?
   end
 
