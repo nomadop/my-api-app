@@ -86,7 +86,7 @@ class Market
                   item_nameid: item_nameid,
               }
           },
-          proxy: 'http://localhost:3213/'
+          proxy: 'socks5://localhost:9150/'
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
@@ -103,6 +103,9 @@ class Market
               latest: true,
           )
       )
+    rescue RestClient::TooManyRequests => e
+      ApplicationJob.perform_unique(TorNewnymJob, wait: 1.minute)
+      raise e
     end
 
     def search(appid, start = 0, count = 10)
