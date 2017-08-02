@@ -6,6 +6,8 @@ class BoosterCreator < ApplicationRecord
           class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :trading_cards, -> { where('type like ?', '%Trading Card').where.not('type like ?', '%Foil Trading Card') },
            class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
+  has_many :foil_trading_cards, -> { where('type like ?', '%Foil Trading Card') },
+           class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
            through: :trading_cards, source: :order_histogram
   has_many :listing_trading_cards, class_name: 'MyListing',
