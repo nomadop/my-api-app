@@ -4,6 +4,12 @@ class AccountBoosterCreator < ApplicationRecord
 
   scope :unavailable, -> { where(unavailable: true) }
 
+  class << self
+    def times
+      find_each.map(&:available_time)
+    end
+  end
+
   def available?
     return true if available_at_time.nil?
     Time.now > available_at
@@ -15,6 +21,7 @@ class AccountBoosterCreator < ApplicationRecord
 
   def available_time
     time_str = available_at_time.gsub('下午', 'PM').gsub('上午', 'AM')
-    DateTime.strptime(time_str, '%m月%d日%P%I:%M').to_time
+    time = DateTime.strptime(time_str, '%m月%d日%P%I:%M').to_time
+    ActiveSupport::TimeZone['Asia/Shanghai'].parse(time.to_s).to_time
   end
 end
