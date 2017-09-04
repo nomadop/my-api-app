@@ -69,7 +69,7 @@ module ActAsBoosterPack
   end
 
   def sell_proportion
-    order_histogram.proportion
+    order_histogram&.proportion || 0
   end
 
   def booster_pack_info_without_price
