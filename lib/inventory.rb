@@ -195,9 +195,9 @@ class Inventory
           proxy: 'http://127.0.0.1:8888',
       }
       RestClient::Request.execute(option)
-    rescue RestClient::Forbidden => e
+    rescue RestClient::Forbidden
       account.refresh
-      raise e
+      create_booster(appid, series, account)
     end
 
     def sell(assetid, price, amount, account = Account::DEFAULT)
