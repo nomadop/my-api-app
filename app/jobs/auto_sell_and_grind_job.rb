@@ -4,8 +4,8 @@ class AutoSellAndGrindJob < ApplicationJob
   EXIST_MESSAGE = '您已上架该物品并正等待确认。请确认或撤下现有的上架物品。'
 
   def perform(id)
-    asset = InventoryAsset.find(id)
-    asset.auto_sell_and_grind
+    @asset = InventoryAsset.find(id)
+    @asset.auto_sell_and_grind
   end
 
   rescue_from(RestClient::BadGateway) do |e|
@@ -14,6 +14,7 @@ class AutoSellAndGrindJob < ApplicationJob
       puts EXIST_MESSAGE
       false
     else
+      @asset.account.refresh
       retry_job
     end
   end
