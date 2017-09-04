@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170726004440) do
+ActiveRecord::Schema.define(version: 20170819144453) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -184,6 +184,8 @@ ActiveRecord::Schema.define(version: 20170726004440) do
     t.jsonb    "item_expiration"
     t.string   "unowned_id"
     t.string   "unowned_contextid"
+    t.string   "rollback_new_id"
+    t.string   "rollback_new_contextid"
     t.index ["classid"], name: "index_market_assets_on_classid", unique: true, using: :btree
     t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
     t.index ["market_hash_name"], name: "index_market_assets_on_market_hash_name", using: :btree
