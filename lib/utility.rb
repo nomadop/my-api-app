@@ -36,5 +36,11 @@ class Utility
       hex = binary.unpack('H*').first
       system("expect -f /Users/twer/tor-newnym.exp #{hex}")
     end
+
+    def parse_cookies(cookie_array, domain = 'http://store.steampowered.com')
+      uri = URI(domain)
+      parse_cookie = Proc.new { |c| HTTP::Cookie.parse(c, uri) }
+      cookie_array.flat_map(&parse_cookie)
+    end
   end
 end

@@ -17,9 +17,7 @@ class Account < ApplicationRecord
   def cookie_jar
     return HTTP::CookieJar.new if cookie.nil?
 
-    uri = URI('http://store.steampowered.com')
-    parse_cookie = Proc.new {|c| HTTP::Cookie.parse(c, uri)}
-    cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new, &:add)
+    Utility.parse_cookies(cookie.split(';')).reduce(HTTP::CookieJar.new, &:add)
   end
 
   def get_cookie(name)
@@ -36,9 +34,7 @@ class Account < ApplicationRecord
   end
 
   def remove_cookie(name)
-    uri = URI('http://store.steampowered.com')
-    parse_cookie = Proc.new {|c| HTTP::Cookie.parse(c, uri)}
-    jar = cookie.split(';').flat_map(&parse_cookie).reduce(HTTP::CookieJar.new) do |jar, cookie|
+    jar = Utility.parse_cookies(cookie.split(';')).reduce(HTTP::CookieJar.new) do |jar, cookie|
       jar.add(cookie) unless cookie.name == name
       jar
     end
