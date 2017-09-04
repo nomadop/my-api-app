@@ -88,6 +88,20 @@ class MyListing < ApplicationRecord
       sleep(30)
       Inventory.auto_sell_and_grind
     end
+
+    def cancel_pending_listings
+      doc = Nokogiri::HTML(Market.request_market)
+      listing_sections = doc.search('.my_listing_section.market_content_block.market_home_listing_table')
+      pending_section = listing_sections.find { |section| section.search('.my_market_header_active').inner_text == '我的等待确认的上架物品' }
+      return if pending_section.nil?
+      listing_rows = pending_section.search('.market_listing_row.market_recent_listing_row')
+      return if listing_rows.blank?
+
+      listing_rows.each do |row|
+        listing_id = row.attr(:id).match(/\d+/)[0]
+        ApplicationJob.perform_unique(CancelMyListingJob, listing_id)
+      end
+    end
   end
 
   def cancelable?
@@ -115,7 +129,7 @@ class MyListing < ApplicationRecord
   end
 
   def cancel_later
-    ApplicationJob.perform_unique(CancelMyListingJob, id)
+    ApplicationJob.perform_unique(CancelMyListingJob, listingid)
   end
 
   def market_asset_type
