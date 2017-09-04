@@ -358,7 +358,7 @@ class Market
     end
 
     def request_market
-      cookie = Authentication.cookie
+      cookie = Account::DEFAULT.cookie
 
       option = {
           method: :get,
@@ -378,6 +378,9 @@ class Market
       }
       response = RestClient::Request.execute(option)
       response.body
+    rescue RestClient::SSLCertificateNotVerified
+      Account::DEFAULT.eligibility_check
+      request_market
     end
 
     def send_trade(account, profile, steamid, offer, message = '')
