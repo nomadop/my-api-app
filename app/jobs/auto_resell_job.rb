@@ -7,6 +7,7 @@ class AutoResellJob < ApplicationJob
       return
     end
 
+    MyListing.cancel_pending_listings
     MyListing.auto_resell
     AutoResellJob.set(wait: 1.hour).perform_later()
   end
