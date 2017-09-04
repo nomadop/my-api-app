@@ -148,19 +148,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def createable?(ppg = 0.6)
-    (booster_pack && listing_booster_pack_count < (order_count / 50.0).ceil &&
-        (price_per_goo > ppg &&
-            (sell_order_count > 20 || sell_proportion > 0.9 ||
-                (buy_order_count > 20 && sell_proportion > 0.3)
-            )
-        )
-    ) || (open_price_per_goo > ppg &&
-        listing_trading_card_count < (open_order_count / 20.0).ceil &&
-        open_price[:coefficient_of_variation] < 0.3 &&
-        (open_sell_order_count > 20 || trading_card_prices_proportion > 0.9 ||
-            (open_buy_order_count > 20 && trading_card_prices_proportion > 0.7)
-        )
-    )
+    (booster_pack && price_per_goo > ppg) || open_price_per_goo > ppg
   end
 
   def listing_trading_card_count
