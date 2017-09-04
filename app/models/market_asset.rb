@@ -95,6 +95,11 @@ class MarketAsset < ApplicationRecord
       Authentication.refresh
       sell_ppg_order.first(limit).each {|ma| ma.quick_buy_later(ppg)}
     end
+
+    def quick_order_by_ppg(limit, ppg = DEFAULT_PPG_VALUE)
+      Authentication.refresh
+      sell_ppg_order.first(limit).each {|ma| ma.quick_order_later(ppg)}
+    end
   end
 
   def load_order_histogram
