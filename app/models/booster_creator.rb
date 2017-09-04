@@ -248,4 +248,12 @@ class BoosterCreator < ApplicationRecord
   def sell_all
     inventory_assets.each(&:auto_sell_and_grind)
   end
+
+  def sell_all_assets
+    Account::DEFAULT
+        .inventory_assets
+        .includes(:market_asset)
+        .where(market_assets: {market_fee_app: appid})
+        .auto_sell_and_grind_later
+  end
 end
