@@ -50,3 +50,4 @@ gem 'composite_primary_keys', '~> 9.0.4'
 gem 'activerecord-import'
 gem 'execjs', require: false
 gem 'socksify', require: false
+gem 'webpacker', '~> 3.0'
