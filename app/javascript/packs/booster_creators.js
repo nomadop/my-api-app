@@ -6,8 +6,9 @@ import Vue from 'vue/dist/vue.esm'
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
-    el: '#creatable',
+    el: '#booster-creator',
     data: {
+      base_ppg: 0.57,
       booster_creators: [],
       fetching: false,
     },

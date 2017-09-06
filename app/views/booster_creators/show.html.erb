@@ -1,37 +1,52 @@
 <%= javascript_pack_tag 'booster_creators' %>
 
-<div id="creatable">
-    <p>
-      <button class="btn btn-primary" @click="fetch_creatable" :disabled="fetching">{{fetching ? 'fetching' : 'fetch'}}</button>
-    </p>
-    <table class="table">
-        <tr>
-            <th>appid</th>
-            <th>name</th>
-            <th>price</th>
-            <th>ppg</th>
-            <th>open ppg</th>
-            <th>open cov</th>
-            <th>open obr</th>
-            <th>listing count</th>
-            <th>order count</th>
-            <th>proportion</th>
-            <th>open order count</th>
-            <th>open proportion</th>
-        </tr>
-        <tr v-for="booster_creator in booster_creators">
-            <td>{{booster_creator.appid}}</td>
-            <td><a :href="booster_creator.listing_url">{{booster_creator.name}}</a></td>
-            <td>{{booster_creator.price}}</td>
-            <td>{{booster_creator.price_per_goo}}</td>
-            <td>{{booster_creator.open_price_per_goo}}</td>
-            <td>{{booster_creator.open_price.coefficient_of_variation}}</td>
-            <td>{{booster_creator.open_price.over_baseline_rate}}</td>
-            <td>{{booster_creator.listing_trading_card_count}} / {{booster_creator.listing_booster_pack_count}}</td>
-            <td>{{booster_creator.sell_order_count}} / {{booster_creator.buy_order_count}}</td>
-            <td>{{booster_creator.sell_proportion}}</td>
-            <td>{{booster_creator.open_sell_order_count}} / {{booster_creator.open_buy_order_count}}</td>
-            <td>{{booster_creator.trading_card_prices_proportion}}</td>
-        </tr>
-    </table>
+<div id="booster-creator">
+  <p>
+    <button class="btn btn-primary" @click="fetch_creatable" :disabled="fetching">{{fetching ? 'fetching' :
+      'fetch'}}
+    </button>
+  </p>
+  <table class="table">
+    <tr>
+      <th>appid</th>
+      <th>name</th>
+      <th>price</th>
+      <th>ppg</th>
+      <th>open ppg</th>
+      <th>open cov</th>
+      <th>open obr</th>
+      <th>listing count</th>
+      <th>order count</th>
+      <th>proportion</th>
+      <th>open order count</th>
+      <th>open proportion</th>
+    </tr>
+    <tr v-for="booster_creator in booster_creators">
+      <td>{{booster_creator.appid}}</td>
+      <td><a :href="booster_creator.listing_url">{{booster_creator.name}}</a></td>
+      <td>{{booster_creator.price}}</td>
+      <td :class="{'text-primary': booster_creator.price_per_goo > base_ppg}">
+        {{booster_creator.price_per_goo}}
+      </td>
+      <td :class="{'text-primary': booster_creator.open_price_per_goo > base_ppg}">
+        {{booster_creator.open_price_per_goo}}
+      </td>
+      <td>{{booster_creator.open_price.coefficient_of_variation}}</td>
+      <td :class="{'text-primary': booster_creator.open_price.over_baseline_rate >= 0.5}">
+        {{booster_creator.open_price.over_baseline_rate}}
+      </td>
+      <td>
+              <span :class="{'text-danger': booster_creator.listing_trading_card_count >= 5}">
+                {{booster_creator.listing_trading_card_count}}
+              </span>/
+        <span :class="{'text-danger': booster_creator.listing_booster_pack_count >= 1}">
+                {{booster_creator.listing_booster_pack_count}}
+              </span>
+      </td>
+      <td>{{booster_creator.sell_order_count}} / {{booster_creator.buy_order_count}}</td>
+      <td>{{booster_creator.sell_proportion}}</td>
+      <td>{{booster_creator.open_sell_order_count}} / {{booster_creator.open_buy_order_count}}</td>
+      <td>{{booster_creator.trading_card_prices_proportion}}</td>
+    </tr>
+  </table>
 </div>
