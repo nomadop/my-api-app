@@ -3,6 +3,7 @@
  */
 
 import Vue from 'vue/dist/vue.esm'
+import notie from 'notie';
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
@@ -20,6 +21,19 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(booster_creators => app.booster_creators = booster_creators)
             .then(() => app.fetching = false);
       },
+      create_and_sell: booster_creator => notie.confirm({
+        text: `confirm to create ${booster_creator.name}?`,
+        submitCallback: () => fetch('/booster_creators/create_and_sell', {
+          method: 'POST',
+          body: JSON.stringify({ appid: booster_creator.appid }),
+        }).then(() => notie.alert({
+          type: 'success',
+          text: 'success',
+        })).catch(error => notie.alert({
+          type: 'error',
+          text: error,
+        }))
+      }),
     }
   });
 });

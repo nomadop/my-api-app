@@ -42,7 +42,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
-           :sell_order_count, :buy_order_count, :order_count, to: :booster_pack
+           :sell_order_count, :buy_order_count, :order_count, :listing_url, to: :booster_pack
 
   class << self
     def refresh_price
@@ -170,7 +170,7 @@ class BoosterCreator < ApplicationRecord
         methods: [
             :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
             :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :listing_booster_pack_count,
-            :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion,
+            :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion, :listing_url,
         ]
     )
   end
