@@ -1,5 +1,5 @@
 <template>
-    <div id="booster-creator">
+    <div id="booster-creators">
         <p>
             <span class="btn btn-primary"
                   @click="fetch_creatable"
@@ -82,9 +82,13 @@
   import ColorText from '../components/color_text.vue';
 
   function fetch_creatable() {
+    if (this.fetching) {
+      return;
+    }
+
     this.fetching = true;
     NProgress.start();
-    return fetch('/booster_creators/creatable')
+    return fetch(`/booster_creators/creatable?base_ppg=${this.base_ppg}`)
         .then(response => response.json())
         .then(booster_creators => this.booster_creators = booster_creators)
         .then(() => {
@@ -115,8 +119,8 @@
   }
 
   export default {
+    props: ['base_ppg'],
     data: () => ({
-      base_ppg: 0.57,
       booster_creators: [],
       fetching: false,
     }),
@@ -129,3 +133,9 @@
     }
   };
 </script>
+
+<style scoped>
+    #booster-creators {
+        padding: 2em 0;
+    }
+</style>

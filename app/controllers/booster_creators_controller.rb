@@ -5,7 +5,8 @@ class BoosterCreatorsController < ActionController::Base
 
   def creatable
     MyListing.reload!
-    render json: BoosterCreator.creatable(ppg: 0.57).map(&:booster_pack_info)
+    ppg = params[:base_ppg] || 0.57
+    render json: BoosterCreator.creatable(ppg: ppg.to_f).map(&:booster_pack_info)
   end
 
   def show
