@@ -5,6 +5,8 @@
 import Vue from 'vue/dist/vue.esm'
 import notie from 'notie';
 
+import ColorText from '../components/color_text.vue';
+
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     el: '#booster-creator',
@@ -25,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         text: `confirm to create ${booster_creator.name}?`,
         submitCallback: () => fetch('/booster_creators/create_and_sell', {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appid: booster_creator.appid }),
         }).then(() => notie.alert({
           type: 'success',
@@ -34,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
           text: error,
         }))
       }),
+    },
+    components: {
+      ColorText,
     }
   });
 });
