@@ -7,12 +7,14 @@ class CancelMyListingJob < ApplicationJob
 
   rescue_from(RestClient::BadGateway) do |e|
     headers = e.http_headers
-    cookies = Utility.parse_cookies(headers[:set_cookie])
-    if cookies.any? { |cookie| cookie.value == 'delete' }
-      Account::DEFAULT.refresh
-      retry_job
-    else
-      false
+    set_cookie = headers[:set_cookie]
+    unless set_cookie.nil?
+      cookies = Utility.parse_cookies(set_cookie)
+      if cookies.any? { |cookie| cookie.value == 'deleted' }
+        Account::DEFAULT.refresh
+        retry_job
+      end
     end
+    false
   end
 end
