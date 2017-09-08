@@ -3,7 +3,8 @@
  */
 
 import Vue from 'vue/dist/vue.esm'
-import notie from 'notie';
+import Notie from 'notie';
+import NProgress from 'nprogress';
 
 import ColorText from '../components/color_text.vue';
 
@@ -18,21 +19,29 @@ document.addEventListener('DOMContentLoaded', () => {
     methods: {
       fetch_creatable: () => {
         app.fetching = true;
+        NProgress.start();
         return fetch('/booster_creators/creatable')
             .then(response => response.json())
             .then(booster_creators => app.booster_creators = booster_creators)
-            .then(() => app.fetching = false);
+            .then(() => {
+              app.fetching = false;
+              NProgress.done();
+            })
+            .catch(error => Notie.alert({
+              type: 'error',
+              text: error,
+            }));
       },
-      create_and_sell: booster_creator => notie.confirm({
+      create_and_sell: booster_creator => Notie.confirm({
         text: `confirm to create ${booster_creator.name}?`,
         submitCallback: () => fetch('/booster_creators/create_and_sell', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ appid: booster_creator.appid }),
-        }).then(() => notie.alert({
+        }).then(() => Notie.alert({
           type: 'success',
           text: 'success',
-        })).catch(error => notie.alert({
+        })).catch(error => Notie.alert({
           type: 'error',
           text: error,
         }))
