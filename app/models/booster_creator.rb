@@ -10,6 +10,8 @@ class BoosterCreator < ApplicationRecord
            class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
            through: :trading_cards, source: :order_histogram
+  has_many :foil_trading_card_order_histograms, class_name: 'OrderHistogram',
+           through: :foil_trading_cards, source: :order_histogram
   has_many :listing_trading_cards, class_name: 'MyListing',
            through: :trading_cards, source: :my_listings
   has_many :listing_booster_packs, class_name: 'MyListing',
@@ -70,7 +72,11 @@ class BoosterCreator < ApplicationRecord
 
     def creatable(limit: 100, ppg: 0.6)
       includes(
+          :account_booster_creators,
           :trading_card_order_histograms,
+          :foil_trading_card_order_histograms,
+          :listing_trading_cards,
+          :listing_booster_packs,
           booster_pack: :order_histogram,
       )
           .first_ppg_order(limit)
@@ -91,8 +97,16 @@ class BoosterCreator < ApplicationRecord
     trading_card_order_histograms.pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
   end
 
+  def foil_trading_card_prices
+    foil_trading_card_order_histograms.pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
+  end
+
   def trading_card_prices_exclude_vat
     trading_card_prices.map(&Utility.method(:exclude_val))
+  end
+
+  def foil_trading_card_prices_exclude_vat
+    foil_trading_card_prices.map(&Utility.method(:exclude_val))
   end
 
   def trading_card_prices_proportion
@@ -116,7 +130,9 @@ class BoosterCreator < ApplicationRecord
 
   def open_price(include_vat = false)
     prices = include_vat ? trading_card_prices : trading_card_prices_exclude_vat
+    foil_prices = include_vat ? foil_trading_card_prices : foil_trading_card_prices_exclude_vat
     average = 1.0 * prices.sum / prices.size
+    foil_average = 1.0 * foil_prices.sum / foil_prices.size
     variance = prices.map { |price| (price - average) ** 2 }.sum / prices.size
     standard_variance = variance ** 0.5
     coefficient_of_variation = standard_variance / average
@@ -130,6 +146,7 @@ class BoosterCreator < ApplicationRecord
         coefficient_of_variation: coefficient_of_variation.round(3),
         over_baseline_rate: (1.0 * prices_over_baseline.size / prices.size).round(3),
         over_average_rate: (1.0 * prices_over_average.size / prices.size).round(3),
+        foil_average: foil_average.round(3),
     }
   end
 
@@ -152,25 +169,34 @@ class BoosterCreator < ApplicationRecord
   end
 
   def listing_trading_card_count
-    listing_trading_cards.count
+    listing_trading_cards.size
   end
 
   def listing_booster_pack_count
-    listing_booster_packs.count
+    listing_booster_packs.size
   end
 
   def sell_proportion
     booster_pack.order_histogram.proportion.round(3)
   end
 
+  def available_times
+    account_booster_creators.map(&:available_time)
+  end
+
+  def min_available_time
+    available_times.compact.min
+  end
+
   def booster_pack_info
-    return nil unless trading_cards.exists?
+    return nil if trading_card_order_histograms.blank?
     as_json(
         only: [:appid, :name, :price],
         methods: [
             :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
             :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :listing_booster_pack_count,
             :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion, :listing_url,
+            :available_times, :min_available_time,
         ]
     )
   end
