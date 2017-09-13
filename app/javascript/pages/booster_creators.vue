@@ -28,7 +28,7 @@
             </tr>
             <tr v-for="booster_creator in booster_creators">
                 <td>{{booster_creator.appid}}</td>
-                <td><a :href="booster_creator.listing_url">{{booster_creator.name}}</a></td>
+                <td><span @click="$modal.show('booster-creator', { booster_creator })">{{booster_creator.name}}</span></td>
                 <td>{{booster_creator.price}}</td>
                 <td>{{booster_creator.open_price.foil_average}}</td>
                 <td>
@@ -73,13 +73,14 @@
                     <color-text color_class="text-primary"
                                 :content="booster_creator.min_available_time ? new Date(booster_creator.min_available_time) : null"
                                 :condition="content => content < new Date()"
-                                :filter="content => content.toLocaleTimeString()"/>
+                                :filter="content => content ? content.toLocaleTimeString() : null"/>
                 </td>
                 <td>
                     <span class="btn btn-primary" @click="create_and_sell(booster_creator)">create and sell</span>
                 </td>
             </tr>
         </table>
+        <booster-creator-model />
     </div>
 </template>
 
@@ -88,6 +89,7 @@
   import NProgress from 'nprogress';
 
   import ColorText from '../components/color_text.vue';
+  import BoosterCreatorModel from './booster_creator_model.vue';
 
   function fetch_creatable() {
     if (this.fetching) {
@@ -126,6 +128,10 @@
     });
   }
 
+  function open_booster_creator_model(booster_creator) {
+    this.$modal.show('booster-creator', { booster_creator });
+  }
+
   export default {
     props: ['base_ppg'],
     data: () => ({
@@ -135,9 +141,11 @@
     methods: {
       fetch_creatable,
       create_and_sell,
+      open_booster_creator_model,
     },
     components: {
       ColorText,
+      BoosterCreatorModel,
     }
   };
 </script>
