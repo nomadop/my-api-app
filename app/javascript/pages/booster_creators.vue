@@ -98,7 +98,7 @@
 
     this.fetching = true;
     NProgress.start();
-    return fetch(`/booster_creators/creatable?base_ppg=${this.base_ppg}`)
+    return fetch(`/booster_creators/creatable?base_ppg=${this.base_ppg}&limit=${this.limit}`)
         .then(response => response.json())
         .then(booster_creators => this.booster_creators = booster_creators)
         .then(() => {
@@ -133,7 +133,7 @@
   }
 
   export default {
-    props: ['base_ppg'],
+    props: ['base_ppg', 'limit'],
     data: () => ({
       booster_creators: [],
       fetching: false,
