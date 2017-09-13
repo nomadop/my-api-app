@@ -6,6 +6,7 @@
     "notie": "^4.3.1",
     "nprogress": "^0.2.0",
     "vue": "^2.4.2",
+    "vue-js-modal": "^1.2.10",
     "vue-loader": "^13.0.4",
     "vue-template-compiler": "^2.4.2"
   },
