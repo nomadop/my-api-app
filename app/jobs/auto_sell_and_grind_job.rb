@@ -19,4 +19,8 @@ class AutoSellAndGrindJob < ApplicationJob
       retry_job
     end
   end
+
+  rescue_from(ActiveRecord::RecordNotFound) do
+    false
+  end
 end

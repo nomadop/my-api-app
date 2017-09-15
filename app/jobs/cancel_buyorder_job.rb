@@ -5,4 +5,8 @@ class CancelBuyorderJob < ApplicationJob
     buy_order = BuyOrder.find(id)
     rebuy ? buy_order.rebuy : buy_order.cancel
   end
+
+  rescue_from(ActiveRecord::RecordNotFound) do
+    false
+  end
 end
