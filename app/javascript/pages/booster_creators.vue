@@ -41,7 +41,11 @@
                                 :content="booster_creator.open_price_per_goo"
                                 :condition="content => content > base_ppg"/>
                 </td>
-                <td>{{booster_creator.open_price.coefficient_of_variation}}</td>
+                <td>
+                    <color-text color_class="text-primary"
+                                :content="booster_creator.open_price.coefficient_of_variation"
+                                :condition="content => content < 0.15"/>
+                </td>
                 <td>
                     <color-text color_class="text-danger"
                                 :content="booster_creator.open_price.over_baseline_rate"
@@ -76,7 +80,9 @@
                                 :filter="content => content ? content.toLocaleTimeString() : null"/>
                 </td>
                 <td>
-                    <span class="btn btn-primary" @click="create_and_sell(booster_creator)">create and sell</span>
+                    <span class="btn btn-primary" @click="create_and_sell(booster_creator)">sell</span>
+                    <span class="btn btn-primary" @click="create_and_unpack(booster_creator)">unpack</span>
+                    <span class="btn btn-primary" @click="sell_all_assets(booster_creator)">sell assets</span>
                 </td>
             </tr>
         </table>
@@ -128,6 +134,40 @@
     });
   }
 
+  function create_and_unpack(booster_creator) {
+    return Notie.confirm({
+      text: `confirm to create ${booster_creator.name}?`,
+      submitCallback: () => fetch('/booster_creators/create_and_unpack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appid: booster_creator.appid }),
+      }).then(() => Notie.alert({
+        type: 'success',
+        text: 'success',
+      })).catch(error => Notie.alert({
+        type: 'error',
+        text: error,
+      }))
+    });
+  }
+
+  function sell_all_assets(booster_creator) {
+    return Notie.confirm({
+      text: `confirm to create ${booster_creator.name}?`,
+      submitCallback: () => fetch('/booster_creators/sell_all_assets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appid: booster_creator.appid }),
+      }).then(() => Notie.alert({
+        type: 'success',
+        text: 'success',
+      })).catch(error => Notie.alert({
+        type: 'error',
+        text: error,
+      }))
+    });
+  }
+
   function open_booster_creator_model(booster_creator) {
     this.$modal.show('booster-creator', { booster_creator });
   }
@@ -141,6 +181,8 @@
     methods: {
       fetch_creatable,
       create_and_sell,
+      create_and_unpack,
+      sell_all_assets,
       open_booster_creator_model,
     },
     components: {

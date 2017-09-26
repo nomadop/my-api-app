@@ -15,7 +15,20 @@ class BoosterCreatorsController < ActionController::Base
   end
 
   def create_and_sell
-    booster_creator = BoosterCreator.find_by(appid: params[:appid])
     booster_creator.create_and_sell
+  end
+
+  def create_and_unpack
+    booster_creator.create_and_unpack
+  end
+
+  def sell_all_assets
+    Inventory.reload!
+    booster_creator.sell_all_assets
+  end
+
+  private
+  def booster_creator
+    BoosterCreator.find_by(appid: params[:appid])
   end
 end
