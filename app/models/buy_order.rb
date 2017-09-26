@@ -18,6 +18,7 @@ class BuyOrder < ApplicationRecord
   scope :without_active, -> { left_outer_joins(:active_order).where(active_orders_buy_orders: {market_hash_name: nil}) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {market_hash_name: nil}) }
   scope :with_in, ->(duration, table_name = :buy_orders) { where("#{table_name}.created_at > ?", duration.ago) }
+  scope :with_in_ppg, ->(ppg = MarketAsset::DEFAULT_PPG_VALUE) { joins(:market_asset).where("#{PPG_SQL} < #{ppg}") }
 
   default_scope { where(success: 1) }
 
