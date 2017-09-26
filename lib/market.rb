@@ -14,7 +14,7 @@ class Market
       option = {
           method: :get,
           url: url,
-          proxy: 'http://localhost:1087',
+          proxy: 'socks5://localhost:9150/',
       }
       if with_authentication
         cookie = Authentication.cookie
@@ -36,6 +36,13 @@ class Market
       end
       response = RestClient::Request.execute(option)
       response.body
+    rescue RestClient::TooManyRequests
+      TorNewnymJob.perform_later
+      loop do
+        sleep 1.second
+        break unless JobLock.find_by(name: 'TorNewnymJob').reload.locked
+      end
+      request_asset(url, with_authentication)
     end
 
     def request_sell_history(url)
@@ -103,9 +110,13 @@ class Market
               latest: true,
           )
       )
-    rescue RestClient::TooManyRequests => e
-      ApplicationJob.perform_unique(TorNewnymJob, wait: 1.minute)
-      raise e
+    rescue RestClient::TooManyRequests
+      TorNewnymJob.perform_later
+      loop do
+        sleep 1.second
+        break unless JobLock.find_by(name: 'TorNewnymJob').reload.locked
+      end
+      load_order_histogram(item_nameid)
     end
 
     def search(appid, start = 0, count = 10)
@@ -124,10 +135,17 @@ class Market
                   :'category_753_Game[]' => "tag_app_#{appid}",
               },
           },
-          proxy: 'http://127.0.0.1:8888',
+          proxy: 'socks5://localhost:9150/',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
+    rescue RestClient::TooManyRequests
+      TorNewnymJob.perform_later
+      loop do
+        sleep 1.second
+        break unless JobLock.find_by(name: 'TorNewnymJob').reload.locked
+      end
+      search(appid, start, count)
     end
 
     def search_by_query(query, start = 0, count = 10)
