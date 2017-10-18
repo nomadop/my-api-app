@@ -1,4 +1,7 @@
 class InventoryAsset < ApplicationRecord
+  GEMS_CLASSID = 667924416
+  SACK_OF_GEMS_CLASSID = 667933237
+
   belongs_to :account
   has_one :description, class_name: 'InventoryDescription',
           primary_key: [:classid, :instanceid], foreign_key: [:classid, :instanceid]
@@ -15,10 +18,10 @@ class InventoryAsset < ApplicationRecord
   scope :unmarketable, -> { joins(:description).where(inventory_descriptions: {marketable: 0}) }
   scope :tradable, -> { joins(:description).where(inventory_descriptions: {tradable: 1}) }
   scope :untradable, -> { joins(:description).where(inventory_descriptions: {tradable: 0}) }
-  scope :gems, -> { where(classid: 667924416) }
-  scope :non_gems, -> { where.not(classid: 667924416) }
-  scope :sacks_of_gem, -> { where(classid: 667933237) }
-  scope :non_sacks_of_gem, -> { where.not(classid: 667933237) }
+  scope :gems, -> { where(classid: GEMS_CLASSID) }
+  scope :non_gems, -> { where.not(classid: GEMS_CLASSID) }
+  scope :sacks_of_gem, -> { where(classid: SACK_OF_GEMS_CLASSID) }
+  scope :non_sacks_of_gem, -> { where.not(classid: SACK_OF_GEMS_CLASSID) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {classid: nil}) }
   scope :with_order_histogram, -> { joins(:order_histogram).distinct.includes(:order_histogram) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
@@ -150,6 +153,28 @@ class InventoryAsset < ApplicationRecord
     cookie = account.cookie
     sessionid = account.session_id
 
+    payload = if classid == GEMS_CLASSID
+      {
+          sessionid: sessionid,
+          appid: appid,
+          assetid: assetid,
+          goo_denomination_in: 1,
+          goo_amount_in: amount * 1000,
+          goo_denomination_out: 1000,
+          goo_amount_out_expected: amount,
+      }
+    else
+      {
+          sessionid: sessionid,
+          appid: appid,
+          assetid: assetid,
+          goo_denomination_in: 1000,
+          goo_amount_in: amount,
+          goo_denomination_out: 1,
+          goo_amount_out_expected: amount * 1000,
+      }
+    end
+
     option = {
         method: :post,
         url: "http://steamcommunity.com/id/#{account_name}/ajaxexchangegoo/",
@@ -168,20 +193,13 @@ class InventoryAsset < ApplicationRecord
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
             :'X-Requested-With' => 'XMLHttpRequest',
         },
-        payload: {
-            sessionid: sessionid,
-            appid: appid,
-            assetid: assetid,
-            goo_denomination_in: 1,
-            goo_amount_in: amount * 1000,
-            goo_denomination_out: 1000,
-            goo_amount_out_expected: amount,
-        },
+        payload: payload,
         proxy: 'http://127.0.0.1:8888',
     }
     response = RestClient::Request.execute(option)
     if JSON.parse(response.body)['success'] == 1
-      remain_amount = self.amount.to_i - amount * 1000
+      cost = classid == GEMS_CLASSID ? amount * 1000 : amount
+      remain_amount = self.amount.to_i - cost
       remain_amount > 0 ? update(amount: remain_amount) : destroy
     end
   rescue RestClient::Forbidden => e
@@ -199,7 +217,7 @@ class InventoryAsset < ApplicationRecord
     refresh_goo_value
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
-    return quick_sell if (ppg > 1 && marketable?) || (ppg >= 0.56 && booster_pack?)
+    return quick_sell if (ppg > 1 && marketable?) || (ppg >= 0.55 && booster_pack?)
     grind_into_goo if ppg <= 2 && !booster_pack?
   end
 
