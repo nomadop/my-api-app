@@ -104,15 +104,22 @@ class BuyOrder < ApplicationRecord
       active.includes(:market_asset).refresh_order_histogram_later
     end
 
+    # def rebuy_purchased
+    #   Authentication.refresh
+    #   3.times do
+    #     break if BuyOrder.refresh
+    #   end
+    #   BuyOrder.part_purchased.rebuy_later
+    #   market_hash_names = BuyOrder.purchased.without_active.distinct.pluck(:market_hash_name)
+    #   MarketAsset.where(market_hash_name: market_hash_names).quick_order_later
+    #   market_hash_names.size
+    # end
+
     def rebuy_purchased
       Authentication.refresh
-      3.times do
-        break if BuyOrder.refresh
-      end
-      BuyOrder.part_purchased.rebuy_later
-      market_hash_names = BuyOrder.purchased.without_active.distinct.pluck(:market_hash_name)
-      MarketAsset.where(market_hash_name: market_hash_names).quick_order_later
-      market_hash_names.size
+      Market.scan_my_histories
+      sleep 30.seconds
+      MarketAsset.with_my_buy_histories(3.minute).quick_order_later
     end
 
     def rebuy_all
