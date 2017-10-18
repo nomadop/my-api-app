@@ -44,7 +44,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
-           :sell_order_count, :buy_order_count, :order_count, :listing_url, to: :booster_pack
+           :sell_order_count, :buy_order_count, :order_count, :listing_url, to: :booster_pack, allow_nil: true
 
   class << self
     def refresh_price
@@ -177,7 +177,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def sell_proportion
-    booster_pack.order_histogram.proportion.round(3)
+    booster_pack&.order_histogram&.proportion&.round(3)
   end
 
   def available_times
@@ -234,6 +234,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def create_and_sell
+    Market.load_order_histogram(booster_pack.item_nameid)
     accounts.reload.each do |account|
       account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
       next unless account_booster_creator&.available?
