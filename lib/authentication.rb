@@ -1,6 +1,8 @@
 require 'execjs'
 
 class Authentication
+  class AccountExpired < Exception; end
+
   class << self
     delegate :account_name, :account_id, :cookie, :session_id, :refresh, to: :default_account
 
@@ -31,7 +33,10 @@ class Authentication
           proxy: 'http://127.0.0.1:8888',
           ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
-      RestClient::Request.execute(option)
+      RestClient::Request.execute(option).tap do |response|
+        pp cookies = Utility.parse_cookies(response.headers[:set_cookie])
+        raise AccountExpired.new if cookies.any? { |c| c.value == 'deleted' }
+      end
     end
 
     def get_rsa_key(username)
