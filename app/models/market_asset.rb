@@ -43,8 +43,8 @@ class MarketAsset < ApplicationRecord
   scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
   scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
   scope :with_sell_histories, -> { joins(:sell_histories).distinct }
-  scope :with_my_buy_histories, -> { joins(:my_buy_histories).distinct }
-  scope :with_my_sell_histories, -> { joins(:my_sell_histories).distinct }
+  scope :with_my_buy_histories, ->(duration) { joins(:my_buy_histories).where('my_histories.created_at > ?', duration.ago).distinct }
+  scope :with_my_sell_histories, ->(duration) { joins(:my_sell_histories).where('my_histories.created_at > ?', duration.ago).distinct }
 
   JOIN_LATEST_ORDER_HISTOGRAM_SQL = <<-SQL
       JOIN order_histograms
@@ -185,7 +185,7 @@ class MarketAsset < ApplicationRecord
 
   def quick_order
     return if booster_pack?
-    return if active_buy_orders.reload.exists?
+    # return if active_buy_orders.reload.exists?
     Market.load_order_histogram(item_nameid)
     refresh_goo_value
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
