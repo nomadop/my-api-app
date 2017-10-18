@@ -28,13 +28,14 @@
             </tr>
             <tr v-for="booster_creator in booster_creators">
                 <td>{{booster_creator.appid}}</td>
-                <td><span @click="$modal.show('booster-creator', { booster_creator })">{{booster_creator.name}}</span></td>
+                <td><span @click="$modal.show('booster-creator', { booster_creator })">{{booster_creator.name}}</span>
+                </td>
                 <td>{{booster_creator.price}}</td>
                 <td>{{booster_creator.open_price.foil_average}}</td>
                 <td>
                     <color-text color_class="text-primary"
                                 :content="booster_creator.price_per_goo"
-                                :condition="content => content > base_ppg"/>
+                                :condition="content => content > 0.57"/>
                 </td>
                 <td>
                     <color-text color_class="text-primary"
@@ -54,7 +55,7 @@
                 <td>
                     <color-text color_class="text-primary"
                                 :content="booster_creator.listing_booster_pack_count"
-                                :condition="content => content === 0 && booster_creator.price_per_goo > base_ppg"/>
+                                :condition="content => content === 0 && booster_creator.price_per_goo > 0.57"/>
                 </td>
                 <td>
                     <color-text color_class="text-danger"
