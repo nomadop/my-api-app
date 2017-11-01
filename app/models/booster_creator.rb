@@ -235,6 +235,7 @@ class BoosterCreator < ApplicationRecord
     response = Inventory.create_booster(appid, series, account)
     raise 'failed to create booster' unless response.code == 200
     result = JSON.parse(response.body)
+    BoosterCreation.create(result['purchase_result'].merge(account: account, booster_creator: self))
     result['purchase_result']['communityitemid']
   end
 

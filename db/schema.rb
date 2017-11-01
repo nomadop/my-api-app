@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170926064829) do
+ActiveRecord::Schema.define(version: 20171101030046) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -46,6 +46,20 @@ ActiveRecord::Schema.define(version: 20170926064829) do
     t.datetime "updated_at",     null: false
     t.string   "email_address"
     t.string   "email_password"
+  end
+
+  create_table "booster_creations", force: :cascade do |t|
+    t.integer  "account_id",         null: false
+    t.integer  "booster_creator_id", null: false
+    t.string   "communityitemid"
+    t.integer  "appid"
+    t.integer  "item_type"
+    t.string   "purchaseid"
+    t.integer  "success"
+    t.integer  "rwgrsn"
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+    t.index ["booster_creator_id"], name: "index_booster_creations_on_booster_creator_id", using: :btree
   end
 
   create_table "booster_creators", force: :cascade do |t|

@@ -1,0 +1,21 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  account_id: 1
+  booster_creator_id: 1
+  communityitemid: MyString
+  appid: 1
+  item_type: 1
+  purchaseid: MyString
+  success: 1
+  rwgrsn: 1
+
+two:
+  account_id: 1
+  booster_creator_id: 1
+  communityitemid: MyString
+  appid: 1
+  item_type: 1
+  purchaseid: MyString
+  success: 1
+  rwgrsn: 1
