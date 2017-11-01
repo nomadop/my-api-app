@@ -114,8 +114,8 @@ class MarketAsset < ApplicationRecord
     ApplicationJob.perform_unique(GetGooValueJob, classid, wait: 3.seconds)
   end
 
-  def refresh_goo_value
-    update(goo_value: get_goo_value) if Time.now - updated_at > 1.day
+  def refresh_goo_value(proxy = true)
+    update(goo_value: get_goo_value(proxy)) if Time.now - updated_at > 1.day
   end
 
   def booster_pack?
