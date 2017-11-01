@@ -11,6 +11,7 @@ class MyListing < ApplicationRecord
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
   scope :foil_card, -> { joins(:market_asset).where('market_assets.type like ?', '%Foil Trading Card') }
+  scope :non_foil_card, -> { joins(:market_asset).where('market_assets.type like ?', '%Trading Card').where.not('market_assets.type like ?', '%Foil Trading Card') }
   scope :without_app, -> { left_outer_joins(:steam_app).where(steam_apps: { steam_appid: nil }) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: { market_hash_name: nil }) }
   scope :cancelable, -> do
