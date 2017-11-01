@@ -9,8 +9,12 @@ module ActAsBoosterPack
     end
     has_many :trading_cards, trading_cards_proc, class_name: 'MarketAsset',
              primary_key: :market_fee_app, foreign_key: :market_fee_app
+    has_many :foil_trading_cards, -> { where('type like ?', '%Foil Trading Card') },
+             class_name: 'MarketAsset', primary_key: :market_fee_app, foreign_key: :market_fee_app
     has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
              through: :trading_cards, source: :order_histogram
+    has_many :foil_trading_card_order_histograms, class_name: 'OrderHistogram',
+             through: :foil_trading_cards, source: :order_histogram
     has_many :listing_trading_cards, class_name: 'MyListing',
              through: :trading_cards, source: :my_listings
 
@@ -21,8 +25,16 @@ module ActAsBoosterPack
     trading_card_order_histograms.pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
   end
 
+  def foil_trading_card_prices
+    foil_trading_card_order_histograms.pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
+  end
+
   def trading_card_prices_exclude_vat
     trading_card_prices.map(&Utility.method(:exclude_val))
+  end
+
+  def foil_trading_card_prices_exclude_vat
+    foil_trading_card_prices.map(&Utility.method(:exclude_val))
   end
 
   def trading_card_prices_proportion
@@ -57,7 +69,9 @@ module ActAsBoosterPack
   end
 
   def buyable?
-    lowest_sell_order < open_price[:total] && open_price[:coefficient_of_variation] < 1 && open_sell_order_count > 20
+    return false if lowest_sell_order.nil? || trading_card_prices_exclude_vat.blank?
+    min_price = trading_card_prices_exclude_vat.min || 0
+    lowest_sell_order < min_price * 3
   end
 
   def listing_trading_card_count
