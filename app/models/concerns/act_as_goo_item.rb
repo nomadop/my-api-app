@@ -1,7 +1,7 @@
 module ActAsGooItem
   extend ActiveSupport::Concern
 
-  def get_goo_value
+  def get_goo_value(proxy = true)
     regexp = /GetGooValue\( '%contextid%', '%assetid%', *'?([0-9]+)'? *, *'?([0-9]+)'? *, *'?([0-9]+)'?/
     get_goo_action = owner_actions.find { |action| regexp.match?(action['link']) }
     return if get_goo_action.nil?
@@ -26,8 +26,8 @@ module ActAsGooItem
             :'Pragma' => 'no-cache',
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         },
-        proxy: 'socks5://localhost:9150/'
     }
+    option[:proxy] = proxy ? 'socks5://localhost:9150/' : 'http://localhost:8888'
     response = RestClient::Request.execute(option)
 
     result = JSON.parse(response.body)

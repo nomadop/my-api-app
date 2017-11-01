@@ -213,8 +213,8 @@ class InventoryAsset < ApplicationRecord
   end
 
   def auto_sell_and_grind
-    refresh_price
-    refresh_goo_value
+    Market.load_order_histogram(market_asset.item_nameid, false)
+    market_asset.refresh_goo_value(false)
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
     return quick_sell if (ppg > 1 && marketable?) || (ppg >= 0.55 && booster_pack?)

@@ -80,7 +80,7 @@ class Market
       load_asset(html)
     end
 
-    def load_order_histogram(item_nameid)
+    def load_order_histogram(item_nameid, proxy = true)
       order_histogram = OrderHistogram.find_by(item_nameid: item_nameid)
       return order_histogram if order_histogram && order_histogram.created_at > 5.minutes.ago
       option = {
@@ -93,8 +93,8 @@ class Market
                   item_nameid: item_nameid,
               }
           },
-          proxy: 'socks5://localhost:9150/'
       }
+      option[:proxy] = proxy ? 'socks5://localhost:9150/' : 'http://localhost:8888'
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
 
