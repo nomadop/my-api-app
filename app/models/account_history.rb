@@ -1,7 +1,8 @@
 class AccountHistory < ApplicationRecord
   self.inheritance_column = nil
 
-  scope :with_in, ->(duration) { where('date > ?', duration.ago) }
+  scope :since, ->(time) { where('date > ?', time) }
+  scope :with_in, ->(duration) { since(duration.ago) }
   scope :between, ->(from, to) { where(date: (from..to)) }
   scope :market, -> { where("items->>0 = 'Steam 社区市场'") }
   scope :wallet, -> { where('items->>0 like ?', '已购买%钱包资金') }
