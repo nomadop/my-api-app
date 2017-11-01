@@ -62,7 +62,7 @@ class BoosterCreator < ApplicationRecord
     end
 
     def refresh_all
-      includes(trading_cards: :order_histogram, booster_pack: :order_histogram)
+      includes(:trading_cards, :foil_trading_cards, :booster_pack)
           .each(&:refresh_price_later)
     end
 
@@ -94,11 +94,11 @@ class BoosterCreator < ApplicationRecord
   end
 
   def trading_card_prices
-    trading_card_order_histograms.pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
+    trading_card_order_histograms.pluck(:lowest_sell_order).compact
   end
 
   def foil_trading_card_prices
-    foil_trading_card_order_histograms.pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
+    foil_trading_card_order_histograms.pluck(:lowest_sell_order).compact
   end
 
   def trading_card_prices_exclude_vat
@@ -223,6 +223,7 @@ class BoosterCreator < ApplicationRecord
 
   def refresh_price_later
     trading_cards.each(&:load_order_histogram)
+    foil_trading_cards.each(&:load_order_histogram)
     booster_pack&.load_order_histogram
   end
 
@@ -276,11 +277,18 @@ class BoosterCreator < ApplicationRecord
     inventory_assets.each(&:auto_sell_and_grind)
   end
 
-  def sell_all_assets
+  def all_assets
     Account::DEFAULT
         .inventory_assets
         .includes(:market_asset)
         .where(market_assets: {market_fee_app: appid})
-        .auto_sell_and_grind_later
+  end
+
+  def sell_all_assets
+    all_assets.auto_sell_and_grind_later
+  end
+
+  def my_histories
+    MyHistory.where('market_hash_name like ?', "#{appid}%")
   end
 end
