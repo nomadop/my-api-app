@@ -17,8 +17,8 @@
                 <th>open ppg</th>
                 <th>open cov</th>
                 <th>open obr</th>
-                <th>lc</th>
-                <th>open lc</th>
+                <th>lc/ic</th>
+                <th>open lc/ic</th>
                 <th>order count</th>
                 <th>proportion</th>
                 <th>open order count</th>
@@ -55,12 +55,18 @@
                 <td>
                     <color-text color_class="text-primary"
                                 :content="booster_creator.listing_booster_pack_count"
-                                :condition="content => content === 0 && booster_creator.price_per_goo > 0.57"/>
+                                :condition="content => content === 0 && booster_creator.price_per_goo > 0.57"/> /
+                    <color-text color_class="text-danger"
+                                :content="booster_creator.inventory_assets_count"
+                                :condition="content => content >= 1"/>
                 </td>
                 <td>
                     <color-text color_class="text-danger"
                                 :content="booster_creator.listing_trading_card_count"
-                                :condition="content => content >= 5"/>
+                                :condition="content => content >= 5"/> /
+                    <color-text color_class="text-danger"
+                                :content="booster_creator.inventory_cards_count"
+                                :condition="content => content >= 3"/>
                 </td>
                 <td>{{booster_creator.sell_order_count}} / {{booster_creator.buy_order_count}}</td>
                 <td>
@@ -87,7 +93,7 @@
                 </td>
             </tr>
         </table>
-        <booster-creator-model />
+        <booster-creator-model/>
     </div>
 </template>
 

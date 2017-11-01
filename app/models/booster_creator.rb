@@ -176,6 +176,18 @@ class BoosterCreator < ApplicationRecord
     listing_booster_packs.size
   end
 
+  def inventory_assets_count
+    inventory_assets.count
+  end
+
+  def all_inventory_assets_count
+    all_assets.count
+  end
+
+  def inventory_cards_count
+    all_inventory_assets_count - inventory_assets_count
+  end
+
   def sell_proportion
     booster_pack&.order_histogram&.proportion&.round(3)
   end
@@ -196,7 +208,7 @@ class BoosterCreator < ApplicationRecord
             :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
             :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :listing_booster_pack_count,
             :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion, :listing_url,
-            :available_times, :min_available_time,
+            :available_times, :min_available_time, :inventory_assets_count, :inventory_cards_count,
         ]
     )
   end
