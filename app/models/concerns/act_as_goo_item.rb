@@ -10,7 +10,7 @@ module ActAsGooItem
 
     option = {
         method: :get,
-        url: "http://steamcommunity.com/auction/ajaxgetgoovalueforitemtype/",
+        url: 'https://steamcommunity.com/auction/ajaxgetgoovalueforitemtype/',
         headers: {
             :params => {
                 appid: appid,
@@ -27,7 +27,12 @@ module ActAsGooItem
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         },
     }
-    option[:proxy] = proxy ? 'socks5://localhost:9150/' : 'http://localhost:8888'
+    if proxy
+      option[:proxy] = 'socks5://localhost:9150/'
+    else
+      option[:proxy] = 'http://localhost:8888'
+      option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
+    end
     response = RestClient::Request.execute(option)
 
     result = JSON.parse(response.body)

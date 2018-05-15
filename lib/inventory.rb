@@ -5,7 +5,7 @@ class Inventory
       cookie = account.cookie
       option = {
           method: :get,
-          url: "http://steamcommunity.com/inventory/#{account_id}/753/6?l=schinese",
+          url: "https://steamcommunity.com/inventory/#{account_id}/753/6?l=schinese",
           headers: {
               :Accept => '*/*',
               :'Accept-Encoding' => 'gzip, deflate, sdch',
@@ -74,7 +74,7 @@ class Inventory
       cookie = account.cookie
       option = {
           method: :get,
-          url: 'http://steamcommunity.com/tradingcards/boostercreator/',
+          url: 'https://steamcommunity.com/tradingcards/boostercreator/',
           headers: {
               :Accept => '*/*',
               :'Accept-Encoding' => 'gzip, deflate, sdch',
@@ -87,6 +87,7 @@ class Inventory
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       regexp = /CBoosterCreatorPage.Init\(\s+(.*),\s+parseFloat/
@@ -170,7 +171,7 @@ class Inventory
 
       option = {
           method: :post,
-          url: 'http://steamcommunity.com/tradingcards/ajaxcreatebooster/',
+          url: 'https://steamcommunity.com/tradingcards/ajaxcreatebooster/',
           headers: {
               :Accept => '*/*',
               :'Accept-Encoding' => 'gzip, deflate',
@@ -180,9 +181,9 @@ class Inventory
               :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
               :'Cookie' => cookie,
               :'Host' => 'steamcommunity.com',
-              :'Origin' => 'http://steamcommunity.com',
+              :'Origin' => 'https://steamcommunity.com',
               :'Pragma' => 'no-cache',
-              :'Referer' => 'http://steamcommunity.com/tradingcards/boostercreator/',
+              :'Referer' => 'https://steamcommunity.com/tradingcards/boostercreator/',
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
               :'X-Requested-With' => 'XMLHttpRequest',
           },
@@ -193,6 +194,7 @@ class Inventory
               tradability_preference: 1,
           },
           proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option)
     rescue RestClient::Forbidden
@@ -211,15 +213,15 @@ class Inventory
           headers: {
               :Accept => '*/*',
               :'Accept-Encoding' => 'gzip, deflate, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+              :'Accept-Language' => 'zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,zh-TW;q=0.6',
               :'Cache-Control' => 'no-cache',
               :'Connection' => 'keep-alive',
               :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
               :'Cookie' => cookie,
               :'Host' => 'steamcommunity.com',
-              :'Origin' => 'http://steamcommunity.com',
+              :'Origin' => 'https://steamcommunity.com',
               :'Pragma' => 'no-cache',
-              :'Referer' => "http://steamcommunity.com/id/#{account_name}/inventory/",
+              :'Referer' => "https://steamcommunity.com/id/#{account_name}/inventory/",
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           payload: {
@@ -243,11 +245,11 @@ class Inventory
       sessionid = account.session_id
 
       url = account_name.blank? ?
-          "http://steamcommunity.com/profiles/#{account_id}/ajaxunpackbooster/" :
-          "http://steamcommunity.com/id/#{account_name}/ajaxunpackbooster/"
+          "https://steamcommunity.com/profiles/#{account_id}/ajaxunpackbooster/" :
+          "https://steamcommunity.com/id/#{account_name}/ajaxunpackbooster/"
       referer = account_name.blank? ?
-          "http://steamcommunity.com/profiles/#{account_id}/inventory/" :
-          "http://steamcommunity.com/id/#{account_name}/inventory/"
+          "https://steamcommunity.com/profiles/#{account_id}/inventory/" :
+          "https://steamcommunity.com/id/#{account_name}/inventory/"
 
       option = {
           method: :post,
@@ -261,7 +263,7 @@ class Inventory
               :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
               :'Cookie' => cookie,
               :'Host' => 'steamcommunity.com',
-              :'Origin' => 'http://steamcommunity.com',
+              :'Origin' => 'https://steamcommunity.com',
               :'Pragma' => 'no-cache',
               :'Referer' => referer,
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
@@ -273,6 +275,7 @@ class Inventory
               communityitemid: assetid,
           },
           proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option)
     rescue RestClient::Forbidden => e
@@ -287,8 +290,8 @@ class Inventory
 
     def request_trade_offers(account, history)
       url = account.account_name.nil? ?
-          "http://steamcommunity.com/profiles/#{account.account_id}/tradeoffers/" :
-          "http://steamcommunity.com/id/#{account.account_name}/tradeoffers/"
+          "https://steamcommunity.com/profiles/#{account.account_id}/tradeoffers/" :
+          "https://steamcommunity.com/id/#{account.account_name}/tradeoffers/"
       option = {
           method: :get,
           url: url,
@@ -308,6 +311,7 @@ class Inventory
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
           },
           proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option)
     end

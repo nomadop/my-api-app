@@ -118,7 +118,7 @@ class InventoryAsset < ApplicationRecord
 
     option = {
         method: :post,
-        url: "http://steamcommunity.com/id/#{account_name}/ajaxgrindintogoo/",
+        url: "https://steamcommunity.com/id/#{account_name}/ajaxgrindintogoo/",
         headers: {
             :Accept => '*/*',
             :'Accept-Encoding' => 'gzip, deflate, br',
