@@ -6,14 +6,16 @@ class MyListing < ApplicationRecord
   has_one :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_one :order_histogram, through: :market_asset
   has_one :steam_app, through: :market_asset
+  has_one :booster_creator, through: :market_asset
+  has_many :booster_creations, through: :booster_creator
 
   scope :booster_pack, -> { where('my_listings.market_hash_name like ?', '%Booster Pack') }
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
   scope :foil_card, -> { joins(:market_asset).where('market_assets.type like ?', '%Foil Trading Card') }
   scope :non_foil_card, -> { joins(:market_asset).where('market_assets.type like ?', '%Trading Card').where.not('market_assets.type like ?', '%Foil Trading Card') }
-  scope :without_app, -> { left_outer_joins(:steam_app).where(steam_apps: { steam_appid: nil }) }
-  scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: { market_hash_name: nil }) }
+  scope :without_app, -> { left_outer_joins(:steam_app).where(steam_apps: {steam_appid: nil}) }
+  scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {market_hash_name: nil}) }
   scope :cancelable, -> do
     joins(:order_histogram).where <<~SQL
         (price > order_histograms.lowest_sell_order OR (
@@ -38,7 +40,7 @@ class MyListing < ApplicationRecord
   end
 
   delegate :load_order_histogram, :find_sell_balance, :goo_value, to: :market_asset
-  delegate :lowest_sell_order, to: :order_histogram
+  delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
 
   class << self
     def reload(start = 0, count = 100)
@@ -74,7 +76,7 @@ class MyListing < ApplicationRecord
     end
 
     def cancel_cancelable
-      MyListing.non_sack_of_gems.cancelable.cancel_later
+      MyListing.non_sack_of_gems.cancelable.to_a.select(&:cancelable?).each(&:cancel_later)
     end
 
     def cancel_dirty
@@ -91,7 +93,7 @@ class MyListing < ApplicationRecord
       cancel_dirty
       sleep(30)
       reload_and_fresh
-      sleep(30)
+      sleep(60)
       cancel_cancelable
       sleep(30)
       Inventory.auto_sell_and_grind
@@ -113,6 +115,8 @@ class MyListing < ApplicationRecord
   end
 
   def cancelable?
+    return false if booster_creations.exists? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * 0.525 / 3).ceil
+
     price > order_histogram.lowest_sell_order ||
         (price > 100 && price == order_histogram.lowest_sell_order && order_histogram.sell_order_graph[0][1] > 1)
   end
@@ -132,7 +136,7 @@ class MyListing < ApplicationRecord
   end
 
   def cancel
-    response =  Market.cancel_my_listing(listingid)
+    response = Market.cancel_my_listing(listingid)
     destroy if response.code == 200
   end
 
