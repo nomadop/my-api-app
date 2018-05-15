@@ -19,10 +19,4 @@ class ApplicationJob < ActiveJob::Base
       job_class.set(option).perform_later(*args)
     end
   end
-
-  rescue_from(RestClient::TooManyRequests) do
-    puts '429 Too Many Requests, waiting for 5 minutes...'
-    sleep 5.minutes
-    retry_job
-  end
 end
