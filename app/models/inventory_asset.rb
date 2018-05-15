@@ -8,6 +8,7 @@ class InventoryAsset < ApplicationRecord
 
   has_one :market_asset, primary_key: :classid, foreign_key: :classid
   has_one :booster_creator, through: :market_asset
+  has_many :booster_creations, through: :booster_creator
   has_one :order_histogram, through: :market_asset
   has_one :steam_app, through: :market_asset
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
@@ -97,6 +98,9 @@ class InventoryAsset < ApplicationRecord
     price = begin
       lowest = order_histogram.lowest_sell_order_exclude_vat
       lowest > 50 ? lowest - 1 : lowest
+    end
+    if booster_creations.exists?
+      price = [price, (booster_creator.price * 0.525 / 3).ceil].max
     end
     sell(price)
   end
