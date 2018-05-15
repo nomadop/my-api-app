@@ -512,7 +512,13 @@ class Market
           proxy: 'http://127.0.0.1:8888',
       }
       response = RestClient::Request.execute(option)
-      JSON.parse(response.body)
+      result = JSON.parse(response.body)
+      if result['total_count'].nil?
+        Authentication.refresh
+        request_my_history(start, count)
+      else
+        result
+      end
     end
 
     def handle_my_history_result(result)
