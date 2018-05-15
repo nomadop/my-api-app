@@ -42,5 +42,16 @@ class Utility
       parse_cookie = Proc.new { |c| HTTP::Cookie.parse(c, uri) }
       cookie_array.flat_map(&parse_cookie)
     end
+
+    def parse_jar(cookies, old_jar = HTTP::CookieJar.new)
+      cookies.reduce(old_jar) do |jar, cookie|
+        cookie.value === 'deleted' ? jar.delete(cookie) : jar.add(cookie)
+        jar
+      end
+    end
+
+    def remove_cookies(cookies, jar)
+      cookies.each(&jar.method(:delete))
+    end
   end
 end
