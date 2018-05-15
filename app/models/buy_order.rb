@@ -119,7 +119,7 @@ class BuyOrder < ApplicationRecord
       Authentication.refresh
       Market.scan_my_histories
       sleep 30.seconds
-      MarketAsset.with_my_buy_histories(3.minute).quick_order_later
+      MarketAsset.with_my_buy_histories(10.minute).quick_order_later
     end
 
     def rebuy_all

@@ -5,7 +5,7 @@ class MarketAsset < ApplicationRecord
   self.inheritance_column = nil
   self.primary_key = :classid
 
-  DEFAULT_PPG_VALUE = 0.4
+  DEFAULT_PPG_VALUE = 0.3
 
   has_one :steam_app, primary_key: :market_fee_app, foreign_key: :steam_appid
   has_many :my_listings, primary_key: :market_hash_name, foreign_key: :market_hash_name
