@@ -19,6 +19,7 @@ class BoosterCreator < ApplicationRecord
   has_many :account_booster_creators, primary_key: :appid, foreign_key: :appid
   has_many :accounts, through: :account_booster_creators
   has_many :inventory_assets, -> { where(account_id: 1) }, through: :booster_pack
+  has_many :booster_creations
 
   scope :without_app, -> { left_outer_joins(:steam_app).where({steam_apps: {steam_appid: nil}}) }
   scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
@@ -56,7 +57,7 @@ class BoosterCreator < ApplicationRecord
     end
 
     def refresh_by_ppg_order(limit = 100)
-      includes(trading_cards: :order_histogram, booster_pack: :order_histogram)
+      includes(trading_cards: :order_histogram, foil_trading_cards: :order_histogram, booster_pack: :order_histogram)
           .first_ppg_order(limit)
           .each(&:refresh_price_later)
     end
