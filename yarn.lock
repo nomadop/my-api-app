@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@rails/webpacker@^3.0.1":
+"@rails/webpacker@3.0.1":
   version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@rails/webpacker/-/webpacker-3.0.1.tgz#54da0c2a0d2b7c482cd4eb2eca73beb28150c45d"
+  resolved "http://registry.npm.taobao.org/@rails/webpacker/download/@rails/webpacker-3.0.1.tgz#54da0c2a0d2b7c482cd4eb2eca73beb28150c45d"
   dependencies:
     babel-core "^6.26.0"
     babel-loader "^7.1.2"
@@ -857,13 +857,13 @@ boom@2.x.x:
   dependencies:
     hoek "2.x.x"
 
-bootstrap-material-design@^4.0.0-beta.3:
+bootstrap-material-design@4.0.0-beta.3:
   version "4.0.0-beta.3"
-  resolved "https://registry.yarnpkg.com/bootstrap-material-design/-/bootstrap-material-design-4.0.0-beta.3.tgz#78c1588fbaab38f1bb66e43154fd43bf3f69a500"
+  resolved "http://registry.npm.taobao.org/bootstrap-material-design/download/bootstrap-material-design-4.0.0-beta.3.tgz#78c1588fbaab38f1bb66e43154fd43bf3f69a500"
 
-bootstrap@^3.3.7:
+bootstrap@3.3.7:
   version "3.3.7"
-  resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-3.3.7.tgz#5a389394549f23330875a3b150656574f8a9eb71"
+  resolved "http://registry.npm.taobao.org/bootstrap/download/bootstrap-3.3.7.tgz#5a389394549f23330875a3b150656574f8a9eb71"
 
 brace-expansion@^1.1.7:
   version "1.1.8"
@@ -3181,9 +3181,9 @@ normalize-url@^1.4.0:
     query-string "^4.1.0"
     sort-keys "^1.0.0"
 
-notie@^4.3.1:
+notie@4.3.1:
   version "4.3.1"
-  resolved "https://registry.yarnpkg.com/notie/-/notie-4.3.1.tgz#0d199de15130242e21675507aba63c6929e0adda"
+  resolved "http://registry.npm.taobao.org/notie/download/notie-4.3.1.tgz#0d199de15130242e21675507aba63c6929e0adda"
 
 npm-run-path@^2.0.0:
   version "2.0.2"
@@ -3200,9 +3200,9 @@ npm-run-path@^2.0.0:
     gauge "~2.7.3"
     set-blocking "~2.0.0"
 
-nprogress@^0.2.0:
+nprogress@0.2.0:
   version "0.2.0"
-  resolved "https://registry.yarnpkg.com/nprogress/-/nprogress-0.2.0.tgz#cb8f34c53213d895723fcbab907e9422adbcafb1"
+  resolved "http://registry.npm.taobao.org/nprogress/download/nprogress-0.2.0.tgz#cb8f34c53213d895723fcbab907e9422adbcafb1"
 
 num2fraction@^1.2.2:
   version "1.2.2"
@@ -5035,9 +5035,9 @@ vm-browserify@0.0.4:
   dependencies:
     indexof "0.0.1"
 
-vue-beauty@^2.0.0-beta.7:
+vue-beauty@2.0.0-beta.7:
   version "2.0.0-beta.7"
-  resolved "https://registry.yarnpkg.com/vue-beauty/-/vue-beauty-2.0.0-beta.7.tgz#8e69a0768f7bef4cdd1b979a793b81ed3103a76d"
+  resolved "http://registry.npm.taobao.org/vue-beauty/download/vue-beauty-2.0.0-beta.7.tgz#8e69a0768f7bef4cdd1b979a793b81ed3103a76d"
   dependencies:
     async-validator "^1.8.1"
     autosize "^4.0.0"
@@ -5051,13 +5051,13 @@ vue-hot-reload-api@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.1.0.tgz#9ca58a6e0df9078554ce1708688b6578754d86de"
 
-vue-js-modal@^1.2.10:
+vue-js-modal@1.2.10:
   version "1.2.10"
-  resolved "https://registry.yarnpkg.com/vue-js-modal/-/vue-js-modal-1.2.10.tgz#005da2b6d67efc083847e49ff6136dcbf9421f55"
+  resolved "http://registry.npm.taobao.org/vue-js-modal/download/vue-js-modal-1.2.10.tgz#005da2b6d67efc083847e49ff6136dcbf9421f55"
 
-vue-loader@^13.0.4:
+vue-loader@13.0.4:
   version "13.0.4"
-  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-13.0.4.tgz#0a6d893698735fcf7037b20a23d724cb39eee7d4"
+  resolved "http://registry.npm.taobao.org/vue-loader/download/vue-loader-13.0.4.tgz#0a6d893698735fcf7037b20a23d724cb39eee7d4"
   dependencies:
     consolidate "^0.14.0"
     hash-sum "^1.0.2"
@@ -5080,9 +5080,9 @@ vue-style-loader@^3.0.0:
     hash-sum "^1.0.2"
     loader-utils "^1.0.2"
 
-vue-template-compiler@^2.4.2:
+vue-template-compiler@2.4.2:
   version "2.4.2"
-  resolved "https://registry.yarnpkg.com/vue-template-compiler/-/vue-template-compiler-2.4.2.tgz#5a45d843f148b098f6c1d1e35ac20c4956d30ad1"
+  resolved "http://registry.npm.taobao.org/vue-template-compiler/download/vue-template-compiler-2.4.2.tgz#5a45d843f148b098f6c1d1e35ac20c4956d30ad1"
   dependencies:
     de-indent "^1.0.2"
     he "^1.1.0"
@@ -5091,9 +5091,9 @@ vue-template-es2015-compiler@^1.5.3:
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.5.3.tgz#22787de4e37ebd9339b74223bc467d1adee30545"
 
-vue@^2.4.2:
+vue@2.4.2:
   version "2.4.2"
-  resolved "https://registry.yarnpkg.com/vue/-/vue-2.4.2.tgz#a9855261f191c978cc0dc1150531b8d08149b58c"
+  resolved "http://registry.npm.taobao.org/vue/download/vue-2.4.2.tgz#a9855261f191c978cc0dc1150531b8d08149b58c"
 
 watchpack@^1.4.0:
   version "1.4.0"
@@ -5119,9 +5119,9 @@ webpack-dev-middleware@^1.11.0:
     range-parser "^1.0.3"
     time-stamp "^2.0.0"
 
-webpack-dev-server@^2.7.1:
+webpack-dev-server@2.7.1:
   version "2.7.1"
-  resolved "https://registry.yarnpkg.com/webpack-dev-server/-/webpack-dev-server-2.7.1.tgz#21580f5a08cd065c71144cf6f61c345bca59a8b8"
+  resolved "http://registry.npm.taobao.org/webpack-dev-server/download/webpack-dev-server-2.7.1.tgz#21580f5a08cd065c71144cf6f61c345bca59a8b8"
   dependencies:
     ansi-html "0.0.7"
     bonjour "^3.5.0"
