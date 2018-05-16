@@ -93,7 +93,6 @@
                 </td>
             </tr>
         </table>
-        <booster-creator-model/>
     </div>
 </template>
 
@@ -102,7 +101,6 @@
   import NProgress from 'nprogress';
 
   import ColorText from '../components/color_text.vue';
-  import BoosterCreatorModel from './booster_creator_model.vue';
 
   function fetch_creatable() {
     if (this.fetching) {
@@ -194,7 +192,6 @@
     },
     components: {
       ColorText,
-      BoosterCreatorModel,
     }
   };
 </script>
