@@ -181,7 +181,7 @@ class InventoryAsset < ApplicationRecord
 
     option = {
         method: :post,
-        url: "http://steamcommunity.com/id/#{account_name}/ajaxexchangegoo/",
+        url: "https://steamcommunity.com/id/#{account_name}/ajaxexchangegoo/",
         headers: {
             :Accept => '*/*',
             :'Accept-Encoding' => 'gzip, deflate',
@@ -199,6 +199,7 @@ class InventoryAsset < ApplicationRecord
         },
         payload: payload,
         proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
     }
     response = RestClient::Request.execute(option)
     if JSON.parse(response.body)['success'] == 1
