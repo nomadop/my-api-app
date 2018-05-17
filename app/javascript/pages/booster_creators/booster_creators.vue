@@ -1,5 +1,7 @@
 <template>
-    <md-table v-model="booster_creators" md-card>
+    <md-table v-model="booster_creators" md-card
+              md-sort="price_per_goo" md-sort-order="desc"
+              @md-selected="on_select">
         <md-table-toolbar>
             <p>
                 <md-button class="md-raised md-primary"
@@ -9,17 +11,17 @@
                 </md-button>
             </p>
         </md-table-toolbar>
-        <md-table-row slot="md-table-row" slot-scope="{ item }">
+        <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)" md-selectable="single">
             <md-table-cell md-label="Appid">{{item.appid}}</md-table-cell>
             <md-table-cell md-label="Name">{{item.name}}</md-table-cell>
-            <md-table-cell md-label="Price">{{item.price}}</md-table-cell>
+            <md-table-cell md-label="Price" md-sort-by="price" md-numeric>{{item.price}}</md-table-cell>
             <md-table-cell md-label="AVG Foil Price">{{item.open_price.foil_average}}</md-table-cell>
-            <md-table-cell md-label="PPG">
+            <md-table-cell md-label="PPG" md-sort-by="price_per_goo" md-numeric>
                 <color-text color_class="text-primary"
                             :content="item.price_per_goo"
                             :condition="content => content > 0.57"/>
             </md-table-cell>
-            <md-table-cell md-label="Open PPG">
+            <md-table-cell md-label="Open PPG" md-sort-by="open_price_per_goo" md-numeric>
                 <color-text color_class="text-primary"
                             :content="item.open_price_per_goo"
                             :condition="content => content > base_ppg"/>

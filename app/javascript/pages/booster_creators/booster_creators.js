@@ -78,11 +78,20 @@ function open_booster_creator_model(booster_creator) {
   this.$modal.show('booster-creator', { booster_creator });
 }
 
+function get_class(item) {
+  return item === this.selected ? 'md-primary' : 'md-default';
+}
+
+function on_select(item) {
+  this.selected = item;
+}
+
 export default {
   props: ['base_ppg', 'limit'],
   data: () => ({
     booster_creators: [],
     fetching: false,
+    selected: null,
   }),
   components: {
     ColorText,
@@ -93,6 +102,8 @@ export default {
     create_and_unpack,
     sell_all_assets,
     open_booster_creator_model,
+    get_class,
+    on_select,
   },
   beforeMount() {
     this.fetch_creatable(false);
