@@ -4,12 +4,20 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <%= javascript_pack_tag 'application' %>
     <%= javascript_pack_tag 'main' %>
+    <%= stylesheet_pack_tag 'application' %>
     <%= stylesheet_pack_tag 'vendor' %>
   </head>
 
   <body>
-    <div id="vue-app" class="container-fluid">
-      <%= yield %>
+    <div id="vue-app" class="page-container">
+      <md-app>
+        <md-app-toolbar class="md-primary">
+          <%= yield :title %>
+        </md-app-toolbar>
+        <md-app-content>
+          <%= yield %>
+        </md-app-content>
+      </md-app>
     </div>
   </body>
 </html>

@@ -84,6 +84,9 @@ export default {
     booster_creators: [],
     fetching: false,
   }),
+  components: {
+    ColorText,
+  },
   methods: {
     fetch_creatable,
     create_and_sell,
@@ -91,7 +94,4 @@ export default {
     sell_all_assets,
     open_booster_creator_model,
   },
-  components: {
-    ColorText,
-  }
 };
