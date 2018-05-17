@@ -1,5 +1,6 @@
 class BoosterCreator < ApplicationRecord
   before_save :set_trading_card_type
+  after_create :create_or_scan_app
 
   has_one :steam_app, primary_key: :appid, foreign_key: :steam_appid
   has_one :booster_pack, -> { where(type: 'Booster Pack') },
@@ -292,5 +293,9 @@ class BoosterCreator < ApplicationRecord
 
   def my_histories
     MyHistory.where('market_hash_name like ?', "#{appid}%")
+  end
+
+  def create_or_scan_app
+    Steam.create_or_scan_app(appid)
   end
 end
