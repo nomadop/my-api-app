@@ -17,10 +17,11 @@ function fetch_creatable(refresh = true) {
       this.fetching = false;
       NProgress.done();
     })
-    .catch(error => Notie.alert({
+    .catch(error => this.snackbar = {
       type: 'error',
-      text: error,
-    }));
+      active: true,
+      message: error,
+    });
 }
 
 function create_and_sell(booster_creator) {
@@ -30,13 +31,15 @@ function create_and_sell(booster_creator) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid }),
-    }).then(() => Notie.alert({
-      type: 'success',
-      text: 'success',
-    })).catch(error => Notie.alert({
+    }).then(() => this.snackbar = {
+      type: 'info',
+      active: true,
+      message: 'success',
+    }).catch(error => this.snackbar = {
       type: 'error',
-      text: error,
-    }))
+      active: true,
+      message: error,
+    })
   });
 }
 
@@ -47,13 +50,15 @@ function create_and_unpack(booster_creator) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid }),
-    }).then(() => Notie.alert({
-      type: 'success',
-      text: 'success',
-    })).catch(error => Notie.alert({
+    }).then(() => this.snackbar = {
+      type: 'info',
+      active: true,
+      message: 'success',
+    }).catch(error => this.snackbar = {
       type: 'error',
-      text: error,
-    }))
+      active: true,
+      message: error,
+    })
   });
 }
 
@@ -64,13 +69,15 @@ function sell_all_assets(booster_creator) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid }),
-    }).then(() => Notie.alert({
-      type: 'success',
-      text: 'success',
-    })).catch(error => Notie.alert({
+    }).then(() => this.snackbar = {
+      type: 'info',
+      active: true,
+      message: 'success',
+    }).catch(error => this.snackbar = {
       type: 'error',
-      text: error,
-    }))
+      active: true,
+      message: error,
+    })
   });
 }
 
@@ -79,7 +86,15 @@ function open_booster_creator_model(booster_creator) {
 }
 
 function get_class(item) {
-  return item === this.selected ? 'md-primary' : 'md-default';
+  if (item === this.selected) {
+    return 'md-primary';
+  }
+
+  if (item.min_available_time) {
+    return 'md-accent';
+  }
+
+  return 'md-default';
 }
 
 function on_select(item) {
@@ -92,6 +107,10 @@ export default {
     booster_creators: [],
     fetching: false,
     selected: null,
+    snackbar: {
+      active: false,
+      message: null,
+    }
   }),
   components: {
     ColorText,
