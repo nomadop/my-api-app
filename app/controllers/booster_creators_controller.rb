@@ -4,9 +4,11 @@ class BoosterCreatorsController < ActionController::Base
   end
 
   def creatable
-    MyListing.reload!
-    Inventory.reload!
-    Account::DEFAULT.load_booster_creators
+    if params[:refresh]
+      MyListing.reload!
+      Inventory.reload!
+      Account::DEFAULT.load_booster_creators
+    end
     ppg = params[:base_ppg] || 0.57
     limit = params[:limit] || 100
     render json: BoosterCreator.creatable(ppg: ppg.to_f, limit: limit.to_i).map(&:booster_pack_info)

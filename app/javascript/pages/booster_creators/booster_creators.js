@@ -3,14 +3,14 @@ import NProgress from 'nprogress';
 
 import ColorText from '../../components/color_text.vue';
 
-function fetch_creatable() {
+function fetch_creatable(refresh = true) {
   if (this.fetching) {
     return;
   }
 
   this.fetching = true;
   NProgress.start();
-  return fetch(`/booster_creators/creatable?base_ppg=${this.base_ppg}&limit=${this.limit}`)
+  return fetch(`/booster_creators/creatable?base_ppg=${this.base_ppg}&limit=${this.limit}${refresh ? '&refresh=1' : ''}`)
     .then(response => response.json())
     .then(booster_creators => this.booster_creators = booster_creators)
     .then(() => {
@@ -94,4 +94,7 @@ export default {
     sell_all_assets,
     open_booster_creator_model,
   },
+  beforeMount() {
+    this.fetch_creatable(false);
+  }
 };
