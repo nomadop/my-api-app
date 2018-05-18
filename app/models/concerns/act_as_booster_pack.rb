@@ -1,40 +1,51 @@
 module ActAsBoosterPack
   extend ActiveSupport::Concern
 
+  class_methods do
+    def register_asset_type(type, &block)
+      type_str = type.to_s
+      relation_proc = block_given? ? block : -> do
+        where('type like ?', "%#{type_str.titleize}")
+      end
+      relation_sym = type_str.pluralize.to_sym
+      order_histogram_relation_sym = "#{type}_order_histograms".to_sym
+      has_many relation_sym, relation_proc, class_name: 'MarketAsset',
+               primary_key: :market_fee_app, foreign_key: :market_fee_app
+      has_many order_histogram_relation_sym, class_name: 'OrderHistogram',
+               through: relation_sym, source: :order_histogram
+      define_method("#{type}_prices") do
+        send(order_histogram_relation_sym).pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
+      end
+      define_method("#{type}_prices_exclude_vat") do
+        send("#{type}_prices").map(&Utility.method(:exclude_val))
+      end
+    end
+  end
+
   included do
     has_one :booster_creator, primary_key: :market_fee_app, foreign_key: :appid
-    trading_cards_proc = -> do
-      where('type like ?', '%Trading Card')
-          .where.not('type like ?', '%Foil Trading Card')
-    end
-    has_many :trading_cards, trading_cards_proc, class_name: 'MarketAsset',
-             primary_key: :market_fee_app, foreign_key: :market_fee_app
-    has_many :foil_trading_cards, -> { where('type like ?', '%Foil Trading Card') },
-             class_name: 'MarketAsset', primary_key: :market_fee_app, foreign_key: :market_fee_app
-    has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
-             through: :trading_cards, source: :order_histogram
-    has_many :foil_trading_card_order_histograms, class_name: 'OrderHistogram',
-             through: :foil_trading_cards, source: :order_histogram
     has_many :listing_trading_cards, class_name: 'MyListing',
              through: :trading_cards, source: :my_listings
-
     scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(trading_cards_market_assets: {type: nil}) }
-  end
 
-  def trading_card_prices
-    trading_card_order_histograms.pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
-  end
-
-  def foil_trading_card_prices
-    foil_trading_card_order_histograms.pluck(:lowest_sell_order, :highest_buy_order).map { |prices| prices.compact.max }.compact
-  end
-
-  def trading_card_prices_exclude_vat
-    trading_card_prices.map(&Utility.method(:exclude_val))
-  end
-
-  def foil_trading_card_prices_exclude_vat
-    foil_trading_card_prices.map(&Utility.method(:exclude_val))
+    register_asset_type(:trading_card) do
+      where('type like ?', '%Trading Card').where.not('type like ?', '%Foil Trading Card')
+    end
+    register_asset_type(:foil_trading_card)
+    register_asset_type(:profile_background) do
+      where('type like ?', '%Profile Background')
+        .where.not('type like ?', '%Rare Profile Background')
+        .where.not('type like ?', '%Uncommon Profile Background')
+    end
+    register_asset_type(:rare_profile_background)
+    register_asset_type(:uncommon_profile_background)
+    register_asset_type(:emoticon) do
+      where('type like ?', '%Emoticon')
+        .where.not('type like ?', '%Rare Emoticon')
+        .where.not('type like ?', '%Uncommon Emoticon')
+    end
+    register_asset_type(:rare_emoticon)
+    register_asset_type(:uncommon_emoticon)
   end
 
   def trading_card_prices_proportion
