@@ -1,4 +1,3 @@
-import Notie from 'notie';
 import NProgress from 'nprogress';
 
 import ColorText from '../../components/color_text.vue';
@@ -17,17 +16,22 @@ function fetch_creatable(refresh = true) {
       this.fetching = false;
       NProgress.done();
     })
-    .catch(error => this.snackbar = {
-      type: 'error',
-      active: true,
-      message: error,
+    .catch(error => {
+      NProgress.done();
+      this.fetching = false;
+      this.snackbar = {
+        type: 'error',
+        active: true,
+        message: error,
+      };
     });
 }
 
 function create_and_sell(booster_creator) {
-  return Notie.confirm({
-    text: `confirm to create ${booster_creator.name}?`,
-    submitCallback: () => fetch('/booster_creators/create_and_sell', {
+  this.confirm = {
+    active: true,
+    title: `confirm to create ${booster_creator.name}?`,
+    callback: () => fetch('/booster_creators/create_and_sell', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid }),
@@ -40,13 +44,14 @@ function create_and_sell(booster_creator) {
       active: true,
       message: error,
     })
-  });
+  };
 }
 
 function create_and_unpack(booster_creator) {
-  return Notie.confirm({
-    text: `confirm to create ${booster_creator.name}?`,
-    submitCallback: () => fetch('/booster_creators/create_and_unpack', {
+  this.confirm = {
+    active: true,
+    title: `confirm to create ${booster_creator.name}?`,
+    callback: () => fetch('/booster_creators/create_and_unpack', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid }),
@@ -59,13 +64,14 @@ function create_and_unpack(booster_creator) {
       active: true,
       message: error,
     })
-  });
+  };
 }
 
 function sell_all_assets(booster_creator) {
-  return Notie.confirm({
-    text: `confirm to create ${booster_creator.name}?`,
-    submitCallback: () => fetch('/booster_creators/sell_all_assets', {
+  this.confirm = {
+    active: true,
+    title: `confirm to create ${booster_creator.name}?`,
+    callback: () => fetch('/booster_creators/sell_all_assets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid }),
@@ -78,11 +84,7 @@ function sell_all_assets(booster_creator) {
       active: true,
       message: error,
     })
-  });
-}
-
-function open_booster_creator_model(booster_creator) {
-  this.$modal.show('booster-creator', { booster_creator });
+  };
 }
 
 function get_class(item) {
@@ -110,7 +112,12 @@ export default {
     snackbar: {
       active: false,
       message: null,
-    }
+    },
+    confirm: {
+      title: null,
+      active: false,
+      callback: () => {},
+    },
   }),
   components: {
     ColorText,
@@ -120,7 +127,6 @@ export default {
     create_and_sell,
     create_and_unpack,
     sell_all_assets,
-    open_booster_creator_model,
     get_class,
     on_select,
   },

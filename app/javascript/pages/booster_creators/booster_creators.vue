@@ -28,7 +28,7 @@
                 <md-table-cell md-label="Open COV">
                     <color-text color_class="text-primary"
                                 :content="item.open_price.coefficient_of_variation"
-                                :condition="content => content < 0.15"/>
+                                :condition="content => content < 0.5"/>
                 </md-table-cell>
                 <md-table-cell md-label="Open OBR">
                     <color-text color_class="text-danger"
@@ -79,6 +79,13 @@
                 </md-table-cell>
             </md-table-row>
         </md-table>
+
+        <md-dialog-confirm :md-active.sync="confirm.active"
+                           :md-title="confirm.title"
+                           @md-confirm="confirm.callback"
+                           md-confirm-text="Yes"
+                           md-cancel-text="No"
+        />
 
         <md-snackbar :class="snackbar.type" md-position="left" :md-duration="Infinity" :md-active.sync="snackbar.active">
             <span>{{snackbar.message}}</span>
