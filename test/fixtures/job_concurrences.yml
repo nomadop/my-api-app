@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  uuid: MyString
+  concurrence: 1
+  limit: 1
+  limit_type: 1
+  lock_version: 1
+
+two:
+  uuid: MyString
+  concurrence: 1
+  limit: 1
+  limit_type: 1
+  lock_version: 1
