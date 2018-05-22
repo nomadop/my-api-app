@@ -56,13 +56,16 @@ class JobConcurrence < ApplicationRecord
   end
 
   def with_concurrence
+    increased = false
     raise 'no block given' unless block_given?
     if limited?
       return if block?
       raise 'limit reached' if throw?
     end
     increase
+    increased = true
     yield
-    decrease
+  ensure
+    decrease if increased
   end
 end
