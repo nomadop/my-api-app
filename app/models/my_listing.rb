@@ -60,7 +60,9 @@ class MyListing < ApplicationRecord
     end
 
     def refresh_order_histogram
-      includes(:market_asset).find_each(&:load_order_histogram)
+      JobConcurrence.start do |uuid|
+        includes(:market_asset).find_each { |market_asset| market_asset.load_order_histogram(uuid) }
+      end
     end
 
     def count_by_app
@@ -71,16 +73,24 @@ class MyListing < ApplicationRecord
       find_each(&:cancel)
     end
 
-    def cancel_later
-      find_each(&:cancel_later)
+    def cancel_later(concurrence_uuid = nil)
+      find_each do |my_listing|
+        my_listing.cancel_later(concurrence_uuid)
+      end
     end
 
     def cancel_cancelable
-      MyListing.non_sack_of_gems.cancelable.to_a.select(&:cancelable?).each(&:cancel_later)
+      JobConcurrence.start do |uuid|
+        MyListing.non_sack_of_gems.cancelable.to_a.select(&:cancelable?).each do |my_listing|
+          my_listing.cancel_later(uuid)
+        end
+      end
     end
 
     def cancel_dirty
-      MyListing.without_market_asset.cancel_later
+      JobConcurrence.start do |uuid|
+        MyListing.without_market_asset.cancel_later(uuid)
+      end
     end
 
     def reload_and_fresh
@@ -90,12 +100,9 @@ class MyListing < ApplicationRecord
     end
 
     def auto_resell
-      cancel_dirty
-      sleep(30)
-      reload_and_fresh
-      sleep(60)
-      cancel_cancelable
-      sleep(30)
+      JobConcurrence.wait_for(cancel_dirty)
+      JobConcurrence.wait_for(reload_and_fresh)
+      JobConcurrence.wait_for(cancel_cancelable)
       Inventory.auto_sell_and_grind
     end
 
@@ -140,8 +147,8 @@ class MyListing < ApplicationRecord
     destroy if response.code == 200
   end
 
-  def cancel_later
-    ApplicationJob.perform_unique(CancelMyListingJob, listingid)
+  def cancel_later(concurrence_uuid = nil)
+    ApplicationJob.perform_unique(CancelMyListingJob, listingid, concurrence_uuid)
   end
 
   def market_asset_type

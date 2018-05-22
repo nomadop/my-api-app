@@ -1,8 +1,10 @@
 class CancelMyListingJob < ApplicationJob
   queue_as :cancel_my_listing
 
-  def perform(listing_id)
-    Market.cancel_my_listing(listing_id)
+  def perform(listing_id, concurrence_uuid = nil)
+    JobConcurrence.with_concurrence(concurrence_uuid) do
+      Market.cancel_my_listing(listing_id)
+    end
   end
 
   rescue_from(RestClient::BadGateway) do |e|

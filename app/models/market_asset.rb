@@ -102,10 +102,10 @@ class MarketAsset < ApplicationRecord
     end
   end
 
-  def load_order_histogram
+  def load_order_histogram(concurrence_uuid = nil)
     return false if item_nameid.nil?
 
-    LoadOrderHistogramJob.perform_later(item_nameid)
+    LoadOrderHistogramJob.perform_later(item_nameid, concurrence_uuid)
   end
 
   def load_goo_value
