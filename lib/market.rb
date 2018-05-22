@@ -40,7 +40,7 @@ class Market
       TorNewnymJob.perform_later
       loop do
         sleep 1.second
-        break unless JobLock.find_by(name: 'TorNewnymJob').reload.locked
+        break unless JobConcurrence.find_by(uuid: 'TorNewnymJob').reload.completed?
       end
       request_asset(url, with_authentication)
     end
@@ -120,7 +120,7 @@ class Market
       TorNewnymJob.perform_later
       loop do
         sleep 1.second
-        break unless JobLock.find_by(name: 'TorNewnymJob').reload.locked
+        break unless JobConcurrence.find_by(uuid: 'TorNewnymJob').reload.completed?
       end
       load_order_histogram(item_nameid)
     end
@@ -150,7 +150,7 @@ class Market
       TorNewnymJob.perform_later
       loop do
         sleep 1.second
-        break unless JobLock.find_by(name: 'TorNewnymJob').reload.locked
+        break unless JobConcurrence.find_by(uuid: 'TorNewnymJob').reload.completed?
       end
       search(appid, start, count)
     end
