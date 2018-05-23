@@ -565,8 +565,8 @@ class Market
       })
     end
 
-    def scan_my_histories
-      LoadMyHistoriesJob.perform_later(0, 100)
+    def scan_my_histories(concurrence_uuid = nil)
+      LoadMyHistoriesJob.perform_later(0, 100, concurrence_uuid)
     end
 
     def eligibility_check(account)

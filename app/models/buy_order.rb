@@ -117,8 +117,10 @@ class BuyOrder < ApplicationRecord
 
     def rebuy_purchased
       Authentication.refresh
-      Market.scan_my_histories
-      sleep 30.seconds
+      concurrence_uuid = JobConcurrence.start do |uuid|
+        Market.scan_my_histories(uuid)
+      end
+      JobConcurrence.wait_for(concurrence_uuid)
       MarketAsset.with_my_buy_histories(10.minute).quick_order_later
     end
 
