@@ -10,5 +10,8 @@ Vue.component('booster-creators', function (resolve) {
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     el: '#vue-app',
+    data: () => ({
+      nav_visible: false,
+    }),
   });
 });
