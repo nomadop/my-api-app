@@ -34,23 +34,23 @@ class AccountHistory < ApplicationRecord
         package.workbook.add_worksheet(name: 'Purchased') do |sheet|
           sheet.add_row(%w|Game Price|)
           purchase.expense.payment('钱包').find_each do |history|
-            sheet.add_row([history.items.first, Utility.format_currency(history.total)])
+            sheet.add_row([history.items.first, Utility.format_price(history.total)])
           end
-          sheet.add_row(['Sum', Utility.format_currency(purchase.expense.payment('钱包').total)])
+          sheet.add_row(['Sum', Utility.format_price(purchase.expense.payment('钱包').total)])
         end
         package.workbook.add_worksheet(name: 'Refund') do |sheet|
           sheet.add_row(%w|Game Price|)
           refund.income.find_each do |history|
-            sheet.add_row([history.items.first, Utility.format_currency(history.total)])
+            sheet.add_row([history.items.first, Utility.format_price(history.total)])
           end
-          sheet.add_row(['Sum', Utility.format_currency(refund.income.total)])
+          sheet.add_row(['Sum', Utility.format_price(refund.income.total)])
         end
         package.workbook.add_worksheet(name: 'Gift') do |sheet|
           sheet.add_row(%w|Game Price SendTo|)
           gift.expense.find_each do |history|
-            sheet.add_row([history.items.first, Utility.format_currency(history.total), history.items.last])
+            sheet.add_row([history.items.first, Utility.format_price(history.total), history.items.last])
           end
-          sheet.add_row(['Sum', Utility.format_currency(gift.expense.total)])
+          sheet.add_row(['Sum', Utility.format_price(gift.expense.total)])
         end
         package.serialize('expenses.xlsx')
       end
