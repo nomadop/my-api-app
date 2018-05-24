@@ -53,5 +53,9 @@ class Utility
     def remove_cookies(cookies, jar)
       cookies.each(&jar.method(:delete))
     end
+
+    def format_currency(price)
+      ActionController::Base.helpers.number_to_currency(price / 100.0, locale: :cn)
+    end
   end
 end
