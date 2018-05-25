@@ -9,3 +9,21 @@
     width: 25%;
   }
 }
+
+.md-table-row.md-accent {
+  background-color: #5D4037;
+}
+
+.md-snackbar {
+  &.info {
+    background-color: #CFD8DC;
+  }
+
+  &.error {
+    background-color: #D7CCC8;
+  }
+}
+
+.tooltip-label {
+  color: #999;
+}

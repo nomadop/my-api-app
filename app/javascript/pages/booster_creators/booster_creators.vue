@@ -115,22 +115,6 @@
     .action-cell >>> .md-table-cell-container {
         width: 365px;
     }
-
-    .md-table-row.md-accent {
-        background-color: #5D4037;
-    }
-
-    .md-snackbar.info {
-        background-color: #CFD8DC;
-    }
-
-    .md-snackbar.error {
-        background-color: #D7CCC8;
-    }
-
-    .tooltip-label {
-        color: #999;
-    }
 </style>
 
 <script src="./booster_creators.js"></script>
