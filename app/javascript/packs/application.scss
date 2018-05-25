@@ -27,3 +27,11 @@
 .tooltip-label {
   color: #999;
 }
+
+.md-field.md-has-value {
+  .md-select i svg {
+    path:first-child {
+      display: none;
+    }
+  }
+}

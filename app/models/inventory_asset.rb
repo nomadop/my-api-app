@@ -1,6 +1,7 @@
 class InventoryAsset < ApplicationRecord
   GEMS_CLASSID = 667924416
   SACK_OF_GEMS_CLASSID = 667933237
+  self.inheritance_column = nil
 
   belongs_to :account
   has_one :description, class_name: 'InventoryDescription',
@@ -27,11 +28,11 @@ class InventoryAsset < ApplicationRecord
   scope :with_order_histogram, -> { joins(:order_histogram).distinct.includes(:order_histogram) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
 
-  delegate :marketable?, :unmarketable?, :market_hash_name, :load_market_asset, :marketable_date, :owner_descriptions,
-           to: :description
+  delegate :marketable, :marketable?, :unmarketable?, :market_hash_name,
+           :load_market_asset, :marketable_date, :owner_descriptions, to: :description
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance,
            :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value, :booster_pack_info,
-           :open_price_per_goo, :load_order_histogram, :listing_url, to: :market_asset, allow_nil: true
+           :open_price_per_goo, :load_order_histogram, :listing_url, :type, to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, :sell_order_count, to: :order_histogram, allow_nil: true
 
   class << self
@@ -90,7 +91,6 @@ class InventoryAsset < ApplicationRecord
     if JSON.parse(response.body)['success']
       remain_amount = self.amount.to_i - amount
       remain_amount > 0 ? update(amount: remain_amount) : destroy
-      `say sold`
     end
   end
 
