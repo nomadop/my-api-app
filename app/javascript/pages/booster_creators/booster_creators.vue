@@ -1,7 +1,7 @@
 <template>
     <div id="booster-creators">
         <md-table v-model="booster_creators" md-card md-fixed-header
-                  md-sort="price_per_goo" md-sort-order="desc"
+                  md-sort="open_price_per_goo" md-sort-order="desc"
                   @md-selected="on_select">
             <md-table-toolbar class="md-elevation-2">
                 <md-button class="md-raised md-primary"
@@ -51,24 +51,24 @@
                     <md-button class="md-dense md-raised md-primary" @click="sell_all_assets(item)">sell assets</md-button>
                 </md-table-cell>
                 <md-tooltip md-direction="bottom">
-                    Appid: {{item.appid}}
-                    | Price: {{item.price}}
-                    | AVG Foil Price: {{item.open_price.foil_average}}
-                    | Open OBR:
+                    <span class="tooltip-label">Appid:</span> {{item.appid}}
+                    | <span class="tooltip-label">Price:</span> {{item.price}}
+                    | <span class="tooltip-label">AVG Foil Price:</span> {{item.open_price.foil_average}}
+                    | <span class="tooltip-label">Open OBR:</span>
                     <color-text color_class="text-danger"
                                 :content="item.open_price.over_baseline_rate"
                                 :condition="content => content < 0.5"/>
-                    | Order Count: {{item.sell_order_count}} / {{item.buy_order_count}}
-                    | Open Order Count: {{item.open_sell_order_count}} / {{item.open_buy_order_count}}
-                    | Proportion:
+                    | <span class="tooltip-label">Order Count:</span> {{item.sell_order_count}} / {{item.buy_order_count}}
+                    | <span class="tooltip-label">Open Order Count:</span> {{item.open_sell_order_count}} / {{item.open_buy_order_count}}
+                    | <span class="tooltip-label">Proportion:</span>
                     <color-text color_class="text-danger"
                                 :content="item.sell_proportion"
                                 :condition="content => content < 0.1"/>
-                    | Open Proportion:
+                    | <span class="tooltip-label">Open Proportion:</span>
                     <color-text color_class="text-danger"
                                 :content="item.trading_card_prices_proportion"
                                 :condition="content => content < 0.1"/>
-                    | Available Time:
+                    | <span class="tooltip-label">Available Time:</span>
                     <color-text color_class="text-primary"
                                 :content="item.min_available_time ? new Date(item.min_available_time) : null"
                                 :condition="content => content < new Date()"
@@ -126,6 +126,10 @@
 
     .md-snackbar.error {
         background-color: #D7CCC8;
+    }
+
+    .tooltip-label {
+        color: #999;
     }
 </style>
 

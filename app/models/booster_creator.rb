@@ -27,9 +27,9 @@ class BoosterCreator < ApplicationRecord
   scope :unavailable, -> { where(unavailable: true) }
   scope :available, -> { where(unavailable: false) }
   scope :with_inventory_assets, -> { joins(:inventory_assets).distinct }
-  scope :ppg_order, -> do
-    joins(
-        <<-SQL
+
+  scope :ppg_group, -> do
+    join_sql = <<-SQL
       INNER JOIN "market_assets" 
       ON "market_assets"."market_fee_app" = "booster_creators"."appid"
       AND ("market_assets"."type" like '%Trading Card')
@@ -42,8 +42,11 @@ class BoosterCreator < ApplicationRecord
         ORDER BY oh.created_at DESC LIMIT 1
       )
     SQL
-    ).group('booster_creators.id').order('1.0 * SUM(order_histograms.lowest_sell_order) / COUNT(order_histograms.id) * 3 / price desc')
+    joins(join_sql).group('booster_creators.id')
   end
+  ppg_sql = '1.0 * SUM(order_histograms.lowest_sell_order) / COUNT(order_histograms.id) * 3 / price'
+  scope :ppg_order, -> { ppg_group.order("#{ppg_sql} desc") }
+  scope :ppg_having, ->(ppg) { ppg_group.having("(#{ppg_sql}) > #{ppg}") }
 
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
            :sell_order_count, :buy_order_count, :order_count, :listing_url, to: :booster_pack, allow_nil: true
@@ -81,8 +84,7 @@ class BoosterCreator < ApplicationRecord
           :listing_booster_packs,
           booster_pack: :order_histogram,
       )
-          .first_ppg_order(limit)
-          .to_a.select { |booster_creator| booster_creator.createable?(ppg) }
+          .ppg_having(ppg)
     end
 
     def set_trading_card_type
