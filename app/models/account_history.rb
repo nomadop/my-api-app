@@ -29,6 +29,28 @@ class AccountHistory < ApplicationRecord
      purchase.expense.payment('钱包').total_change + refund.income.total_change + gift.expense.total_change
     end
 
+    def purchase_without_refund
+      purchase.expense.payment('钱包').to_a.tap do |purchases|
+        refund.income.find_each do |refund_history|
+          purchases.delete_if { |purchase_history| purchase_history.items.first == refund_history.items.first }
+        end
+      end
+    end
+
+    def purchase_report
+      Axlsx::Package.new do |package|
+        package.workbook.add_worksheet(name: 'Purchase Without Refund') do |sheet|
+          sheet.add_row(%w|Game Price|)
+          purchase_without_refund.each do |history|
+            sheet.add_row([history.items.first, Utility.format_price(history.total)])
+          end
+          sheet.add_row(['Sum', Utility.format_price(purchase_without_refund.sum(&:total))])
+        end
+        package.serialize('purchases.xlsx')
+      end
+      true
+    end
+
     def expense_report
       Axlsx::Package.new do |package|
         package.workbook.add_worksheet(name: 'Purchased') do |sheet|
