@@ -1,5 +1,5 @@
 class Account < ApplicationRecord
-  DEFAULT = find_by(account_id: '76561197967991989')
+  DEFAULT = find(1)
 
   has_many :inventory_assets
   has_many :account_booster_creators
