@@ -34,7 +34,13 @@ class JobConcurrence < ApplicationRecord
   end
 
   def increase
-    reload.update(concurrence: concurrence + 1)
+    reload
+    if limited?
+      return false if block?
+      raise 'limit reached' if throw?
+    end
+    update(concurrence: concurrence + 1)
+    true
   rescue ActiveRecord::StaleObjectError
     sleep 0.1.second
     increase
@@ -58,12 +64,8 @@ class JobConcurrence < ApplicationRecord
   def with_concurrence
     increased = false
     raise 'no block given' unless block_given?
-    if limited?
-      return if block?
-      raise 'limit reached' if throw?
-    end
-    increase
-    increased = true
+    increased = increase
+    return unless increased
     yield
   ensure
     decrease if increased
