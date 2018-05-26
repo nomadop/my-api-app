@@ -86,6 +86,7 @@ class Authentication
       if result['success'] && result['login_complete']
         account = Account.find_or_create_by(account_id: result['transfer_parameters']['steamid'])
         account.update_cookie(response)
+        account.enabled!
       end
       result
     end

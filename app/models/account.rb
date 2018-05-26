@@ -9,6 +9,8 @@ class Account < ApplicationRecord
   has_many :emails, primary_key: :email_address, foreign_key: :to
   has_many :account_histories
 
+  enum status: [:enabled, :disabled, :expired]
+
   def cookie
     reload
     super
@@ -61,6 +63,9 @@ class Account < ApplicationRecord
   def refresh
     response = Authentication.check_login(cookie)
     update_cookie(response)
+  rescue Authentication::AccountExpired => e
+    expired!
+    raise(e)
   end
 
   def reload_inventory

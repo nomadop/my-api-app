@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180522021816) do
+ActiveRecord::Schema.define(version: 20180526182842) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,10 +42,11 @@ ActiveRecord::Schema.define(version: 20180522021816) do
     t.string   "account_name"
     t.string   "account_id"
     t.text     "cookie"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
     t.string   "email_address"
     t.string   "email_password"
+    t.integer  "status",         default: 0
   end
 
   create_table "booster_creations", force: :cascade do |t|
