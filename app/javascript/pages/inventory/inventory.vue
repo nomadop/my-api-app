@@ -20,6 +20,7 @@
                 </md-field>
             </md-table-toolbar>
             <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)" md-selectable="single">
+                <md-table-cell md-label="Id" class="name-cell">{{item.id}}</md-table-cell>
                 <md-table-cell md-label="Name" class="name-cell">{{item.market_hash_name}}</md-table-cell>
                 <md-table-cell md-label="Goo Value" class="numeric-cell" md-sort-by="goo_value" md-numeric>
                     {{item.goo_value}}
@@ -38,7 +39,7 @@
                 </md-table-cell>
 
                 <md-tooltip md-direction="right">
-                    {{item.type}}
+                    {{item.assetid}} | {{item.type}}
                 </md-tooltip>
             </md-table-row>
         </md-table>
@@ -67,6 +68,9 @@
 
     .md-field {
         max-width: 120px;
+    }
+    .md-tooltip {
+        transform: translate(48px, 32px);
     }
 </style>
 
