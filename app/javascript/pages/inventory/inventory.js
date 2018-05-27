@@ -49,16 +49,16 @@ function get_class(item) {
   return 'md-default';
 }
 
-function on_select(item) {
-  this.selected = item;
+function on_select(items) {
+  this.selected = items;
 }
 
 export default {
   data: () => ({
     items: [],
+    selected: [],
     inventory_assets: [],
     fetching: false,
-    selected: null,
     snackbar: {
       active: false,
       message: null,

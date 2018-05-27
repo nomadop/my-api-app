@@ -3,6 +3,7 @@
         <md-table v-model="items" md-card md-fixed-header
                   md-sort="lowest_sell_order" md-sort-order="desc"
                   @md-selected="on_select">
+
             <md-table-toolbar class="md-elevation-2">
                 <div class="md-toolbar-section-start">
                     <md-button class="md-raised md-primary"
@@ -19,7 +20,19 @@
                     </md-select>
                 </md-field>
             </md-table-toolbar>
-            <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)" md-selectable="single">
+
+            <md-table-toolbar slot="md-table-alternate-header" slot-scope="{ count }">
+                <div class="md-toolbar-section-start">selected: {{ count }}</div>
+
+                <div class="md-toolbar-section-end">
+                    <md-button class="md-icon-button">
+                        <md-icon>delete</md-icon>
+                    </md-button>
+                </div>
+            </md-table-toolbar>
+
+            <md-table-row slot="md-table-row" slot-scope="{ item }" :md-disabled="item.marketable === 0"
+                          md-selectable="multiple" md-auto-select>
                 <md-table-cell md-label="Id" class="name-cell">{{item.id}}</md-table-cell>
                 <md-table-cell md-label="Name" class="name-cell">
                     <md-button class="md-dense" target="_blank" :href="item.listing_url">{{item.market_hash_name}}</md-button>
