@@ -9,12 +9,12 @@
                     <md-button class="md-raised md-primary"
                                @click="reload_assets"
                                :disabled="fetching">
-                        {{fetching ? 'Pending' : 'Reload'}}
+                        Reload
                     </md-button>
                 </div>
                 <md-field md-clearable class="md-toolbar-section-end">
-                    <label for="marketable">Marketable</label>
-                    <md-select v-model="filter.marketable" name="marketable" id="marketable">
+                    <label>Marketable</label>
+                    <md-select v-model="filter.marketable">
                         <md-option :value="1">True</md-option>
                         <md-option :value="0">False</md-option>
                     </md-select>
@@ -22,18 +22,21 @@
             </md-table-toolbar>
 
             <md-table-toolbar slot="md-table-alternate-header" slot-scope="{ count }">
-                <div class="md-toolbar-section-start">selected: {{ count }}</div>
+                <div class="md-toolbar-section-start">Selected: {{ count }}</div>
 
                 <div class="md-toolbar-section-end">
-                    <md-button class="md-icon-button">
-                        <md-icon>delete</md-icon>
+                    <md-field>
+                        <label>Sell PPG</label>
+                        <md-input v-model="sell_ppg"></md-input>
+                    </md-field>
+                    <md-button class="md-raised md-primary" @click="sell_by_ppg" :disabled="fetching">
+                        Sell By PPG
                     </md-button>
                 </div>
             </md-table-toolbar>
 
             <md-table-row slot="md-table-row" slot-scope="{ item }" :md-disabled="item.marketable === 0"
                           md-selectable="multiple" md-auto-select>
-                <md-table-cell md-label="Id" class="name-cell">{{item.id}}</md-table-cell>
                 <md-table-cell md-label="Name" class="name-cell">
                     <md-button class="md-dense" target="_blank" :href="item.listing_url">{{item.market_hash_name}}</md-button>
                 </md-table-cell>
@@ -41,10 +44,10 @@
                     {{item.goo_value}}
                 </md-table-cell>
                 <md-table-cell md-label="Sell Price" class="numeric-cell" md-sort-by="lowest_sell_order" md-numeric>
-                    <div class="md-list-item-text">
-                        <span>{{item.lowest_sell_order}}</span>
-                        <span>({{item.lowest_sell_order_exclude_vat}})</span>
-                    </div>
+                    {{item.lowest_sell_order_exclude_vat}}
+                </md-table-cell>
+                <md-table-cell md-label="Sell PPG" class="numeric-cell" md-sort-by="price_per_goo_exclude_vat" md-numeric>
+                    {{item.price_per_goo_exclude_vat | round }}
                 </md-table-cell>
                 <md-table-cell md-label="Sell Count" class="numeric-cell" md-sort-by="sell_order_count" md-numeric>
                     {{item.sell_order_count}}

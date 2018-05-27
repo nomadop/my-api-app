@@ -31,8 +31,8 @@ class InventoryAsset < ApplicationRecord
   delegate :marketable, :marketable?, :unmarketable?, :marketable_date,
            :load_market_asset, :owner_descriptions, to: :description
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance,
-           :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value, :booster_pack_info,
            :open_price_per_goo, :load_order_histogram, :listing_url, :type, :market_hash_name,
+           :goo_value, :booster_pack?, :refresh_goo_value, :booster_pack_info,
            to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, :sell_order_count, :highest_buy_order, :buy_order_count,
            :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
@@ -95,6 +95,10 @@ class InventoryAsset < ApplicationRecord
       remain_amount = self.amount.to_i - amount
       remain_amount > 0 ? update(amount: remain_amount) : destroy
     end
+  end
+
+  def sell_by_ppg(ppg)
+    sell((goo_value * ppg).ceil)
   end
 
   def quick_sell
