@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180526182842) do
+ActiveRecord::Schema.define(version: 20180527023704) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -236,10 +236,11 @@ ActiveRecord::Schema.define(version: 20180526182842) do
   create_table "my_listings", force: :cascade do |t|
     t.string   "listingid"
     t.string   "market_hash_name"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",                       null: false
+    t.datetime "updated_at",                       null: false
     t.integer  "price"
     t.string   "listed_date"
+    t.boolean  "confirming",       default: false
   end
 
   create_table "order_activities", force: :cascade do |t|

@@ -38,6 +38,7 @@ class MyListing < ApplicationRecord
         )
     SQL
   end
+  scope :confirming, -> { where(confirming: true) }
 
   delegate :load_order_histogram, :find_sell_balance, :goo_value, to: :market_asset
   delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
@@ -57,6 +58,15 @@ class MyListing < ApplicationRecord
         truncate
         reload
       end
+    end
+
+    def load_confirming
+      Market.load_confirming_listings
+    end
+
+    def reload_confiming
+      confirming.delete_all
+      load_confirming
     end
 
     def refresh_order_histogram

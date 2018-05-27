@@ -226,19 +226,32 @@ class Market
       result['total_count'] == 0 ? request_my_listings(start, count) : result
     end
 
+    def handle_my_listing_row(row, confirming = false)
+      listingid = row.attr(:id).match(/mylisting_(?<id>\d+)/)[:id]
+      name_link = row.search('.market_listing_item_name_link').first
+      market_hash_name = URI.decode(name_link.attr(:href).split('/').last)
+      price_text = row.search('.market_listing_price > span > span:eq(1)').text.strip
+      price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
+      price = price_text_match && price_text_match[:price].to_f * 100
+      listed_date = row.search('.market_listing_listed_date').text.strip
+      {listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date, confirming: confirming}
+    end
+
     def handle_my_listing_result(result)
       doc = Nokogiri::HTML(result['results_html'])
       rows = doc.search('.market_listing_row')
-      my_listings = rows.map do |row|
-        listingid = row.attr(:id).match(/mylisting_(?<id>\d+)/)[:id]
-        name_link = row.search('.market_listing_item_name_link').first
-        market_hash_name = URI.decode(name_link.attr(:href).split('/').last)
-        price_text = row.search('.market_listing_price > span > span:eq(1)').text.strip
-        price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
-        price = price_text_match && price_text_match[:price].to_f * 100
-        listed_date = row.search('.market_listing_listed_date').text.strip
-        {listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date}
+      my_listings = rows.map { |row| handle_my_listing_row(row) }
+      MyListing.import(my_listings)
+    end
+
+    def load_confirming_listings
+      doc = Nokogiri::HTML(Market.request_market)
+      listing_section = doc.search('.my_listing_section').find do |section|
+        section.search('.my_market_header_active').first&.text === '我的等待确认的上架物品'
       end
+      return if listing_section.nil?
+      rows = listing_section.search('.market_listing_row')
+      my_listings = rows.map { |row| handle_my_listing_row(row, true) }
       MyListing.import(my_listings)
     end
 
@@ -391,7 +404,7 @@ class Market
 
       option = {
           method: :get,
-          url: 'http://steamcommunity.com/market/',
+          url: 'https://steamcommunity.com/market/',
           headers: {
               :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
               :'Accept-Encoding' => 'gzip, deflate, sdch',
@@ -404,6 +417,7 @@ class Market
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       response.body
