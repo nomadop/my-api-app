@@ -4,7 +4,7 @@ function on_response(response) {
   return response.json()
     .then(inventory_assets => {
       this.inventory_assets = inventory_assets;
-      this.filter_by_marketable(this.filter.marketable);
+      this.on_filter();
     })
     .then(() => {
       this.fetching = false;
@@ -71,12 +71,15 @@ function on_select(items) {
   this.selected = items;
 }
 
-function filter_by_marketable(marketable) {
-  if (marketable === "") {
-    return this.items = this.inventory_assets;
+function on_filter(filter = {}) {
+  const filters = { ...this.filter, ...filter };
+  this.items = this.inventory_assets;
+  if (filters.marketable !== '') {
+    this.items = this.items.filter(item => item.marketable === filters.marketable);
   }
-
-  this.items = this.inventory_assets.filter(asset => asset.marketable === marketable);
+  if (filters.sell_ppg !== '') {
+    this.items = this.items.filter(item => item.price_per_goo_exclude_vat >= +filters.sell_ppg);
+  }
 }
 
 export default {
@@ -91,13 +94,17 @@ export default {
     },
     filter: {
       marketable: 1,
+      sell_ppg: '',
     },
     sell_ppg: 0.57,
   }),
   watch: {
     'filter.marketable': function (marketable) {
-      this.filter_by_marketable(marketable);
-    }
+      this.on_filter({ marketable });
+    },
+    'filter.sell_ppg': function (sell_ppg) {
+      this.on_filter({ sell_ppg })
+    },
   },
   methods: {
     fetch_assets,
@@ -105,7 +112,7 @@ export default {
     sell_by_ppg,
     get_class,
     on_select,
-    filter_by_marketable,
+    on_filter,
   },
   filters: {
     round: number => number && +number.toFixed(2),

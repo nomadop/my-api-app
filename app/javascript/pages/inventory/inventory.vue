@@ -12,13 +12,21 @@
                         Reload
                     </md-button>
                 </div>
-                <md-field md-clearable class="md-toolbar-section-end">
-                    <label>Marketable</label>
-                    <md-select v-model="filter.marketable">
-                        <md-option :value="1">True</md-option>
-                        <md-option :value="0">False</md-option>
-                    </md-select>
-                </md-field>
+
+                <div class="md-toolbar-section-end">
+                    <md-field md-clearable>
+                        <label>Sell PPG</label>
+                        <md-input v-model="filter.sell_ppg"></md-input>
+                    </md-field>
+
+                    <md-field md-clearable>
+                        <label>Marketable</label>
+                        <md-select v-model="filter.marketable">
+                            <md-option :value="1">True</md-option>
+                            <md-option :value="0">False</md-option>
+                        </md-select>
+                    </md-field>
+                </div>
             </md-table-toolbar>
 
             <md-table-toolbar slot="md-table-alternate-header" slot-scope="{ count }">
@@ -88,6 +96,7 @@
     }
 
     .md-field {
+        margin-left: 12px;
         max-width: 120px;
     }
     .md-tooltip {
