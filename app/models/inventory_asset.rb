@@ -34,7 +34,9 @@ class InventoryAsset < ApplicationRecord
            :price_per_goo_exclude_vat, :goo_value, :booster_pack?, :refresh_goo_value, :booster_pack_info,
            :open_price_per_goo, :load_order_histogram, :listing_url, :type, :market_hash_name,
            to: :market_asset, allow_nil: true
-  delegate :lowest_sell_order, :sell_order_count, to: :order_histogram, allow_nil: true
+  delegate :lowest_sell_order, :sell_order_count, :highest_buy_order, :buy_order_count,
+           :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
+           to: :order_histogram, allow_nil: true
 
   class << self
     def total_goo_value
