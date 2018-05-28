@@ -11,6 +11,10 @@ Vue.component('inventory', function (resolve) {
   require(['../pages/inventory/inventory.vue'], resolve)
 });
 
+Vue.component('my-listings', function (resolve) {
+  require(['../pages/my_listings/my_listings.vue'], resolve)
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     el: '#vue-app',

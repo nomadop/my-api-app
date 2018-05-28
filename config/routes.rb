@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   resource :authentication
   get '/inventory', to: 'inventory#show'
   get '/inventory/assets', to: 'inventory#assets'
+  get '/my_listings', to: 'my_listings#show'
+  get '/my_listings/list', to: 'my_listings#list'
   get '/booster_creators', to: 'booster_creators#show'
   get '/booster_creators/creatable', to: 'booster_creators#creatable'
   post '/inventory/reload', to: 'inventory#reload'

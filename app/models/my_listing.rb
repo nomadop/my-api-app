@@ -1,5 +1,6 @@
 class MyListing < ApplicationRecord
   include ActAsListable
+  self.inheritance_column = nil
 
   after_create :load_market_asset_later
 
@@ -40,8 +41,10 @@ class MyListing < ApplicationRecord
   end
   scope :confirming, -> { where(confirming: true) }
 
-  delegate :load_order_histogram, :find_sell_balance, :goo_value, to: :market_asset
+  delegate :load_order_histogram, :find_sell_balance, :goo_value,
+           :market_name, :market_fee_app, :type, to: :market_asset
   delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
+  delegate :name, to: :booster_creator, allow_nil: true
 
   class << self
     def reload(start = 0, count = 100)
@@ -57,14 +60,15 @@ class MyListing < ApplicationRecord
       transaction do
         truncate
         reload
+        reload_confirming
       end
     end
 
-    def load_confirming
+    def reload_confirming
       Market.load_confirming_listings
     end
 
-    def reload_confiming
+    def reload_confirming!
       confirming.delete_all
       load_confirming
     end
