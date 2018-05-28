@@ -10,16 +10,18 @@ class JobConcurrence < ApplicationRecord
       concurrence.uuid
     end
 
-    def wait_for(uuid)
+    def wait_for(uuid, watch_time: 3.second, sleep_time: 0.5.second, timeout: nil)
       concurrence = find_by(uuid: uuid)
       return if concurrence.nil?
 
       down_time = 0.second
-      sleep_time = 0.5.second
+      wait_time = 0.second
       loop do
         sleep sleep_time
+        wait_time += sleep_time
         down_time = concurrence.reload.completed? ? down_time + sleep_time : 0.second
-        break if down_time > 3.second
+        break if down_time > watch_time
+        raise 'timeout' if timeout && wait_time > timeout
       end
     end
 
