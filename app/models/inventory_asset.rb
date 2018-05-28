@@ -44,8 +44,8 @@ class InventoryAsset < ApplicationRecord
       joins(:market_asset).sum(:goo_value)
     end
 
-    def auto_sell_and_grind_later
-      find_each &:auto_sell_and_grind_later
+    def auto_sell_and_grind_later(concurrence_uuid = nil)
+      find_each { |asset| asset.auto_sell_and_grind_later(concurrence_uuid) }
     end
 
     def find_biggest_tradable_gem
@@ -233,13 +233,13 @@ class InventoryAsset < ApplicationRecord
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
     return false unless marketable?
-    return quick_sell if ppg > 1 || booster_pack?
+    return quick_sell if ppg > 1 || (booster_pack? && booster_creations.exists?)
     grind_into_goo if ppg <= 2 && !booster_pack?
   end
 
-  def auto_sell_and_grind_later
+  def auto_sell_and_grind_later(concurrence_uuid = nil)
     return if market_asset.nil?
-    ApplicationJob.perform_unique(AutoSellAndGrindJob, id)
+    ApplicationJob.perform_unique(AutoSellAndGrindJob, id, concurrence_uuid)
   end
 
   def generate_trade_offer(amount)

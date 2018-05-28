@@ -113,7 +113,8 @@ class MyListing < ApplicationRecord
       JobConcurrence.wait_for(cancel_dirty)
       JobConcurrence.wait_for(reload_and_fresh)
       JobConcurrence.wait_for(cancel_cancelable)
-      Inventory.auto_sell_and_grind
+      JobConcurrence.wait_for(Inventory.auto_sell_and_grind)
+      ASF.send_command('2faok')
     end
 
     def cancel_pending_listings

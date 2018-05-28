@@ -62,7 +62,9 @@ class Inventory
 
     def auto_sell_and_grind(account = Account::DEFAULT)
       account.reload_inventory
-      account.inventory_assets.reload.non_gems.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later
+      JobConcurrence.start do |uuid|
+        account.inventory_assets.reload.non_gems.non_sacks_of_gem.includes(:market_asset).auto_sell_and_grind_later(uuid)
+      end
     end
 
     def auto_sell_and_grind_marketable(account = Account::DEFAULT)
