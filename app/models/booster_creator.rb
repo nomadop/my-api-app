@@ -266,7 +266,7 @@ class BoosterCreator < ApplicationRecord
       account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
       next unless account_booster_creator&.available?
       assetid = create(account)
-      assetid && account == Account::DEFAULT && Inventory.unpack_booster(assetid, account)
+      assetid && Inventory.unpack_booster(assetid, account)
     end
   end
 
