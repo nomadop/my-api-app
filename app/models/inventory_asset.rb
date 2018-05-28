@@ -8,6 +8,7 @@ class InventoryAsset < ApplicationRecord
           primary_key: [:classid, :instanceid], foreign_key: [:classid, :instanceid]
 
   has_one :market_asset, primary_key: :classid, foreign_key: :classid
+  has_many :my_listings, through: :market_asset
   has_one :booster_creator, through: :market_asset
   has_many :booster_creations, through: :booster_creator
   has_one :order_histogram, through: :market_asset
@@ -112,6 +113,7 @@ class InventoryAsset < ApplicationRecord
         [price, (booster_creator.price * 0.55).ceil].max :
         [price, (booster_creator.price * 0.525 / 3).ceil].max
     end
+    price = my_listings.take.price_exclude_vat if my_listings.exists?
     sell(price)
   end
 
