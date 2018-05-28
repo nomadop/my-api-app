@@ -11,6 +11,13 @@ class Account < ApplicationRecord
   has_many :my_listings
 
   enum status: [:enabled, :disabled, :expired]
+  default_scope -> { enabled }
+
+  class << self
+    def load_booster_creators
+      find_each(&:load_booster_creators)
+    end
+  end
 
   def cookie
     reload
