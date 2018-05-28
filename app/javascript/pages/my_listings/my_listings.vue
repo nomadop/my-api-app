@@ -21,8 +21,12 @@
             <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="multiple" md-auto-select>
                 <md-table-cell md-label="Appid" class="numeric-cell" md-sort-by="market_fee_app" md-numeric>
                     {{item.market_fee_app}}
-                </md-table-cell><md-table-cell md-label="Name" class="name-cell">
+                </md-table-cell>
+                <md-table-cell md-label="Name" class="name-cell">
                     {{item.market_name}}
+                </md-table-cell>
+                <md-table-cell md-label="Account" class="name-cell" md-sort-by="bot_name">
+                    {{item.bot_name}}
                 </md-table-cell>
                 <md-table-cell md-label="Price" class="numeric-cell" md-sort-by="price" md-numeric>
                     <div class="md-list-item-text">

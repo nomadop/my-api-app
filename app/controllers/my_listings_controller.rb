@@ -5,7 +5,7 @@ class MyListingsController < ActionController::Base
       methods: [
         :price_exclude_vat, :price_per_goo_exclude_vat,
         :lowest_sell_order, :lowest_sell_order_exclude_vat,
-        :market_name, :market_fee_app, :name, :type,
+        :market_name, :market_fee_app, :name, :type, :bot_name,
       ]
     )
   end
