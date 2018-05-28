@@ -3,13 +3,13 @@ import NProgress from 'nprogress';
 import ColorText from '../../components/color_text.vue';
 
 function fetch_creatable(refresh = true) {
-  if (this.fetching) {
+  if (this.fetching || this.base_ppg === '') {
     return;
   }
 
   this.fetching = true;
   NProgress.start();
-  return fetch(`/booster_creators/creatable?base_ppg=${this.base_ppg}&limit=${this.limit}${refresh ? '&refresh=1' : ''}`)
+  return fetch(`/booster_creators/creatable?base_ppg=${+this.base_ppg}${refresh ? '&refresh=1' : ''}`)
     .then(response => response.json())
     .then(booster_creators => this.booster_creators = booster_creators)
     .then(() => {
@@ -104,7 +104,6 @@ function on_select(item) {
 }
 
 export default {
-  props: ['base_ppg', 'limit'],
   data: () => ({
     booster_creators: [],
     fetching: false,
@@ -118,6 +117,7 @@ export default {
       active: false,
       callback: () => {},
     },
+    base_ppg: 0.55,
   }),
   components: {
     ColorText,

@@ -28,10 +28,19 @@
   color: #999;
 }
 
-.md-field.md-has-value {
-  .md-select i svg {
-    path:first-child {
-      display: none;
+.md-field {
+  margin-left: 12px;
+  max-width: 120px;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  &.md-has-value {
+    .md-select i svg {
+      path:first-child {
+        display: none;
+      }
     }
   }
 }

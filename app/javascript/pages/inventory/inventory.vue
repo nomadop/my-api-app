@@ -103,10 +103,6 @@
         width: 180px;
     }
 
-    .md-field {
-        margin-left: 12px;
-        max-width: 120px;
-    }
     .md-tooltip {
         transform: translate(48px, 32px);
     }

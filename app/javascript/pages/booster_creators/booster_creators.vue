@@ -6,9 +6,13 @@
             <md-table-toolbar class="md-elevation-2">
                 <md-button class="md-raised md-primary"
                            @click="fetch_creatable"
-                           :disabled="fetching">
+                           :disabled="fetching || base_ppg === ''">
                     {{fetching ? 'fetching' : 'fetch'}}
                 </md-button>
+                <md-field>
+                    <label>Base PPG</label>
+                    <md-input v-model="base_ppg"></md-input>
+                </md-field>
             </md-table-toolbar>
             <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)" md-selectable="single">
                 <md-table-cell md-label="Name" class="name-cell">{{item.name}}</md-table-cell>
