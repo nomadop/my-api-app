@@ -19,7 +19,7 @@ class MyListing < ApplicationRecord
   scope :without_app, -> { left_outer_joins(:steam_app).where(steam_apps: {steam_appid: nil}) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {market_hash_name: nil}) }
   scope :cancelable, -> do
-    joins(:order_histogram).where <<~SQL
+    joins(:order_histogram).where <<-SQL
         (price > order_histograms.lowest_sell_order OR (
           price > 100 AND 
           price = order_histograms.lowest_sell_order AND 
@@ -42,7 +42,7 @@ class MyListing < ApplicationRecord
   end
   scope :confirming, -> { where(confirming: true) }
 
-  delegate :load_order_histogram, :find_sell_balance, :goo_value,
+  delegate :load_order_histogram, :find_sell_balance, :goo_value, :booster_pack?,
            :market_name, :market_fee_app, :type, to: :market_asset
   delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
   delegate :name, to: :booster_creator, allow_nil: true
@@ -96,7 +96,7 @@ class MyListing < ApplicationRecord
 
     def cancel_cancelable
       JobConcurrence.start do |uuid|
-        MyListing.non_sack_of_gems.cancelable.to_a.select(&:cancelable?).each do |my_listing|
+        MyListing.non_sack_of_gems.cancelable.includes(:booster_creator).to_a.select(&:cancelable?).each do |my_listing|
           my_listing.cancel_later(uuid)
         end
       end
@@ -138,7 +138,10 @@ class MyListing < ApplicationRecord
   end
 
   def cancelable?
-    return false if booster_creations.exists? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * 0.525 / 3).ceil
+    if booster_creations.size > 0
+      return false if booster_pack? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * 0.5).ceil
+      return false if !booster_pack? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * 0.525 / 3).ceil
+    end
 
     price > order_histogram.lowest_sell_order ||
         (price > 100 && price == order_histogram.lowest_sell_order && order_histogram.sell_order_graph[0][1] > 1)
