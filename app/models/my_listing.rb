@@ -121,7 +121,7 @@ class MyListing < ApplicationRecord
       JobConcurrence.wait_for(reload_and_fresh)
       JobConcurrence.wait_for(cancel_cancelable)
       JobConcurrence.wait_for(Inventory.auto_sell_and_grind(nil))
-      Account.find_each { |account| ASF.send_command("2faok #{account.bot_name}") }
+      Account.find_each { |account| puts ASF.send_command("2faok #{account.bot_name}") }
     end
 
     def cancel_pending_listings
