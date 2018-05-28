@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   get '/booster_creators/creatable', to: 'booster_creators#creatable'
   post '/inventory/reload', to: 'inventory#reload'
   post '/inventory/sell_by_ppg', to: 'inventory#sell_by_ppg'
+  post '/my_listings/reload', to: 'my_listings#reload'
   post '/booster_creators/create_and_sell', to: 'booster_creators#create_and_sell'
   post '/booster_creators/create_and_unpack', to: 'booster_creators#create_and_unpack'
   post '/booster_creators/sell_all_assets', to: 'booster_creators#sell_all_assets'

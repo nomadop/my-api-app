@@ -13,4 +13,9 @@ class MyListingsController < ActionController::Base
   def show
     render layout: 'vue'
   end
+
+  def reload
+    MyListing.reload_all!
+    redirect_to action: 'list'
+  end
 end
