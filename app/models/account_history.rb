@@ -3,6 +3,9 @@ require 'axlsx'
 class AccountHistory < ApplicationRecord
   self.inheritance_column = nil
 
+  belongs_to :account
+
+  scope :belongs, ->(account) { where(account: account) }
   scope :since, ->(time) { where('date > ?', time) }
   scope :with_in, ->(duration) { since(duration.ago) }
   scope :between, ->(from, to) { where(date: (from..to)) }
@@ -12,9 +15,10 @@ class AccountHistory < ApplicationRecord
   scope :income, -> { where('change > 0') }
   scope :expense, -> { where('change < 0') }
   scope :gift, -> { where(type: '礼物购买') }
-  scope :purchase, -> { where(type: '购买') }
+  scope :purchase, -> { where('type like ?', '购买%') }
   scope :refund, -> { where(type: '退款') }
   scope :payment, ->(payment) { where(payment: payment) }
+  scope :refundable, -> { purchase.with_in(2.weeks) }
 
   class << self
     def total

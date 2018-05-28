@@ -367,8 +367,13 @@ class Steam
     end
 
     def scan_account_history(account = Account::DEFAULT)
-      AccountHistory.truncate
+      AccountHistory.belongs(account).delete_all
       LoadAccountHistoryJob.perform_later(account)
+    end
+
+    def scan_all_account_history
+      AccountHistory.truncate
+      Account.find_each { |account| LoadAccountHistoryJob.perform_later(account) }
     end
 
     def get_notification_counts(account = Account::DEFAULT)
