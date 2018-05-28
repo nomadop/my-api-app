@@ -1,18 +1,29 @@
 <template>
     <div id="booster-creators">
-        <md-table v-model="booster_creators" md-card md-fixed-header
+        <md-table v-model="items" md-card md-fixed-header
                   md-sort="open_price_per_goo" md-sort-order="desc"
                   @md-selected="on_select">
             <md-table-toolbar class="md-elevation-2">
-                <md-button class="md-raised md-primary"
-                           @click="fetch_creatable"
-                           :disabled="fetching || base_ppg === ''">
-                    {{fetching ? 'fetching' : 'fetch'}}
-                </md-button>
-                <md-field>
-                    <label>Base PPG</label>
-                    <md-input v-model="base_ppg"></md-input>
-                </md-field>
+                <div class="md-toolbar-section-start">
+                    <md-button class="md-raised md-primary"
+                               @click="fetch_creatable"
+                               :disabled="fetching || base_ppg === ''">
+                        {{fetching ? 'fetching' : 'fetch'}}
+                    </md-button>
+                    <md-field>
+                        <label>Base PPG</label>
+                        <md-input v-model="base_ppg"></md-input>
+                    </md-field>
+                </div>
+
+                <div class="md-toolbar-section-end">
+                    <md-field class="account-filter" md-clearable>
+                        <label>Account</label>
+                        <md-select v-model="filter.account" :disabled="account_names.length === 0">
+                            <md-option v-for="name in account_names" :value="name">{{name}}</md-option>
+                        </md-select>
+                    </md-field>
+                </div>
             </md-table-toolbar>
             <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)" md-selectable="single">
                 <md-table-cell md-label="Name" class="name-cell">{{item.name}}</md-table-cell>
@@ -118,6 +129,10 @@
 
     .action-cell >>> .md-table-cell-container {
         width: 365px;
+    }
+
+    .account-filter {
+        max-width: 180px;
     }
 </style>
 

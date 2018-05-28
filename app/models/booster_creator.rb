@@ -77,6 +77,7 @@ class BoosterCreator < ApplicationRecord
 
     def creatable(limit: 100, ppg: 0.6)
       includes(
+          :accounts,
           :account_booster_creators,
           :trading_card_order_histograms,
           :foil_trading_card_order_histograms,
@@ -209,7 +210,7 @@ class BoosterCreator < ApplicationRecord
     as_json(
         only: [:appid, :name, :price],
         methods: [
-            :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
+            :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion, :account_names,
             :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :listing_booster_pack_count,
             :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion, :listing_url,
             :available_times, :min_available_time, :inventory_assets_count, :inventory_cards_count,
@@ -303,5 +304,9 @@ class BoosterCreator < ApplicationRecord
 
   def create_creation
     booster_creations.create(account: Account::DEFAULT, appid: appid)
+  end
+
+  def account_names
+    accounts.map(&:bot_name)
   end
 end

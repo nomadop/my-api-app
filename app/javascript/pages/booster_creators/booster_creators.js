@@ -1,4 +1,5 @@
 import NProgress from 'nprogress';
+import * as _ from 'lodash';
 
 import ColorText from '../../components/color_text.vue';
 
@@ -11,7 +12,13 @@ function fetch_creatable(refresh = true) {
   NProgress.start();
   return fetch(`/booster_creators/creatable?base_ppg=${+this.base_ppg}${refresh ? '&refresh=1' : ''}`)
     .then(response => response.json())
-    .then(booster_creators => this.booster_creators = booster_creators)
+    .then(booster_creators => {
+      this.booster_creators = booster_creators;
+      this.account_names = booster_creators.reduce(
+        (names, booster_creator) => _.union(names, booster_creator.account_names), ['None']
+      );
+      this.on_filter();
+    })
     .then(() => {
       this.fetching = false;
       NProgress.done();
@@ -103,8 +110,20 @@ function on_select(item) {
   this.selected = item;
 }
 
+function on_filter(filter = {}) {
+  const filters = { ...this.filter, ...filter };
+  this.items = this.booster_creators;
+  if (filters.account === 'None') {
+    this.items = this.items.filter(item => _.isEmpty(item.account_names));
+  } else if (filters.account !== '') {
+    this.items = this.items.filter(item => _.includes(item.account_names, filter.account));
+  }
+}
+
 export default {
   data: () => ({
+    items: [],
+    account_names: [],
     booster_creators: [],
     fetching: false,
     selected: null,
@@ -115,12 +134,21 @@ export default {
     confirm: {
       title: null,
       active: false,
-      callback: () => {},
+      callback: () => {
+      },
+    },
+    filter: {
+      account: '',
     },
     base_ppg: 0.55,
   }),
   components: {
     ColorText,
+  },
+  watch: {
+    'filter.account': function (account) {
+      this.on_filter({ account });
+    },
   },
   methods: {
     fetch_creatable,
@@ -129,6 +157,7 @@ export default {
     sell_all_assets,
     get_class,
     on_select,
+    on_filter,
   },
   beforeMount() {
     this.fetch_creatable(false);
