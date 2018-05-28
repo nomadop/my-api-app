@@ -108,7 +108,9 @@ class InventoryAsset < ApplicationRecord
       lowest > 50 ? lowest - 1 : lowest
     end
     if booster_creations.exists?
-      price = [price, (booster_creator.price * 0.525 / 3).ceil].max
+      price = booster_pack? ?
+        [price, (booster_creator.price * 0.55).ceil].max :
+        [price, (booster_creator.price * 0.525 / 3).ceil].max
     end
     sell(price)
   end
@@ -230,7 +232,8 @@ class InventoryAsset < ApplicationRecord
     market_asset.refresh_goo_value(false)
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
-    return quick_sell if (ppg > 1 && marketable?) || (ppg >= 0.55 && booster_pack?)
+    return false unless marketable?
+    return quick_sell if ppg > 1 || booster_pack?
     grind_into_goo if ppg <= 2 && !booster_pack?
   end
 
