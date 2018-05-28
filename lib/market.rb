@@ -356,9 +356,9 @@ class Market
       JSON.parse(response.body)
     end
 
-    def cancel_my_listing(listingid)
-      cookie = Authentication.cookie
-      session_id = Authentication.session_id
+    def cancel_my_listing(account, listingid)
+      cookie = account.cookie
+      session_id = account.session_id
 
       option = {
           method: :post,

@@ -3,7 +3,7 @@ class CancelMyListingJob < ApplicationJob
 
   def perform(listing_id, concurrence_uuid = nil)
     JobConcurrence.with_concurrence(concurrence_uuid) do
-      Market.cancel_my_listing(listing_id)
+      MyListing.find_by(listingid: listing_id).cancel
     end
   end
 

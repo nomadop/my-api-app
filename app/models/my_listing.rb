@@ -41,11 +41,13 @@ class MyListing < ApplicationRecord
     SQL
   end
   scope :confirming, -> { where(confirming: true) }
+  scope :belongs, ->(account) { where(account: account) }
 
   delegate :load_order_histogram, :find_sell_balance, :goo_value, :booster_pack?,
            :market_name, :market_fee_app, :type, to: :market_asset
   delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
   delegate :name, to: :booster_creator, allow_nil: true
+  delegate :bot_name, to: :account
 
   class << self
     def reload(start = 0, count = 100, account)
@@ -57,7 +59,15 @@ class MyListing < ApplicationRecord
       reload(tail, count, account) if tail < result['total_count']
     end
 
-    def reload!
+    def reload!(account = Account::DEFAULT)
+      transaction do
+        truncate
+        reload(0, 100, account)
+        reload_confirming(account)
+      end
+    end
+
+    def reload_all!
       transaction do
         truncate
         Account.find_each do |account|
@@ -76,9 +86,10 @@ class MyListing < ApplicationRecord
       reload_confirming(account)
     end
 
-    def refresh_order_histogram
+    def refresh_order_histogram(account = Account::DEFAULT)
       JobConcurrence.start do |uuid|
-        includes(:market_asset).find_each { |market_asset| market_asset.load_order_histogram(uuid) }
+        my_listings = account.nil? ? all : belongs(account)
+        my_listings.includes(:market_asset).find_each { |market_asset| market_asset.load_order_histogram(uuid) }
       end
     end
 
@@ -96,9 +107,10 @@ class MyListing < ApplicationRecord
       end
     end
 
-    def cancel_cancelable
+    def cancel_cancelable(account = Account::DEFAULT)
       JobConcurrence.start do |uuid|
-        MyListing.non_sack_of_gems.cancelable.includes(:booster_creator).to_a.select(&:cancelable?).each do |my_listing|
+        my_listings = account.nil? ? all : belongs(account)
+        my_listings.non_sack_of_gems.cancelable.includes(:booster_creator).to_a.select(&:cancelable?).each do |my_listing|
           my_listing.cancel_later(uuid)
         end
       end
@@ -106,20 +118,28 @@ class MyListing < ApplicationRecord
 
     def cancel_dirty
       JobConcurrence.start do |uuid|
-        MyListing.without_market_asset.cancel_later(uuid)
+        without_market_asset.cancel_later(uuid)
       end
     end
 
-    def reload_and_fresh
-      Authentication.refresh
-      MyListing.reload!
-      MyListing.refresh_order_histogram
+    def reload_and_fresh(account = Account::DEFAULT)
+      account.nil? ? Account.find_each(&:refresh) : account.refresh
+      account.nil? ? reload_all! : reload!(account)
+      refresh_order_histogram(account)
     end
 
-    def auto_resell
+    def auto_resell(account = Account::DEFAULT)
       JobConcurrence.wait_for(cancel_dirty)
-      JobConcurrence.wait_for(reload_and_fresh)
-      JobConcurrence.wait_for(cancel_cancelable)
+      JobConcurrence.wait_for(reload_and_fresh(account))
+      JobConcurrence.wait_for(cancel_cancelable(account))
+      JobConcurrence.wait_for(Inventory.auto_sell_and_grind(account))
+      ASF.send_command("2faok #{account.bot_name}")
+    end
+
+    def auto_resell_all
+      JobConcurrence.wait_for(cancel_dirty)
+      JobConcurrence.wait_for(reload_and_fresh(nil))
+      JobConcurrence.wait_for(cancel_cancelable(nil))
       JobConcurrence.wait_for(Inventory.auto_sell_and_grind(nil))
       Account.find_each { |account| puts ASF.send_command("2faok #{account.bot_name}") }
     end
@@ -164,7 +184,7 @@ class MyListing < ApplicationRecord
   end
 
   def cancel
-    response = Market.cancel_my_listing(listingid)
+    response = Market.cancel_my_listing(account, listingid)
     destroy if response.code == 200
   end
 
