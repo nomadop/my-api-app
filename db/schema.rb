@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180527023704) do
+ActiveRecord::Schema.define(version: 20180528022008) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -68,11 +68,12 @@ ActiveRecord::Schema.define(version: 20180527023704) do
     t.string   "name"
     t.integer  "series"
     t.integer  "price"
-    t.datetime "created_at",                        null: false
-    t.datetime "updated_at",                        null: false
+    t.datetime "created_at",                              null: false
+    t.datetime "updated_at",                              null: false
     t.string   "trading_card_type"
-    t.boolean  "unavailable",       default: false
+    t.boolean  "unavailable",             default: false
     t.string   "available_at_time"
+    t.integer  "booster_creations_count"
     t.index ["appid"], name: "index_booster_creators_on_appid", unique: true, using: :btree
   end
 

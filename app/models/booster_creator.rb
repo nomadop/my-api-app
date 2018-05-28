@@ -300,4 +300,8 @@ class BoosterCreator < ApplicationRecord
   def create_or_scan_app
     Steam.create_or_scan_app(appid)
   end
+
+  def create_creation
+    booster_creations.create(account: Account::DEFAULT, appid: appid)
+  end
 end
