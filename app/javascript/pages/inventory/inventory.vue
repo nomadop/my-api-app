@@ -37,7 +37,8 @@
                         <label>Sell PPG</label>
                         <md-input v-model="sell_ppg"></md-input>
                     </md-field>
-                    <md-button class="md-raised md-primary" @click="sell_by_ppg" :disabled="fetching">
+                    <md-button class="md-raised md-primary" @click="sell_by_ppg"
+                               :disabled="fetching || selected.length === 0">
                         Sell By PPG
                     </md-button>
                 </div>
@@ -46,7 +47,7 @@
             <md-table-row slot="md-table-row" slot-scope="{ item }" :md-disabled="item.marketable === 0"
                           md-selectable="multiple" md-auto-select>
                 <md-table-cell md-label="Name" class="name-cell">
-                    <md-button class="md-dense" target="_blank" :href="item.listing_url">{{item.market_hash_name}}</md-button>
+                    {{item.market_hash_name}}
                 </md-table-cell>
                 <md-table-cell md-label="Goo Value" class="numeric-cell" md-sort-by="goo_value" md-numeric>
                     {{item.goo_value}}
@@ -72,6 +73,13 @@
                 </md-tooltip>
             </md-table-row>
         </md-table>
+
+        <md-dialog-confirm :md-active.sync="confirm.active"
+                           :md-title="confirm.title"
+                           @md-confirm="confirm.callback"
+                           md-confirm-text="Yes"
+                           md-cancel-text="No"
+        />
 
         <md-snackbar :class="snackbar.type" md-position="left" :md-duration="Infinity" :md-active.sync="snackbar.active">
             <span>{{snackbar.message}}</span>

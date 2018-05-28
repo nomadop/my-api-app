@@ -45,18 +45,36 @@ function sell_by_ppg() {
   if (this.fetching) {
     return;
   }
-  this.fetching = true;
-  NProgress.start();
-  return fetch('/inventory/sell_by_ppg', {
-    method: 'post',
-    body: JSON.stringify({
-      sell_ppg: this.sell_ppg,
-      asset_ids: this.selected.map(item => item.id),
-    }),
-    headers: {
-      'content-type': 'application/json'
-    },
-  }).then(() => window.location.reload(true));
+
+  this.confirm = {
+    active: true,
+    title: `confirm to sell ${this.selected.length} items by ppg ${this.sell_ppg}?`,
+    callback: () => {
+      this.fetching = true;
+      NProgress.start();
+      const option = {
+        method: 'post',
+        body: JSON.stringify({
+          sell_ppg: this.sell_ppg,
+          asset_ids: this.selected.map(item => item.id),
+        }),
+        headers: {
+          'content-type': 'application/json'
+        }
+      };
+      return fetch('/inventory/sell_by_ppg', option)
+        .then(() => window.location.reload(true))
+        .catch(error => {
+          this.fetching = false;
+          NProgress.done();
+          this.snackbar = {
+            type: 'error',
+            active: true,
+            message: error,
+          };
+        });
+    }
+  };
 }
 
 function get_class(item) {
@@ -91,6 +109,11 @@ export default {
     snackbar: {
       active: false,
       message: null,
+    },
+    confirm: {
+      title: null,
+      active: false,
+      callback: () => {},
     },
     filter: {
       marketable: 1,
