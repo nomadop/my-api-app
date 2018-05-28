@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180528022008) do
+ActiveRecord::Schema.define(version: 20180528052158) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -47,6 +47,7 @@ ActiveRecord::Schema.define(version: 20180528022008) do
     t.string   "email_address"
     t.string   "email_password"
     t.integer  "status",         default: 0
+    t.string   "bot_name"
   end
 
   create_table "booster_creations", force: :cascade do |t|
