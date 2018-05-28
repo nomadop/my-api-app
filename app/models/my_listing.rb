@@ -4,6 +4,7 @@ class MyListing < ApplicationRecord
 
   after_create :load_market_asset_later
 
+  belongs_to :account
   has_one :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_one :order_histogram, through: :market_asset
   has_one :steam_app, through: :market_asset
