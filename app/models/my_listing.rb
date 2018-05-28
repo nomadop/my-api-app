@@ -48,30 +48,32 @@ class MyListing < ApplicationRecord
   delegate :name, to: :booster_creator, allow_nil: true
 
   class << self
-    def reload(start = 0, count = 100)
-      result = Market.request_my_listings(start, count)
+    def reload(start = 0, count = 100, account)
+      result = Market.request_my_listings(start, count, account)
       return false unless result['success']
 
-      Market.handle_my_listing_result(result)
+      Market.handle_my_listing_result(result, account)
       tail = start + count
-      reload(tail, count) if tail < result['total_count']
+      reload(tail, count, account) if tail < result['total_count']
     end
 
     def reload!
       transaction do
         truncate
-        reload
-        reload_confirming
+        Account.find_each do |account|
+          reload(0, 100, account)
+          reload_confirming(account)
+        end
       end
     end
 
-    def reload_confirming
-      Market.load_confirming_listings
+    def reload_confirming(account = Account::DEFAULT)
+      Market.load_confirming_listings(account)
     end
 
-    def reload_confirming!
-      confirming.delete_all
-      load_confirming
+    def reload_confirming!(account = Account::DEFAULT)
+      where(account: account).confirming.delete_all
+      reload_confirming(account)
     end
 
     def refresh_order_histogram
@@ -118,8 +120,8 @@ class MyListing < ApplicationRecord
       JobConcurrence.wait_for(cancel_dirty)
       JobConcurrence.wait_for(reload_and_fresh)
       JobConcurrence.wait_for(cancel_cancelable)
-      JobConcurrence.wait_for(Inventory.auto_sell_and_grind)
-      ASF.send_command('2faok')
+      JobConcurrence.wait_for(Inventory.auto_sell_and_grind(nil))
+      Account.find_each { |account| ASF.send_command("2faok #{account.bot_name}") }
     end
 
     def cancel_pending_listings

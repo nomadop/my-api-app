@@ -196,8 +196,8 @@ class Market
       ScanMarketByQueryJob.perform_later(query, 0, 100)
     end
 
-    def request_my_listings(start, count)
-      cookie = Authentication.cookie
+    def request_my_listings(start, count, account = Account::DEFAULT)
+      cookie = account.cookie
       option = {
           method: :get,
           url: 'https://steamcommunity.com/market/mylistings/render/',
@@ -223,10 +223,10 @@ class Market
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
-      result['total_count'] == 0 ? request_my_listings(start, count) : result
+      result['total_count'] == 0 ? request_my_listings(start, count, account) : result
     end
 
-    def handle_my_listing_row(row, confirming = false)
+    def handle_my_listing_row(row, account = Account::DEFAULT, confirming = false)
       listingid = row.attr(:id).match(/mylisting_(?<id>\d+)/)[:id]
       name_link = row.search('.market_listing_item_name_link').first
       market_hash_name = URI.decode(name_link.attr(:href).split('/').last)
@@ -234,24 +234,24 @@ class Market
       price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
       price = price_text_match && price_text_match[:price].to_f * 100
       listed_date = row.search('.market_listing_listed_date').text.strip
-      {listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date, confirming: confirming}
+      {listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date, confirming: confirming, account_id: account.id}
     end
 
-    def handle_my_listing_result(result)
+    def handle_my_listing_result(result, account = Account::DEFAULT)
       doc = Nokogiri::HTML(result['results_html'])
       rows = doc.search('.market_listing_row')
-      my_listings = rows.map { |row| handle_my_listing_row(row) }
+      my_listings = rows.map { |row| handle_my_listing_row(row, account) }
       MyListing.import(my_listings)
     end
 
-    def load_confirming_listings
-      doc = Nokogiri::HTML(Market.request_market)
+    def load_confirming_listings(account = Account::DEFAULT)
+      doc = Nokogiri::HTML(Market.request_market(account))
       listing_section = doc.search('.my_listing_section').find do |section|
         section.search('.my_market_header_active').first&.text === '我的等待确认的上架物品'
       end
       return if listing_section.nil?
       rows = listing_section.search('.market_listing_row')
-      my_listings = rows.map { |row| handle_my_listing_row(row, true) }
+      my_listings = rows.map { |row| handle_my_listing_row(row, account, true) }
       MyListing.import(my_listings)
     end
 
@@ -399,8 +399,8 @@ class Market
       MarketAsset.buyable.quick_buy_later(ppg)
     end
 
-    def request_market
-      cookie = Account::DEFAULT.cookie
+    def request_market(account = Account::DEFAULT)
+      cookie = account.cookie
 
       option = {
           method: :get,
@@ -420,10 +420,8 @@ class Market
           ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
+      account.update_cookie(response)
       response.body
-    rescue RestClient::SSLCertificateNotVerified
-      Account::DEFAULT.eligibility_check
-      request_market
     end
 
     def send_trade(account, profile, steamid, offer, message = '')
