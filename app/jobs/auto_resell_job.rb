@@ -1,14 +1,8 @@
 class AutoResellJob < ApplicationJob
   queue_as :default
 
-  def perform()
-    unless Time.now.hour.between?(9, 21)
-      AutoResellJob.set(wait: 1.hour).perform_later()
-      return
-    end
-
-    # MyListing.cancel_pending_listings
-    MyListing.auto_resell
-    AutoResellJob.set(wait: 1.hour).perform_later()
+  def perform(account_id)
+    MyListing.auto_resell(Account.find(account_id))
+    AutoResellJob.set(wait: 30.minutes).perform_later(account_id)
   end
 end
