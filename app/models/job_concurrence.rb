@@ -5,8 +5,7 @@ class JobConcurrence < ApplicationRecord
     def start(uuid = SecureRandom.uuid, limit = nil)
       raise 'no block given' unless block_given?
 
-      jobs = yield
-      jobs = [jobs] unless jobs.is_a?(Array)
+      jobs = Array(yield).select { |job| job.is_a?(ApplicationJob) }
       concurrences = jobs.map { |job| {uuid: uuid, limit: limit, job_id: job.job_id} }
       JobConcurrence.import(concurrences)
       uuid
