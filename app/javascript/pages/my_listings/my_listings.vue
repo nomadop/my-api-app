@@ -40,6 +40,9 @@
                         <span>({{item.lowest_sell_order_exclude_vat}})</span>
                     </div>
                 </md-table-cell>
+                <md-table-cell md-label="BC COST" class="numeric-cell" md-sort-by="booster_creator_cost" md-numeric>
+                    {{item.booster_creator_cost}}
+                </md-table-cell>
                 <md-table-cell md-label="Date" class="numeric-cell" md-sort-by="listed_date">
                     {{item.listed_date}}
                 </md-table-cell>

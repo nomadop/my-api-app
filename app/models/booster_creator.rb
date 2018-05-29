@@ -309,4 +309,8 @@ class BoosterCreator < ApplicationRecord
   def account_names
     accounts.map(&:bot_name)
   end
+
+  def booster_creator_cost
+    price
+  end
 end

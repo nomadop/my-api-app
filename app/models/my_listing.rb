@@ -46,7 +46,7 @@ class MyListing < ApplicationRecord
   delegate :load_order_histogram, :find_sell_balance, :goo_value, :booster_pack?,
            :market_name, :market_fee_app, :type, to: :market_asset
   delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
-  delegate :name, to: :booster_creator, allow_nil: true
+  delegate :name, :booster_creator_cost, to: :booster_creator, allow_nil: true
   delegate :bot_name, to: :account
 
   class << self
