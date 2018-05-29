@@ -1,4 +1,6 @@
 class ApplicationJob < ActiveJob::Base
+  after_perform { |job| JobConcurrence.where(job_id: job.job_id).delete_all }
+
   class << self
     def perform_unique(job_class, *args, **option)
       queue = Sidekiq::Queue.new(job_class.queue_name)

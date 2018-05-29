@@ -2,11 +2,11 @@ class TorNewnymJob < ApplicationJob
   queue_as :default
 
   def perform()
-    concurrence = JobConcurrence.find_or_create_by(uuid: 'TorNewnymJob', limit: 1)
-    concurrence.with_concurrence { Utility.tor_newnym }
+    JobConcurrence.create(uuid: 'TorNewnymJob', limit: 1, job_id: @job_id)
+    Utility.tor_newnym
   end
 
-  rescue_from(ActiveRecord::StaleObjectError) do
+  rescue_from(ActiveRecord::RecordNotUnique) do
     false
   end
 end

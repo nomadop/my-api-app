@@ -38,10 +38,7 @@ class Market
       response.body
     rescue RestClient::TooManyRequests, RestClient::Forbidden
       TorNewnymJob.perform_later
-      loop do
-        sleep 1.second
-        break unless JobConcurrence.find_by(uuid: 'TorNewnymJob').reload.completed?
-      end
+      JobConcurrence.wait_for('TorNewnymJob')
       request_asset(url, with_authentication)
     end
 
@@ -118,10 +115,7 @@ class Market
       )
     rescue RestClient::TooManyRequests, RestClient::Forbidden
       TorNewnymJob.perform_later
-      loop do
-        sleep 1.second
-        break unless JobConcurrence.find_by(uuid: 'TorNewnymJob').reload.completed?
-      end
+      JobConcurrence.wait_for('TorNewnymJob')
       load_order_histogram(item_nameid)
     end
 
@@ -148,10 +142,7 @@ class Market
       JSON.parse(response.body)
     rescue RestClient::TooManyRequests
       TorNewnymJob.perform_later
-      loop do
-        sleep 1.second
-        break unless JobConcurrence.find_by(uuid: 'TorNewnymJob').reload.completed?
-      end
+      JobConcurrence.wait_for('TorNewnymJob')
       search(appid, start, count)
     end
 
@@ -577,8 +568,8 @@ class Market
       })
     end
 
-    def scan_my_histories(concurrence_uuid = nil)
-      LoadMyHistoriesJob.perform_later(0, 100, concurrence_uuid)
+    def scan_my_histories
+      LoadMyHistoriesJob.perform_later(0, 100)
     end
 
     def eligibility_check(account)

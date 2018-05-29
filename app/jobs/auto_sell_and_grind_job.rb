@@ -4,11 +4,9 @@ class AutoSellAndGrindJob < ApplicationJob
   EXIST_MESSAGE = '您已上架该物品并正等待确认。请确认或撤下现有的上架物品。'
   NOT_EXIST_MESSAGE = '指定的物品不再存在于您的库存，或者不允许在社区市场交易该物品。'
 
-  def perform(id, concurrence_uuid = nil)
-    JobConcurrence.with_concurrence(concurrence_uuid) do
-      @asset = InventoryAsset.find(id)
-      @asset.auto_sell_and_grind
-    end
+  def perform(id)
+    @asset = InventoryAsset.find(id)
+    @asset.auto_sell_and_grind
   end
 
   rescue_from(RestClient::BadGateway) do |e|

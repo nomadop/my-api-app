@@ -84,9 +84,9 @@ class MyListing < ApplicationRecord
     end
 
     def refresh_order_histogram(account)
-      JobConcurrence.start do |uuid|
+      JobConcurrence.start do
         my_listings = account.nil? ? all : belongs(account)
-        my_listings.includes(:market_asset).find_each { |market_asset| market_asset.load_order_histogram(uuid) }
+        my_listings.includes(:market_asset).map { |market_asset| market_asset.load_order_histogram }
       end
     end
 
@@ -98,25 +98,22 @@ class MyListing < ApplicationRecord
       find_each(&:cancel)
     end
 
-    def cancel_later(concurrence_uuid = nil)
-      find_each do |my_listing|
-        my_listing.cancel_later(concurrence_uuid)
-      end
+    def cancel_later
+      all.map(&:cancel_later)
     end
 
     def cancel_cancelable(account = Account::DEFAULT)
-      JobConcurrence.start do |uuid|
+      JobConcurrence.start do
         my_listings = account.nil? ? all : belongs(account)
-        my_listings.non_sack_of_gems.cancelable.includes(:booster_creator).to_a.select(&:cancelable?).each do |my_listing|
-          my_listing.cancel_later(uuid)
-        end
+        my_listings.non_sack_of_gems.cancelable
+          .includes(:booster_creator)
+          .to_a.select(&:cancelable?)
+          .map { |my_listing| my_listing.cancel_later }
       end
     end
 
     def cancel_dirty
-      JobConcurrence.start do |uuid|
-        without_market_asset.cancel_later(uuid)
-      end
+      JobConcurrence.start { without_market_asset.cancel_later }
     end
 
     def reload_and_fresh(account = Account::DEFAULT)
@@ -185,8 +182,8 @@ class MyListing < ApplicationRecord
     destroy if response.code == 200
   end
 
-  def cancel_later(concurrence_uuid = nil)
-    ApplicationJob.perform_unique(CancelMyListingJob, listingid, concurrence_uuid)
+  def cancel_later
+    ApplicationJob.perform_unique(CancelMyListingJob, listingid)
   end
 
   def market_asset_type
