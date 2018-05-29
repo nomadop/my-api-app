@@ -120,4 +120,9 @@ class Account < ApplicationRecord
   def accept_gift_offers
     trade_offers.gift_offer.pending.accept
   end
+
+  def asf(command)
+    raise 'no bot name' if bot_name.nil?
+    ASF.send_command("#{command} #{bot_name}")
+  end
 end

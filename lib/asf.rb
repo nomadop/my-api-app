@@ -12,10 +12,5 @@ class ASF
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
     end
-
-    def twofaok(account_name = nil)
-      command = account_name.nil? ? '2faok' : "2faok #{account_name}"
-      send_command(command)
-    end
   end
 end
