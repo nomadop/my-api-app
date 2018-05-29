@@ -85,6 +85,10 @@ class InventoryAsset < ApplicationRecord
       Market.send_trade(accounts.first, friend.profile, friend.steamid, generate_trade_offer)
       destroy_all
     end
+
+    def load_missing_market_assets
+      without_market_asset.find_each(&:load_market_asset)
+    end
   end
 
   def refresh_price
