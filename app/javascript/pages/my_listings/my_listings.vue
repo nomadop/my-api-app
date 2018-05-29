@@ -14,13 +14,7 @@
                 </div>
 
                 <div class="md-toolbar-section-end">
-                    <md-field md-clearable>
-                        <label>Confirming</label>
-                        <md-select v-model="filter.confirming">
-                            <md-option :value="true">True</md-option>
-                            <md-option :value="false">False</md-option>
-                        </md-select>
-                    </md-field>
+                    <md-switch v-model="filter.confirming">Confirming</md-switch>
                 </div>
             </md-table-toolbar>
 

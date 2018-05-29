@@ -53,7 +53,7 @@ function on_filter(filter = {}) {
   const filters = { ...this.filter, ...filter };
   this.items = this.my_listings;
   if (filters.confirming !== '') {
-    this.items = this.items.filter(item => item.confirming);
+    this.items = this.items.filter(item => item.confirming === filters.confirming);
   }
 }
 
@@ -73,7 +73,7 @@ export default {
       callback: () => {},
     },
     filter: {
-      confirming: '',
+      confirming: false,
     },
   }),
   watch: {
