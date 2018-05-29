@@ -110,14 +110,14 @@ class InventoryAsset < ApplicationRecord
   def quick_sell
     price = begin
       lowest = order_histogram.lowest_sell_order_exclude_vat
-      lowest > 50 ? lowest - 1 : lowest
+      equals_listing = my_listings.exists? && my_listings.take.price_exclude_vat == lowest
+      lowest <= 50 || equals_listing ? lowest : lowest - 1
     end
     if booster_creations.exists?
       price = booster_pack? ?
         [price, (booster_creator.price * 0.55).ceil].max :
         [price, (booster_creator.price * 0.525 / 3).ceil].max
     end
-    price = my_listings.take.price_exclude_vat if my_listings.exists?
     sell(price)
   end
 
