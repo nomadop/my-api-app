@@ -85,7 +85,7 @@
                                 :condition="content => content < 0.1"/>
                     | <span class="tooltip-label">Available Time:</span>
                     <color-text color_class="text-primary"
-                                :content="item.min_available_time ? new Date(item.min_available_time) : null"
+                                :content="get_available_time(item) ? new Date(get_available_time(item)) : null"
                                 :condition="content => content < new Date()"
                                 :filter="content => content ? content.toLocaleTimeString() : null"/>
                 </md-tooltip>
@@ -107,26 +107,44 @@
 </template>
 
 <style scoped>
+    .ppg-cell {
+        width: 84px;
+    }
     .ppg-cell >>> .md-table-cell-container {
         width: 84px;
     }
 
+    .open-ppg-cell {
+        width: 120px;
+    }
     .open-ppg-cell >>> .md-table-cell-container {
         width: 120px;
     }
 
+    .open-cov-cell {
+        width: 120px;
+    }
     .open-cov-cell >>> .md-table-cell-container  {
         width: 120px;
     }
 
+    .li-count-cell {
+        width: 120px;
+    }
     .li-count-cell >>> .md-table-cell-container {
         width: 120px;
     }
 
+    .open-li-count-cell {
+        width: 150px;
+    }
     .open-li-count-cell >>> .md-table-cell-container {
         width: 150px;
     }
 
+    .action-cell {
+        width: 365px;
+    }
     .action-cell >>> .md-table-cell-container {
         width: 365px;
     }

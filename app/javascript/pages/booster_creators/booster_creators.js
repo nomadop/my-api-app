@@ -15,7 +15,9 @@ function fetch_creatable(refresh = true) {
     .then(booster_creators => {
       this.booster_creators = booster_creators;
       this.account_names = booster_creators.reduce(
-        (names, booster_creator) => _.union(names, booster_creator.account_names), ['None']
+        (names, booster_creator) => _.union(
+          names, _.map(booster_creator.account_booster_creators, 'bot_name')
+        ), ['None']
       );
       this.on_filter();
     })
@@ -99,7 +101,7 @@ function get_class(item) {
     return 'md-primary';
   }
 
-  if (item.min_available_time) {
+  if (this.get_available_time(item)) {
     return 'md-accent';
   }
 
@@ -114,10 +116,24 @@ function on_filter(filter = {}) {
   const filters = { ...this.filter, ...filter };
   this.items = this.booster_creators;
   if (filters.account === 'None') {
-    this.items = this.items.filter(item => _.isEmpty(item.account_names));
+    this.items = this.items.filter(item => _.isEmpty(item.account_booster_creators));
   } else if (filters.account !== '') {
-    this.items = this.items.filter(item => _.includes(item.account_names, filter.account));
+    this.items = this.items.filter(item => _.some(item.account_booster_creators, { bot_name: filters.account }));
   }
+}
+
+function get_available_time(booster_creator) {
+  if (_.isEmpty(booster_creator.account_booster_creators)) {
+    return null;
+  }
+
+  if (this.filter.account === '') {
+    return booster_creator.min_available_time;
+  }
+
+  return _.get(
+    _.find(booster_creator.account_booster_creators, { bot_name: this.filter.account }), 'available_time'
+  );
 }
 
 export default {
@@ -158,6 +174,7 @@ export default {
     get_class,
     on_select,
     on_filter,
+    get_available_time,
   },
   beforeMount() {
     this.fetch_creatable(false);

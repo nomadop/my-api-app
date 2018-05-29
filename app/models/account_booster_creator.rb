@@ -4,6 +4,8 @@ class AccountBoosterCreator < ApplicationRecord
 
   scope :unavailable, -> { where(unavailable: true) }
 
+  delegate :bot_name, to: :account
+
   class << self
     def times
       find_each.map(&:available_time)

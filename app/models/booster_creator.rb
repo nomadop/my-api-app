@@ -209,11 +209,17 @@ class BoosterCreator < ApplicationRecord
     return nil if trading_card_order_histograms.blank?
     as_json(
         only: [:appid, :name, :price],
+        include: {
+          account_booster_creators: {
+            only: [],
+            methods: [:bot_name, :available_time],
+          },
+        },
         methods: [
-            :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion, :account_names,
+            :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
             :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :listing_booster_pack_count,
             :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion, :listing_url,
-            :available_times, :min_available_time, :inventory_assets_count, :inventory_cards_count,
+            :min_available_time, :inventory_assets_count, :inventory_cards_count,
         ]
     )
   end
