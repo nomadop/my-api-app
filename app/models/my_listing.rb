@@ -11,6 +11,7 @@ class MyListing < ApplicationRecord
   has_one :booster_creator, through: :market_asset
   has_many :booster_creations, through: :booster_creator
 
+  scope :belongs, ->(account) { where(account: account) }
   scope :booster_pack, -> { where('my_listings.market_hash_name like ?', '%Booster Pack') }
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
@@ -61,19 +62,15 @@ class MyListing < ApplicationRecord
 
     def reload!(account = Account::DEFAULT)
       transaction do
-        truncate
+        belongs(account).delete_all
         reload(0, 100, account)
-        reload_confirming(account)
       end
     end
 
     def reload_all!
       transaction do
         truncate
-        Account.find_each do |account|
-          reload(0, 100, account)
-          reload_confirming(account)
-        end
+        Account.find_each { |account| reload(0, 100, account) }
       end
     end
 
@@ -86,7 +83,7 @@ class MyListing < ApplicationRecord
       reload_confirming(account)
     end
 
-    def refresh_order_histogram(account = Account::DEFAULT)
+    def refresh_order_histogram(account)
       JobConcurrence.start do |uuid|
         my_listings = account.nil? ? all : belongs(account)
         my_listings.includes(:market_asset).find_each { |market_asset| market_asset.load_order_histogram(uuid) }
