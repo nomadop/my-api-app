@@ -238,8 +238,7 @@ class InventoryAsset < ApplicationRecord
     market_asset.refresh_goo_value(false)
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
-    return false unless marketable?
-    return quick_sell if ppg > 1 || (booster_pack? && booster_creations.exists?)
+    return quick_sell if (ppg > 1 && marketable?) || (booster_pack? && booster_creations.exists?)
     grind_into_goo if ppg <= 2 && !booster_pack?
   end
 
