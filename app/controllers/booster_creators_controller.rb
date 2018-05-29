@@ -5,9 +5,9 @@ class BoosterCreatorsController < ActionController::Base
 
   def creatable
     if params[:refresh]
-      MyListing.reload!
-      Inventory.reload!
-      Account::DEFAULT.load_booster_creators
+      MyListing.reload_all!
+      Inventory.reload_all!
+      Account.load_booster_creators
     end
     ppg = params[:base_ppg] || 0.57
     limit = params[:limit] || 100
