@@ -13,7 +13,7 @@ class AutoSellAndGrindJob < ApplicationJob
     result = JSON.parse(e.http_body)
     if result['message'] == EXIST_MESSAGE || result['message'] == NOT_EXIST_MESSAGE
       puts EXIST_MESSAGE
-      false
+      clean_job_concurrence
     else
       @asset.account.refresh
       retry_job
@@ -21,6 +21,6 @@ class AutoSellAndGrindJob < ApplicationJob
   end
 
   rescue_from(ActiveRecord::RecordNotFound) do
-    false
+    clean_job_concurrence
   end
 end

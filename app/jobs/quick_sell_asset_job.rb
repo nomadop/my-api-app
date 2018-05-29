@@ -11,7 +11,7 @@ class QuickSellAssetJob < ApplicationJob
     result = JSON.parse(e.http_body)
     if result['message'] == EXIST_MESSAGE
       puts EXIST_MESSAGE
-      false
+      clean_job_concurrence
     else
       retry_job
     end

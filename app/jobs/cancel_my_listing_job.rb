@@ -15,6 +15,6 @@ class CancelMyListingJob < ApplicationJob
         retry_job
       end
     end
-    false
+    clean_job_concurrence
   end
 end

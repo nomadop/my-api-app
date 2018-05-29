@@ -21,4 +21,10 @@ class ApplicationJob < ActiveJob::Base
       job_class.set(option).perform_later(*args)
     end
   end
+
+  protected
+  def clean_job_concurrence
+    JobConcurrence.where(job_id: @job_id).delete_all
+    false
+  end
 end

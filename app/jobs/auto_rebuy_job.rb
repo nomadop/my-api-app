@@ -7,6 +7,6 @@ class AutoRebuyJob < ApplicationJob
   end
 
   rescue_from(ActiveRecord::RecordNotFound) do
-    false
+    clean_job_concurrence
   end
 end

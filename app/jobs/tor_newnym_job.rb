@@ -7,6 +7,6 @@ class TorNewnymJob < ApplicationJob
   end
 
   rescue_from(ActiveRecord::RecordNotUnique) do
-    false
+    clean_job_concurrence
   end
 end
