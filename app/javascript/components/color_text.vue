@@ -15,3 +15,13 @@
     }
   }
 </script>
+
+<style scoped>
+    .text-primary {
+        color: #448AFF;
+    }
+
+    .text-danger {
+        color: #FF5252;
+    }
+</style>

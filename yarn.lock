@@ -853,14 +853,6 @@ boom@2.x.x:
   dependencies:
     hoek "2.x.x"
 
-bootstrap-material-design@4.0.0-beta.3:
-  version "4.0.0-beta.3"
-  resolved "http://registry.npm.taobao.org/bootstrap-material-design/download/bootstrap-material-design-4.0.0-beta.3.tgz#78c1588fbaab38f1bb66e43154fd43bf3f69a500"
-
-bootstrap@3.3.7:
-  version "3.3.7"
-  resolved "http://registry.npm.taobao.org/bootstrap/download/bootstrap-3.3.7.tgz#5a389394549f23330875a3b150656574f8a9eb71"
-
 brace-expansion@^1.1.7:
   version "1.1.8"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.8.tgz#c07b211c7c952ec1f8efd51a77ef0d1d3990a292"
