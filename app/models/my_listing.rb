@@ -42,7 +42,6 @@ class MyListing < ApplicationRecord
     SQL
   end
   scope :confirming, -> { where(confirming: true) }
-  scope :belongs, ->(account) { where(account: account) }
 
   delegate :load_order_histogram, :find_sell_balance, :goo_value, :booster_pack?,
            :market_name, :market_fee_app, :type, to: :market_asset
