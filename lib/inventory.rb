@@ -37,6 +37,7 @@ class Inventory
     def reload!(account = Account::DEFAULT)
       result = reload(account)
       assets = result['assets']
+      return if assets.nil?
       assets.each { |asset| asset['account_id'] = account.id }
       InventoryAsset.transaction do
         account.inventory_assets.delete_all(:delete_all)

@@ -209,11 +209,11 @@ class Steam
 
     def add_friend(user, account = Account::DEFAULT)
       referer = user.account_id == user.steamid ?
-          "http://steamcommunity.com/profiles/#{user.account_id}" :
-          "http://steamcommunity.com/id/#{user.account_id}"
+          "https://steamcommunity.com/profiles/#{user.account_id}" :
+          "https://steamcommunity.com/id/#{user.account_id}"
       option = {
           method: :post,
-          url: 'http://steamcommunity.com/actions/AddFriendAjax',
+          url: 'https://steamcommunity.com/actions/AddFriendAjax',
           headers: {
               :Accept => '*/*',
               :'Accept-Encoding' => 'gzip, deflate',
@@ -235,6 +235,7 @@ class Steam
               accept_invite: 0,
           },
           proxy: 'http://127.0.0.1:8888',
+          ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)

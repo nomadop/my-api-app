@@ -223,7 +223,7 @@ class Market
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
-      result['total_count'] == 0 ? request_my_listings(start, count, account) : result
+      result['num_active_listings'].nil? ? request_my_listings(start, count, account) : result
     end
 
     def handle_my_listing_row(row, account = Account::DEFAULT, confirming = false)
