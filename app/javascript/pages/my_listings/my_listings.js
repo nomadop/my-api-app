@@ -4,7 +4,7 @@ function on_response(response) {
   return response.json()
     .then(my_listings => {
       this.my_listings = my_listings;
-      this.items = my_listings;
+      this.on_filter();
     })
     .then(() => {
       this.fetching = false;
@@ -49,6 +49,14 @@ function on_select(items) {
   this.selected = items;
 }
 
+function on_filter(filter = {}) {
+  const filters = { ...this.filter, ...filter };
+  this.items = this.my_listings;
+  if (filters.confirming !== '') {
+    this.items = this.items.filter(item => item.confirming);
+  }
+}
+
 export default {
   data: () => ({
     items: [],
@@ -64,12 +72,21 @@ export default {
       active: false,
       callback: () => {},
     },
+    filter: {
+      confirming: '',
+    },
   }),
+  watch: {
+    'filter.confirming': function (confirming) {
+      this.on_filter({ confirming });
+    },
+  },
   methods: {
     fetch_all,
     reload_all,
     get_class,
     on_select,
+    on_filter,
   },
   filters: {
     round: number => number && +number.toFixed(2),

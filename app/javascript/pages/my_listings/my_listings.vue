@@ -12,6 +12,16 @@
                         Reload
                     </md-button>
                 </div>
+
+                <div class="md-toolbar-section-end">
+                    <md-field md-clearable>
+                        <label>Confirming</label>
+                        <md-select v-model="filter.confirming">
+                            <md-option :value="true">True</md-option>
+                            <md-option :value="false">False</md-option>
+                        </md-select>
+                    </md-field>
+                </div>
             </md-table-toolbar>
 
             <md-table-toolbar slot="md-table-alternate-header" slot-scope="{ count }">
@@ -45,9 +55,6 @@
                 </md-table-cell>
                 <md-table-cell md-label="Date" class="numeric-cell" md-sort-by="listed_date">
                     {{item.listed_date}}
-                </md-table-cell>
-                <md-table-cell md-label="Confirming" class="numeric-cell" md-sort-by="confirming">
-                    {{item.confirming}}
                 </md-table-cell>
 
                 <md-tooltip md-direction="right">
