@@ -1,8 +1,7 @@
 <template>
     <div id="booster-creators">
         <md-table v-model="items" md-card md-fixed-header
-                  md-sort="open_price_per_goo" md-sort-order="desc"
-                  @md-selected="on_select">
+                  md-sort="open_price_per_goo" md-sort-order="desc">
             <md-table-toolbar class="md-elevation-2">
                 <div class="md-toolbar-section-start">
                     <md-button class="md-raised md-primary"
@@ -25,7 +24,7 @@
                     </md-field>
                 </div>
             </md-table-toolbar>
-            <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)" md-selectable="single">
+            <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)">
                 <md-table-cell md-label="Name" class="name-cell">{{item.name}}</md-table-cell>
                 <md-table-cell md-label="PPG"  class="ppg-cell" md-sort-by="price_per_goo" md-numeric>
                     <color-text color_class="text-primary"
@@ -41,6 +40,11 @@
                     <color-text color_class="text-primary"
                                 :content="item.open_price.coefficient_of_variation"
                                 :condition="content => content < 0.5"/>
+                </md-table-cell>
+                <md-table-cell md-label="Open OBR" class="open-obr-cell" md-sort-by="open_price.over_baseline_rate" md-numeric>
+                    <color-text color_class="text-primary"
+                                :content="item.open_price.over_baseline_rate"
+                                :condition="content => content > 0.5"/>
                 </md-table-cell>
                 <md-table-cell md-label="L/I" class="li-count-cell">
                     <color-text color_class="text-primary"
@@ -75,10 +79,6 @@
                     <span class="tooltip-label">Appid:</span> {{item.appid}}
                     | <span class="tooltip-label">Price:</span> {{item.price}}
                     | <span class="tooltip-label">AVG Foil Price:</span> {{item.open_price.foil_average}}
-                    | <span class="tooltip-label">Open OBR:</span>
-                    <color-text color_class="text-danger"
-                                :content="item.open_price.over_baseline_rate"
-                                :condition="content => content < 0.5"/>
                     | <span class="tooltip-label">Order Count:</span> {{item.sell_order_count}} / {{item.buy_order_count}}
                     | <span class="tooltip-label">Open Order Count:</span> {{item.open_sell_order_count}} / {{item.open_buy_order_count}}
                     | <span class="tooltip-label">Proportion:</span>
@@ -131,6 +131,13 @@
         width: 120px;
     }
     .open-cov-cell >>> .md-table-cell-container  {
+        width: 120px;
+    }
+
+    .open-obr-cell {
+        width: 120px;
+    }
+    .open-obr-cell >>> .md-table-cell-container  {
         width: 120px;
     }
 
