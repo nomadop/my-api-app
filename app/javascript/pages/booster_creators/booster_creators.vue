@@ -37,12 +37,12 @@
                                 :content="item.open_price_per_goo"
                                 :condition="content => content > base_ppg"/>
                 </md-table-cell>
-                <md-table-cell md-label="Open COV" class="open-cov-cell" md-numeric>
+                <md-table-cell md-label="Open COV" class="open-cov-cell" md-sort-by="open_price.coefficient_of_variation" md-numeric>
                     <color-text color_class="text-primary"
                                 :content="item.open_price.coefficient_of_variation"
                                 :condition="content => content < 0.5"/>
                 </md-table-cell>
-                <md-table-cell md-label="L/I Count" class="li-count-cell">
+                <md-table-cell md-label="L/I" class="li-count-cell">
                     <color-text color_class="text-primary"
                                 :content="item.listing_booster_pack_count"
                                 :condition="content => content === 0 && item.price_per_goo > 0.57"/>
@@ -51,7 +51,7 @@
                                 :content="item.inventory_assets_count"
                                 :condition="content => content >= 1"/>
                 </md-table-cell>
-                <md-table-cell md-label="Open L/I Count" class="open-li-count-cell">
+                <md-table-cell md-label="Open L/I" class="open-li-count-cell">
                     <color-text color_class="text-danger"
                                 :content="item.listing_trading_card_count"
                                 :condition="content => content >= 5"/>
@@ -61,9 +61,15 @@
                                 :condition="content => content >= 3"/>
                 </md-table-cell>
                 <md-table-cell md-label="Actions" class="action-cell">
-                    <md-button class="md-dense md-raised md-primary" @click="create_and_sell(item)">sell</md-button>
-                    <md-button class="md-dense md-raised md-primary" @click="create_and_unpack(item)">unpack</md-button>
-                    <md-button class="md-dense md-raised md-primary" @click="sell_all_assets(item)">sell assets</md-button>
+                    <md-button class="md-dense md-icon-button" @click="create_and_unpack(item)">
+                        <md-icon>unarchive</md-icon>
+                    </md-button>
+                    <md-button class="md-dense md-icon-button" @click="create_and_sell(item)">
+                        <md-icon>shop</md-icon>
+                    </md-button>
+                    <md-button class="md-dense md-icon-button" @click="sell_all_assets(item)">
+                        <md-icon>shop_two</md-icon>
+                    </md-button>
                 </md-table-cell>
                 <md-tooltip md-direction="bottom">
                     <span class="tooltip-label">Appid:</span> {{item.appid}}
@@ -129,24 +135,25 @@
     }
 
     .li-count-cell {
-        width: 120px;
+        width: 100px;
     }
     .li-count-cell >>> .md-table-cell-container {
-        width: 120px;
+        width: 100px;
     }
 
     .open-li-count-cell {
-        width: 150px;
+        width: 105px;
     }
     .open-li-count-cell >>> .md-table-cell-container {
-        width: 150px;
+        width: 105px;
     }
 
     .action-cell {
-        width: 365px;
+        width: 176px;
     }
     .action-cell >>> .md-table-cell-container {
-        width: 365px;
+        width: 176px;
+        font-size: 0;
     }
 
     .account-filter {
