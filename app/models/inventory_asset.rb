@@ -118,6 +118,7 @@ class InventoryAsset < ApplicationRecord
         [price, (booster_creator.price * 0.55).ceil].max :
         [price, (booster_creator.price * 0.525 / 3).ceil].max
     end
+    puts "quick sell #{account.bot_name}'s `#{market_hash_name}(#{type})' for #{Utility.format_price(price)}."
     sell(price)
   end
 
