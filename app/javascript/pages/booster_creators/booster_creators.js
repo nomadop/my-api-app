@@ -43,7 +43,7 @@ function create_and_sell(booster_creator) {
     callback: () => fetch('/booster_creators/create_and_sell', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ appid: booster_creator.appid }),
+      body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
     }).then(() => this.snackbar = {
       type: 'info',
       active: true,
@@ -63,7 +63,7 @@ function create_and_unpack(booster_creator) {
     callback: () => fetch('/booster_creators/create_and_unpack', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ appid: booster_creator.appid }),
+      body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
     }).then(() => this.snackbar = {
       type: 'info',
       active: true,
@@ -83,7 +83,7 @@ function sell_all_assets(booster_creator) {
     callback: () => fetch('/booster_creators/sell_all_assets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ appid: booster_creator.appid }),
+      body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
     }).then(() => this.snackbar = {
       type: 'info',
       active: true,
@@ -101,7 +101,7 @@ function get_class(item) {
     return 'md-primary';
   }
 
-  if (this.get_available_time(item)) {
+  if (item.available_time) {
     return 'md-accent';
   }
 
@@ -120,20 +120,28 @@ function on_filter(filter = {}) {
   } else if (filters.account !== '') {
     this.items = this.items.filter(item => _.some(item.account_booster_creators, { bot_name: filters.account }));
   }
+  this.set_available_time(filters.account)
 }
 
-function get_available_time(booster_creator) {
+function get_available_time(booster_creator, account) {
   if (_.isEmpty(booster_creator.account_booster_creators)) {
     return null;
   }
 
-  if (this.filter.account === '') {
+  if (account === '') {
     return booster_creator.min_available_time;
   }
 
   return _.get(
-    _.find(booster_creator.account_booster_creators, { bot_name: this.filter.account }), 'available_time'
+    _.find(booster_creator.account_booster_creators, { bot_name: account }), 'available_time'
   );
+}
+
+function set_available_time(account) {
+  this.items = this.items.map(item => ({
+    ...item,
+    available_time: get_available_time(item, account),
+  }));
 }
 
 export default {
@@ -174,7 +182,7 @@ export default {
     get_class,
     on_select,
     on_filter,
-    get_available_time,
+    set_available_time,
   },
   beforeMount() {
     this.fetch_creatable(false);

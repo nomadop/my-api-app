@@ -258,22 +258,24 @@ class BoosterCreator < ApplicationRecord
     end
   end
 
-  def create_and_sell
+  def create_and_sell(account = Account::DEFAULT)
     Market.load_order_histogram(booster_pack.item_nameid)
-    accounts.reload.each do |account|
-      account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
+    accs = account.nil? ? accounts.reload : [account]
+    accs.each do |acc|
+      account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: acc.id)
       next unless account_booster_creator&.available?
-      assetid = create(account)
-      assetid && Inventory.sell(assetid, lowest_sell_order_exclude_vat - 1, 1, account)
+      assetid = create(acc)
+      assetid && Inventory.sell(assetid, lowest_sell_order_exclude_vat - 1, 1, acc)
     end
   end
 
-  def create_and_unpack
-    accounts.reload.each do |account|
-      account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
+  def create_and_unpack(account = Account::DEFAULT)
+    accs = account.nil? ? accounts.reload : [account]
+    accs.each do |acc|
+      account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: acc.id)
       next unless account_booster_creator&.available?
-      assetid = create(account)
-      assetid && Inventory.unpack_booster(assetid, account)
+      assetid = create(acc)
+      assetid && Inventory.unpack_booster(assetid, acc)
     end
   end
 
@@ -290,10 +292,8 @@ class BoosterCreator < ApplicationRecord
   end
 
   def all_assets(account = Account::DEFAULT)
-    account
-        .inventory_assets
-        .includes(:market_asset)
-        .where(market_assets: {market_fee_app: appid})
+    assets = account.nil? ? InventoryAsset.all : account.inventory_assets
+    assets.includes(:market_asset).where(market_assets: {market_fee_app: appid})
   end
 
   def sell_all_assets(account = Account::DEFAULT)

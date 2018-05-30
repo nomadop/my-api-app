@@ -61,13 +61,13 @@
                                 :condition="content => content >= 3"/>
                 </md-table-cell>
                 <md-table-cell md-label="Actions" class="action-cell">
-                    <md-button class="md-dense md-icon-button" @click="create_and_unpack(item)">
+                    <md-button class="md-dense md-icon-button" @click="create_and_unpack(item)" :disabled="item.account_booster_creators.length === 0">
                         <md-icon>unarchive</md-icon>
                     </md-button>
-                    <md-button class="md-dense md-icon-button" @click="create_and_sell(item)">
+                    <md-button class="md-dense md-icon-button" @click="create_and_sell(item)" :disabled="item.account_booster_creators.length === 0">
                         <md-icon>shop</md-icon>
                     </md-button>
-                    <md-button class="md-dense md-icon-button" @click="sell_all_assets(item)">
+                    <md-button class="md-dense md-icon-button" @click="sell_all_assets(item)" :disabled="item.account_booster_creators.length === 0">
                         <md-icon>shop_two</md-icon>
                     </md-button>
                 </md-table-cell>
@@ -91,7 +91,7 @@
                                 :condition="content => content < 0.1"/>
                     | <span class="tooltip-label">Available Time:</span>
                     <color-text color_class="text-primary"
-                                :content="get_available_time(item) ? new Date(get_available_time(item)) : null"
+                                :content="item.available_time ? new Date(item.available_time) : null"
                                 :condition="content => content < new Date()"
                                 :filter="content => content ? content.toLocaleTimeString() : null"/>
                 </md-tooltip>
