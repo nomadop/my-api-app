@@ -250,10 +250,14 @@ class BoosterCreator < ApplicationRecord
     result['purchase_result']['communityitemid']
   end
 
+  def available?(account = Account::DEFAULT)
+    AccountBoosterCreator.find_by(appid: appid, account_id: account.id)&.available?
+  end
+
+
   def create_all
     accounts.reload.each do |account|
-      account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: account.id)
-      next unless account_booster_creator&.available?
+      next unless available?(account)
       create(account)
     end
   end
@@ -262,8 +266,7 @@ class BoosterCreator < ApplicationRecord
     Market.load_order_histogram(booster_pack.item_nameid)
     accs = account.nil? ? accounts.reload : [account]
     accs.each do |acc|
-      account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: acc.id)
-      next unless account_booster_creator&.available?
+      next unless available?(acc)
       assetid = create(acc)
       assetid && Inventory.sell(assetid, lowest_sell_order_exclude_vat - 1, 1, acc)
     end
@@ -272,8 +275,7 @@ class BoosterCreator < ApplicationRecord
   def create_and_unpack(account = Account::DEFAULT)
     accs = account.nil? ? accounts.reload : [account]
     accs.each do |acc|
-      account_booster_creator = AccountBoosterCreator.find_by(appid: appid, account_id: acc.id)
-      next unless account_booster_creator&.available?
+      next unless available?(acc)
       assetid = create(acc)
       assetid && Inventory.unpack_booster(assetid, acc)
     end
