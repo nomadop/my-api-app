@@ -27,7 +27,7 @@ class BoosterCreatorsController < ActionController::Base
   end
 
   def sell_all_assets
-    account.nil? ? Inventory.reload_all! : Inventory.reload!(acount)
+    account.nil? ? Inventory.reload_all! : Inventory.reload!(account)
     booster_creator.sell_all_assets(account)
   end
 
