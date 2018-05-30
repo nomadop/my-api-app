@@ -35,6 +35,7 @@ class Inventory
     end
 
     def reload!(account = Account::DEFAULT)
+      account = Account.find(account) unless account.is_a?(Account)
       result = reload(account)
       assets = result['assets']
       return if assets.nil?
@@ -58,7 +59,7 @@ class Inventory
     def reload_all!
       InventoryAsset.truncate
       InventoryDescription.truncate
-      Account.find_each(&Inventory.method(:reload!))
+      Account.delegate_all(:Inventory, :reload!)
     end
 
     def auto_sell_and_grind(account = Account::DEFAULT)

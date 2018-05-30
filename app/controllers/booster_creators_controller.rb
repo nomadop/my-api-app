@@ -7,7 +7,7 @@ class BoosterCreatorsController < ActionController::Base
     if params[:refresh]
       MyListing.reload_all!
       Inventory.reload_all!
-      Account.load_booster_creators
+      Account.load_all_booster_creators
     end
     ppg = params[:base_ppg] || 0.57
     limit = params[:limit] || 100

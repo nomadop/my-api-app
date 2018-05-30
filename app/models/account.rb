@@ -14,8 +14,18 @@ class Account < ApplicationRecord
   default_scope -> { enabled }
 
   class << self
-    def load_booster_creators
-      find_each(&:load_booster_creators)
+    def delegate_all(class_name, method)
+      JobConcurrence.start_and_wait_for do
+        all.map { |account| DelegateJob.perform_later(class_name.to_s, method.to_s, account.id) }
+      end
+    end
+
+    def load_booster_creators(account_id)
+      find(account_id).load_booster_creators
+    end
+
+    def load_all_booster_creators
+      delegate_all(:Account, :load_booster_creators)
     end
 
     def asf(command)
@@ -27,9 +37,7 @@ class Account < ApplicationRecord
     end
 
     def refresh_all
-      JobConcurrence.start_and_wait_for do
-        all.map { |account| DelegateJob.perform_later('Account', 'refresh', account.id) }
-      end
+      delegate_all(:Account, :refresh)
     end
   end
 

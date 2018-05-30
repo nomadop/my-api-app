@@ -68,9 +68,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload_all!
-      JobConcurrence.start_and_wait_for do
-        Account.all.map { |account| DelegateJob.perform_later('MyListing', 'reload!', account.id) }
-      end
+      Account.delegate_all(:MyListing, :reload!)
     end
 
     def reload_confirming(account = Account::DEFAULT)
@@ -78,8 +76,13 @@ class MyListing < ApplicationRecord
     end
 
     def reload_confirming!(account = Account::DEFAULT)
+      account = Account.find(account) unless account.is_a?(Account)
       where(account: account).confirming.delete_all
       reload_confirming(account)
+    end
+
+    def reload_all_confirming!
+      Account.delegate_all(:MyListing, :reload_confirming!)
     end
 
     def refresh_order_histogram(account)
