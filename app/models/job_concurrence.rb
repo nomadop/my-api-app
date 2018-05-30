@@ -22,5 +22,12 @@ class JobConcurrence < ApplicationRecord
         raise 'timeout' if timeout && wait_time > timeout
       end
     end
+
+    def start_and_wait_for(uuid = SecureRandom.uuid, limit = nil, sleep_time: 3.second, timeout: nil, &block)
+      raise 'no block given' unless block_given?
+
+      start(uuid, limit, &block)
+      wait_for(uuid, sleep_time: sleep_time, timeout: timeout)
+    end
   end
 end

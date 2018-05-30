@@ -21,6 +21,16 @@ class Account < ApplicationRecord
     def asf(command)
       find_each { |account| puts account.asf(command) }
     end
+
+    def refresh(account_id)
+      find(account_id).refresh
+    end
+
+    def refresh_all
+      JobConcurrence.start_and_wait_for do
+        all.map { |account| DelegateJob.perform_later('Account', 'refresh', account.id) }
+      end
+    end
   end
 
   def cookie

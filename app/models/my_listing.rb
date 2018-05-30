@@ -60,6 +60,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload!(account = Account::DEFAULT)
+      account = Account.find(account) unless account.is_a?(Account)
       transaction do
         belongs(account).delete_all
         reload(0, 100, account)
@@ -67,9 +68,8 @@ class MyListing < ApplicationRecord
     end
 
     def reload_all!
-      transaction do
-        truncate
-        Account.find_each { |account| reload(0, 100, account) }
+      JobConcurrence.start_and_wait_for do
+        Account.all.map { |account| DelegateJob.perform_later('MyListing', 'reload!', account.id) }
       end
     end
 
@@ -116,7 +116,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload_and_fresh(account = Account::DEFAULT)
-      account.nil? ? Account.find_each(&:refresh) : account.refresh
+      account.nil? ? Account.refresh_all : account.refresh
       account.nil? ? reload_all! : reload!(account)
       refresh_order_histogram(account)
     end
