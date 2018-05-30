@@ -17,6 +17,10 @@ class Account < ApplicationRecord
     def load_booster_creators
       find_each(&:load_booster_creators)
     end
+
+    def asf(command)
+      find_each { |account| puts account.asf(command) }
+    end
   end
 
   def cookie
