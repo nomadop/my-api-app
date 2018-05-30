@@ -12,6 +12,8 @@ class JobConcurrence < ApplicationRecord
     end
 
     def wait_for(uuid, sleep_time: 3.second, timeout: nil)
+      return if uuid.nil?
+
       wait_time = 0.second
       loop do
         sleep sleep_time
