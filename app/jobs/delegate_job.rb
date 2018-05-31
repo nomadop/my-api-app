@@ -1,5 +1,5 @@
 class DelegateJob < ApplicationJob
-  queue_as :default
+  queue_as :delegate
 
   def perform(class_name, method, *args, **options)
     klass = ::Object.const_get(class_name)
