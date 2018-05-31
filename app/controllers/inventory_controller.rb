@@ -6,7 +6,7 @@ class InventoryController < ActionController::Base
         :marketable, :market_hash_name, :marketable_date, :listing_url,
         :price_per_goo_exclude_vat, :sell_order_count, :highest_buy_order, :buy_order_count,
         :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
-        :type, :goo_value,
+        :type, :goo_value, :bot_name
       ]
     )
   end

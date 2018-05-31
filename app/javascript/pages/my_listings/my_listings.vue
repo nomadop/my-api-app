@@ -72,13 +72,6 @@
 </template>
 
 <style scoped>
-    .numeric-cell {
-        width: 120px;
-    }
-    .numeric-cell >>> .md-table-cell-container {
-        width: 120px;
-    }
-
     .action-cell {
         width: 180px;
     }

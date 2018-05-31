@@ -39,6 +39,7 @@ class InventoryAsset < ApplicationRecord
            :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
            to: :order_histogram, allow_nil: true
   delegate :booster_creations_count, to: :booster_creator, allow_nil: true
+  delegate :bot_name, to: :account
 
   class << self
     def total_goo_value

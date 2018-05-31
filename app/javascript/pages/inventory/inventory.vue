@@ -54,6 +54,9 @@
                 <md-table-cell md-label="Name" class="name-cell">
                     {{item.market_hash_name}}
                 </md-table-cell>
+                <md-table-cell md-label="Account" class="name-cell" md-sort-by="bot_name">
+                    {{item.bot_name}}
+                </md-table-cell>
                 <md-table-cell md-label="Goo Value" class="numeric-cell" md-sort-by="goo_value" md-numeric>
                     {{item.goo_value}}
                 </md-table-cell>
@@ -81,13 +84,6 @@
 </template>
 
 <style scoped>
-    .numeric-cell {
-        width: 120px;
-    }
-    .numeric-cell >>> .md-table-cell-container {
-        width: 120px;
-    }
-
     .action-cell {
         width: 100px;
     }
