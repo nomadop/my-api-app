@@ -8,29 +8,20 @@ export const wrap_fetch = fetch_fn => {
 
     this.fetching = true;
     NProgress.start();
+
+    const show_message = (type, message) => this.$emit('message', { type, message, });
     fetch_fn.bind(this)(...args)
       .then(response => {
         NProgress.done();
         this.fetching = false;
-        if (response && response.status === 500) {
-          this.$emit('message', {
-            type: 'error',
-            message: response.statusText,
-          });
-        } else {
-          this.$emit('message', {
-            type: 'info',
-            message: 'success',
-          });
-        }
+        response && response.status === 500 ?
+          show_message('error', response.statusText) :
+          show_message('info', 'success');
       })
       .catch(error => {
         NProgress.done();
         this.fetching = false;
-        this.$emit('message', {
-          type: 'error',
-          message: error,
-        });
+        show_message('error', error);
       });
   };
 };

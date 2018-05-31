@@ -46,6 +46,16 @@
                                :disabled="fetching || selected.length === 0">
                         Sell By PPG
                     </md-button>
+                    <md-field class="account-selector">
+                        <label>Account</label>
+                        <md-select v-model="selected_account">
+                            <md-option v-for="account in accounts" :value="account.id">{{account.bot_name}}</md-option>
+                        </md-select>
+                    </md-field>
+                    <md-button class="md-raised md-primary"
+                               :disabled="fetching || selected.length === 0 || selected_account === ''">
+                        Trade
+                    </md-button>
                 </div>
             </md-table-toolbar>
 

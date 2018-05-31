@@ -55,6 +55,7 @@ function on_filter(filter = {}) {
 }
 
 export default {
+  props: ['accounts'],
   data: () => ({
     items: [],
     selected: [],
@@ -65,6 +66,7 @@ export default {
       sell_ppg: '',
     },
     sell_ppg: 0.57,
+    selected_account: '',
   }),
   watch: {
     'filter.marketable': function (marketable) {

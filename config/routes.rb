@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   mount Sidekiq::Web => '/sidekiq'
 
   resource :authentication
+  get '/accounts', to: 'accounts#list'
   get '/inventory', to: 'inventory#show'
   get '/inventory/assets', to: 'inventory#assets'
   get '/my_listings', to: 'my_listings#show'

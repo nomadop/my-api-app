@@ -1,5 +1,6 @@
 import Vue from 'vue/dist/vue.esm';
 import VueMaterial from 'vue-material';
+import { wrap_fetch } from "../utilities/wrapper";
 
 Vue.use(VueMaterial);
 
@@ -15,10 +16,17 @@ Vue.component('my-listings', function (resolve) {
   require(['../pages/my_listings/my_listings.vue'], resolve)
 });
 
+function fetch_accounts() {
+  return fetch('/accounts')
+    .then(response => response.json())
+    .then(accounts => this.accounts = accounts);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     el: '#vue-app',
     data: () => ({
+      accounts: [],
       nav_visible: false,
       snackbar: {
         active: false,
@@ -31,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
     }),
     methods: {
+      fetch_accounts: wrap_fetch(fetch_accounts),
       on_confirm: function (confirm) {
         this.confirm = {
           active: true,
@@ -43,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
           ...message,
         }
       }
+    },
+    created() {
+      this.fetch_accounts();
     }
   });
 });
