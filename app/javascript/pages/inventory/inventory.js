@@ -13,11 +13,10 @@ function on_response(response) {
     .catch(error => {
       NProgress.done();
       this.fetching = false;
-      this.snackbar = {
+      this.$emit('message', {
         type: 'error',
-        active: true,
         message: error,
-      };
+      });
     });
 }
 
@@ -46,8 +45,7 @@ function sell_by_ppg() {
     return;
   }
 
-  this.confirm = {
-    active: true,
+  this.$emit('confirm', {
     title: `confirm to sell ${this.selected.length} items by ppg ${this.sell_ppg}?`,
     callback: () => {
       this.fetching = true;
@@ -67,14 +65,13 @@ function sell_by_ppg() {
         .catch(error => {
           this.fetching = false;
           NProgress.done();
-          this.snackbar = {
+          this.$emit('message', {
             type: 'error',
-            active: true,
             message: error,
-          };
+          });
         });
     }
-  };
+  });
 }
 
 function get_class(item) {
@@ -106,15 +103,6 @@ export default {
     selected: [],
     inventory_assets: [],
     fetching: false,
-    snackbar: {
-      active: false,
-      message: null,
-    },
-    confirm: {
-      title: null,
-      active: false,
-      callback: () => {},
-    },
     filter: {
       marketable: 1,
       sell_ppg: '',
@@ -140,7 +128,7 @@ export default {
   filters: {
     round: number => number && +number.toFixed(2),
   },
-  beforeMount() {
+  created() {
     console.log(this);
     this.fetch_assets();
   }

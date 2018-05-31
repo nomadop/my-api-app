@@ -20,6 +20,29 @@ document.addEventListener('DOMContentLoaded', () => {
     el: '#vue-app',
     data: () => ({
       nav_visible: false,
+      snackbar: {
+        active: false,
+        message: null,
+      },
+      confirm: {
+        title: null,
+        active: false,
+        callback: () => {},
+      },
     }),
+    methods: {
+      on_confirm: function (confirm) {
+        this.confirm = {
+          active: true,
+          ...confirm,
+        };
+      },
+      on_message: function (message) {
+        this.snackbar = {
+          active: true,
+          ...message,
+        }
+      }
+    }
   });
 });

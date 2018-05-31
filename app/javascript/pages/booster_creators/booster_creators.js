@@ -28,72 +28,62 @@ function fetch_creatable(refresh = true) {
     .catch(error => {
       NProgress.done();
       this.fetching = false;
-      this.snackbar = {
+      this.$emit('message', {
         type: 'error',
-        active: true,
         message: error,
-      };
+      });
     });
 }
 
 function create_and_sell(booster_creator) {
-  this.confirm = {
-    active: true,
-    title: `confirm to create ${booster_creator.name}?`,
+  this.$emit('confirm', {
+    title: `confirm to create and sell ${booster_creator.name}?`,
     callback: () => fetch('/booster_creators/create_and_sell', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
-    }).then(() => this.snackbar = {
+    }).then(() => this.$emit('message', {
       type: 'info',
-      active: true,
       message: 'success',
-    }).catch(error => this.snackbar = {
+    })).catch(error => this.$emit('message', {
       type: 'error',
-      active: true,
       message: error,
-    })
-  };
+    }))
+  });
 }
 
 function create_and_unpack(booster_creator) {
-  this.confirm = {
-    active: true,
-    title: `confirm to create ${booster_creator.name}?`,
+  this.$emit('confirm', {
+    title: `confirm to create and unpack ${booster_creator.name}?`,
     callback: () => fetch('/booster_creators/create_and_unpack', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
-    }).then(() => this.snackbar = {
+    }).then(() => this.$emit('message', {
       type: 'info',
-      active: true,
       message: 'success',
-    }).catch(error => this.snackbar = {
+    })).catch(error => this.$emit('message', {
       type: 'error',
-      active: true,
       message: error,
-    })
-  };
+    }))
+  });
 }
 
 function sell_all_assets(booster_creator) {
-  this.confirm = {
-    active: true,
-    title: `confirm to create ${booster_creator.name}?`,
+  this.$emit('confirm', {
+    title: `confirm to sell all assets of ${booster_creator.name}?`,
     callback: () => fetch('/booster_creators/sell_all_assets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
-    }).then(() => this.snackbar = {
+    }).then(() => this.$emit('message', {
       type: 'info',
-      active: true,
       message: 'success',
-    }).catch(error => this.snackbar = {
+    })).catch(error => this.$emit('message', {
       type: 'error',
-      active: true,
       message: error,
-    })
-  };
+    }))
+  });
 }
 
 function get_class(item) {
@@ -151,16 +141,6 @@ export default {
     booster_creators: [],
     fetching: false,
     selected: null,
-    snackbar: {
-      active: false,
-      message: null,
-    },
-    confirm: {
-      title: null,
-      active: false,
-      callback: () => {
-      },
-    },
     filter: {
       account: '',
     },
@@ -184,7 +164,7 @@ export default {
     on_filter,
     set_available_time,
   },
-  beforeMount() {
+  created() {
     this.fetch_creatable(false);
   }
 };

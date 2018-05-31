@@ -13,11 +13,10 @@ function on_response(response) {
     .catch(error => {
       NProgress.done();
       this.fetching = false;
-      this.snackbar = {
+      this.$emit('message', {
         type: 'error',
-        active: true,
         message: error,
-      };
+      });
     });
 }
 
@@ -73,15 +72,6 @@ export default {
     selected: [],
     my_listings: [],
     fetching: false,
-    snackbar: {
-      active: false,
-      message: null,
-    },
-    confirm: {
-      title: null,
-      active: false,
-      callback: () => {},
-    },
     filter: {
       confirming: false,
     },
@@ -102,7 +92,7 @@ export default {
   filters: {
     round: number => number && +number.toFixed(2),
   },
-  beforeMount() {
+  created() {
     console.log(this);
     this.fetch_all();
   }

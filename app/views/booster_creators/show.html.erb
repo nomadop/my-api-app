@@ -2,4 +2,4 @@
     <span class="md-title">Booster Creator</span>
 <% end %>
 
-<booster-creators :base_ppg="<%= params[:base_ppg] || 0.57 %>" :limit="<%= params[:limit] || 100%>"></booster-creators>
+<booster-creators @confirm="on_confirm" @message="on_message"></booster-creators>

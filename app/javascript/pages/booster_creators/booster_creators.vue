@@ -97,18 +97,6 @@
                 </md-tooltip>
             </md-table-row>
         </md-table>
-
-        <md-dialog-confirm :md-active.sync="confirm.active"
-                           :md-title="confirm.title"
-                           @md-confirm="confirm.callback"
-                           md-confirm-text="Yes"
-                           md-cancel-text="No"
-        />
-
-        <md-snackbar :class="snackbar.type" md-position="left" :md-duration="Infinity" :md-active.sync="snackbar.active">
-            <span>{{snackbar.message}}</span>
-            <md-button class="md-primary" @click="snackbar.active = false">Close</md-button>
-        </md-snackbar>
     </div>
 </template>
 
