@@ -19,4 +19,9 @@ class MyListingsController < ActionController::Base
     MyListing.reload_all!
     redirect_to action: 'list'
   end
+
+  def reload_confirming
+    MyListing.reload_all_confirming!
+    redirect_to action: 'list'
+  end
 end

@@ -11,6 +11,11 @@
                                :disabled="fetching">
                         Reload
                     </md-button>
+                    <md-button class="md-raised md-primary"
+                               @click="reload_confirming"
+                               :disabled="fetching">
+                        Reload Confirming
+                    </md-button>
                 </div>
 
                 <div class="md-toolbar-section-end">

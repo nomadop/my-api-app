@@ -41,6 +41,16 @@ function reload_all() {
   return fetch('/my_listings/reload', { method: 'post' }).then(on_response.bind(this));
 }
 
+function reload_confirming() {
+  if (this.fetching) {
+    return;
+  }
+
+  this.fetching = true;
+  NProgress.start();
+  return fetch('/my_listings/reload_confirming', { method: 'post' }).then(on_response.bind(this));
+}
+
 function get_class() {
   return 'md-default';
 }
@@ -84,6 +94,7 @@ export default {
   methods: {
     fetch_all,
     reload_all,
+    reload_confirming,
     get_class,
     on_select,
     on_filter,
