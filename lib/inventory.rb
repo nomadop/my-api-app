@@ -58,7 +58,6 @@ class Inventory
 
     def reload_all!
       InventoryAsset.truncate
-      InventoryDescription.truncate
       Account.delegate_all(:Inventory, :reload!)
     end
 
