@@ -31,6 +31,13 @@
                             <md-option :value="0">False</md-option>
                         </md-select>
                     </md-field>
+
+                    <md-field class="account-selector" md-clearable>
+                        <label>Account</label>
+                        <md-select v-model="filter.account">
+                            <md-option v-for="account in accounts" :value="account.bot_name">{{account.bot_name}}</md-option>
+                        </md-select>
+                    </md-field>
                 </div>
             </md-table-toolbar>
 

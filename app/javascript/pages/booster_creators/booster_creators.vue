@@ -21,7 +21,7 @@
                 </div>
 
                 <div class="md-toolbar-section-end">
-                    <md-field class="account-filter" md-clearable>
+                    <md-field class="account-selector" md-clearable>
                         <label>Account</label>
                         <md-select v-model="filter.account" :disabled="account_names.length === 0">
                             <md-option v-for="name in account_names" :value="name">{{name}}</md-option>
@@ -154,10 +154,6 @@
     .action-cell >>> .md-table-cell-container {
         width: 176px;
         font-size: 0;
-    }
-
-    .account-filter {
-        max-width: 180px;
     }
 </style>
 

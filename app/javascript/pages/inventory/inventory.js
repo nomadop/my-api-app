@@ -52,6 +52,9 @@ function on_filter(filter = {}) {
   if (filters.sell_ppg !== '') {
     this.items = this.items.filter(item => item.price_per_goo_exclude_vat >= +filters.sell_ppg);
   }
+  if (filters.account !== '') {
+    this.items = this.items.filter(item => item.bot_name === filters.account);
+  }
 }
 
 export default {
@@ -64,6 +67,7 @@ export default {
     filter: {
       marketable: 1,
       sell_ppg: '',
+      account: '',
     },
     sell_ppg: 0.57,
     selected_account: '',
@@ -74,6 +78,9 @@ export default {
     },
     'filter.sell_ppg': function (sell_ppg) {
       this.on_filter({ sell_ppg })
+    },
+    'filter.account': function (account) {
+      this.on_filter({ account })
     },
   },
   methods: {
