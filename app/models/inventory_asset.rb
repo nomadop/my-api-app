@@ -118,7 +118,7 @@ class InventoryAsset < ApplicationRecord
         [price, (booster_creator.price * 0.55).ceil].max :
         [price, (booster_creator.price * 0.525 / 3).ceil].max
     end
-    puts "quick sell #{account.bot_name}'s `#{market_hash_name}(#{type})' for #{Utility.format_price(price)}."
+    puts "#{Time.now}: quick sell #{account.bot_name}'s `#{market_hash_name}(#{type})' for #{Utility.format_price(price)}."
     sell(price)
   end
 
@@ -162,6 +162,7 @@ class InventoryAsset < ApplicationRecord
         ssl_ca_file: 'config/certs/ca_certificate.pem',
     }
     response = RestClient::Request.execute(option)
+    puts "#{Time.now}: grind #{account.bot_name}'s `#{market_hash_name}(#{type})' into goo for #{market_asset.goo_value}."
     account.update_cookie(response)
     destroy if JSON.parse(response.body)['success'] == 1
   rescue RestClient::Forbidden => e
@@ -240,7 +241,7 @@ class InventoryAsset < ApplicationRecord
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
     return quick_sell if marketable? && (ppg > 1 || (booster_pack? && booster_creations.exists?))
-    grind_into_goo if ppg <= 2 && !booster_pack?
+    grind_into_goo if ppg <= 2 && !booster_pack? && !booster_creations.exists?
   end
 
   def auto_sell_and_grind_later

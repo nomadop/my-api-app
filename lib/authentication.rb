@@ -34,7 +34,7 @@ class Authentication
           ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option).tap do |response|
-        pp cookies = Utility.parse_cookies(response.headers[:set_cookie])
+        cookies = Utility.parse_cookies(response.headers[:set_cookie])
         raise AccountExpired.new if cookies.any? { |c| c.value == 'deleted' }
       end
     end
