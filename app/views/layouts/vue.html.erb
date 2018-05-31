@@ -39,7 +39,7 @@
         <md-app-content>
           <%= yield %>
 
-          <md-snackbar :class="snackbar.type" md-position="left" :md-duration="Infinity" :md-active.sync="snackbar.active">
+          <md-snackbar :class="snackbar.type" md-position="left" :md-duration="5000" :md-active.sync="snackbar.active">
             <span>{{snackbar.message}}</span>
             <md-button class="md-primary" @click="snackbar.active = false">Close</md-button>
           </md-snackbar>

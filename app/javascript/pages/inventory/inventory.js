@@ -1,76 +1,33 @@
-import NProgress from 'nprogress';
+import { wrap_fetch } from '../../utilities/wrapper';
 
 function on_response(response) {
-  return response.json()
-    .then(inventory_assets => {
-      this.inventory_assets = inventory_assets;
-      this.on_filter();
-    })
-    .then(() => {
-      this.fetching = false;
-      NProgress.done();
-    })
-    .catch(error => {
-      NProgress.done();
-      this.fetching = false;
-      this.$emit('message', {
-        type: 'error',
-        message: error,
-      });
-    });
+  return response.json().then(inventory_assets => {
+    this.inventory_assets = inventory_assets;
+    this.on_filter();
+  });
 }
 
 function fetch_assets() {
-  if (this.fetching) {
-    return;
-  }
-
-  this.fetching = true;
-  NProgress.start();
   return fetch('/inventory/assets').then(on_response.bind(this));
 }
 
 function reload_assets() {
-  if (this.fetching) {
-    return;
-  }
-
-  this.fetching = true;
-  NProgress.start();
   return fetch('/inventory/reload', { method: 'post' }).then(on_response.bind(this));
 }
 
 function sell_by_ppg() {
-  if (this.fetching) {
-    return;
-  }
-
   this.$emit('confirm', {
     title: `confirm to sell ${this.selected.length} items by ppg ${this.sell_ppg}?`,
-    callback: () => {
-      this.fetching = true;
-      NProgress.start();
-      const option = {
-        method: 'post',
-        body: JSON.stringify({
-          sell_ppg: this.sell_ppg,
-          asset_ids: this.selected.map(item => item.id),
-        }),
-        headers: {
-          'content-type': 'application/json'
-        }
-      };
-      return fetch('/inventory/sell_by_ppg', option)
-        .then(() => window.location.reload(true))
-        .catch(error => {
-          this.fetching = false;
-          NProgress.done();
-          this.$emit('message', {
-            type: 'error',
-            message: error,
-          });
-        });
-    }
+    callback: wrap_fetch(() => fetch('/inventory/sell_by_ppg', {
+      method: 'post',
+      body: JSON.stringify({
+        sell_ppg: this.sell_ppg,
+        asset_ids: this.selected.map(item => item.id),
+      }),
+      headers: {
+        'content-type': 'application/json'
+      }
+    }).then(() => window.location.reload(true))).bind(this),
   });
 }
 
@@ -118,8 +75,8 @@ export default {
     },
   },
   methods: {
-    fetch_assets,
-    reload_assets,
+    fetch_assets: wrap_fetch(fetch_assets),
+    reload_assets: wrap_fetch(reload_assets),
     sell_by_ppg,
     get_class,
     on_select,
@@ -128,8 +85,4 @@ export default {
   filters: {
     round: number => number && +number.toFixed(2),
   },
-  created() {
-    console.log(this);
-    this.fetch_assets();
-  }
 };

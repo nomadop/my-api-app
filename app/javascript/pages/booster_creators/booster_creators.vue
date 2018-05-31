@@ -5,9 +5,14 @@
             <md-table-toolbar class="md-elevation-2">
                 <div class="md-toolbar-section-start">
                     <md-button class="md-raised md-primary"
-                               @click="fetch_creatable"
+                               @click="fetch_creatable(false)"
                                :disabled="fetching || base_ppg === ''">
-                        {{fetching ? 'fetching' : 'fetch'}}
+                        Load
+                    </md-button>
+                    <md-button class="md-raised md-primary"
+                               @click="fetch_creatable(true)"
+                               :disabled="fetching || base_ppg === ''">
+                        Reload
                     </md-button>
                     <md-field>
                         <label>Base PPG</label>

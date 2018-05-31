@@ -7,6 +7,11 @@
             <md-table-toolbar class="md-elevation-2">
                 <div class="md-toolbar-section-start">
                     <md-button class="md-raised md-primary"
+                               @click="fetch_assets"
+                               :disabled="fetching">
+                        Load
+                    </md-button>
+                    <md-button class="md-raised md-primary"
                                @click="reload_assets"
                                :disabled="fetching">
                         Reload

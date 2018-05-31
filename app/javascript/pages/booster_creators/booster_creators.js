@@ -1,15 +1,9 @@
-import NProgress from 'nprogress';
 import * as _ from 'lodash';
 
 import ColorText from '../../components/color_text.vue';
+import { wrap_fetch } from '../../utilities/wrapper';
 
 function fetch_creatable(refresh = true) {
-  if (this.fetching || this.base_ppg === '') {
-    return;
-  }
-
-  this.fetching = true;
-  NProgress.start();
   return fetch(`/booster_creators/creatable?base_ppg=${+this.base_ppg}${refresh ? '&refresh=1' : ''}`)
     .then(response => response.json())
     .then(booster_creators => {
@@ -20,69 +14,39 @@ function fetch_creatable(refresh = true) {
         ), ['None']
       );
       this.on_filter();
-    })
-    .then(() => {
-      this.fetching = false;
-      NProgress.done();
-    })
-    .catch(error => {
-      NProgress.done();
-      this.fetching = false;
-      this.$emit('message', {
-        type: 'error',
-        message: error,
-      });
     });
 }
 
 function create_and_sell(booster_creator) {
   this.$emit('confirm', {
     title: `confirm to create and sell ${booster_creator.name}?`,
-    callback: () => fetch('/booster_creators/create_and_sell', {
+    callback: wrap_fetch(() => fetch('/booster_creators/create_and_sell', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
-    }).then(() => this.$emit('message', {
-      type: 'info',
-      message: 'success',
-    })).catch(error => this.$emit('message', {
-      type: 'error',
-      message: error,
-    }))
+    })).bind(this),
   });
 }
 
 function create_and_unpack(booster_creator) {
   this.$emit('confirm', {
     title: `confirm to create and unpack ${booster_creator.name}?`,
-    callback: () => fetch('/booster_creators/create_and_unpack', {
+    callback: wrap_fetch(() => fetch('/booster_creators/create_and_unpack', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
-    }).then(() => this.$emit('message', {
-      type: 'info',
-      message: 'success',
-    })).catch(error => this.$emit('message', {
-      type: 'error',
-      message: error,
-    }))
+    })).bind(this),
   });
 }
 
 function sell_all_assets(booster_creator) {
   this.$emit('confirm', {
     title: `confirm to sell all assets of ${booster_creator.name}?`,
-    callback: () => fetch('/booster_creators/sell_all_assets', {
+    callback: wrap_fetch(() => fetch('/booster_creators/sell_all_assets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
-    }).then(() => this.$emit('message', {
-      type: 'info',
-      message: 'success',
-    })).catch(error => this.$emit('message', {
-      type: 'error',
-      message: error,
-    }))
+    })).bind(this),
   });
 }
 
@@ -155,16 +119,13 @@ export default {
     },
   },
   methods: {
-    fetch_creatable,
-    create_and_sell,
-    create_and_unpack,
+    fetch_creatable: wrap_fetch(fetch_creatable),
+    create_and_sell: create_and_sell,
+    create_and_unpack: create_and_unpack,
     sell_all_assets,
     get_class,
     on_select,
     on_filter,
     set_available_time,
   },
-  created() {
-    this.fetch_creatable(false);
-  }
 };
