@@ -68,7 +68,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload_all!
-      Account.delegate_all(:MyListing, :reload!)
+      Account.delegate_all(:MyListing, [:reload!, :reload_confirming!])
     end
 
     def reload_confirming(account = Account::DEFAULT)

@@ -14,9 +14,12 @@ class Account < ApplicationRecord
   default_scope -> { enabled }
 
   class << self
-    def delegate_all(class_name, method)
+    def delegate_all(class_name, methods)
+      methods = Array(methods)
       JobConcurrence.start_and_wait_for do
-        all.map { |account| DelegateJob.perform_later(class_name.to_s, method.to_s, account.id) }
+        methods.flat_map do |method|
+          all.map { |account| DelegateJob.perform_later(class_name.to_s, method.to_s, account.id) }
+        end
       end
     end
 
