@@ -25,6 +25,13 @@
 
             <md-table-toolbar slot="md-table-alternate-header" slot-scope="{ count }">
                 <div class="md-toolbar-section-start">Selected: {{ count }}</div>
+
+                <div class="md-toolbar-section-end">
+                    <md-button class="md-raised md-primary" @click="cancel_selected"
+                               :disabled="fetching || selected.length === 0">
+                        Cancel
+                    </md-button>
+                </div>
             </md-table-toolbar>
 
             <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="multiple" md-auto-select>

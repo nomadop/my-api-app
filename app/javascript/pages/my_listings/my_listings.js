@@ -19,6 +19,21 @@ function reload_confirming() {
   return fetch('/my_listings/reload_confirming', { method: 'post' }).then(on_response.bind(this));
 }
 
+function cancel_selected() {
+  this.$emit('confirm', {
+    title: `confirm to cancel ${this.selected.length} listings?`,
+    callback: wrap_fetch(() => fetch('/my_listings/cancel', {
+      method: 'post',
+      body: JSON.stringify({
+        ids: this.selected.map(item => item.id),
+      }),
+      headers: {
+        'content-type': 'application/json'
+      }
+    }).then(() => window.location.reload(true))).bind(this),
+  });
+}
+
 function get_class() {
   return 'md-default';
 }
@@ -57,6 +72,7 @@ export default {
     get_class,
     on_select,
     on_filter,
+    cancel_selected,
   },
   filters: {
     round: number => number && +number.toFixed(2),

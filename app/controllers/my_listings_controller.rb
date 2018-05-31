@@ -1,7 +1,7 @@
 class MyListingsController < ActionController::Base
   def list
     render json: MyListing.includes(:market_asset, :order_histogram, :account, :booster_creator,).as_json(
-      only: [:listingid, :market_hash_name, :price, :listed_date, :confirming],
+      only: [:id, :listingid, :market_hash_name, :price, :listed_date, :confirming],
       methods: [
         :price_exclude_vat, :price_per_goo_exclude_vat,
         :lowest_sell_order, :lowest_sell_order_exclude_vat,
@@ -23,5 +23,10 @@ class MyListingsController < ActionController::Base
   def reload_confirming
     MyListing.reload_all_confirming!
     redirect_to action: 'list'
+  end
+
+  def cancel
+    JobConcurrence.start_and_wait_for { MyListing.where(id: params[:ids]).cancel_later }
+    render text: :success
   end
 end
