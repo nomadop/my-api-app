@@ -12,7 +12,7 @@ export const wrap_fetch = fetch_fn => {
       .then(response => {
         NProgress.done();
         this.fetching = false;
-        if (response.status === 500) {
+        if (response && response.status === 500) {
           this.$emit('message', {
             type: 'error',
             message: response.statusText,

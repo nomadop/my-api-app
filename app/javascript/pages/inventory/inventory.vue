@@ -49,8 +49,8 @@
                 </div>
             </md-table-toolbar>
 
-            <md-table-row slot="md-table-row" slot-scope="{ item }" :md-disabled="item.marketable === 0"
-                          md-selectable="multiple" md-auto-select>
+            <md-table-row slot="md-table-row" slot-scope="{ item }"
+                          :md-disabled="item.marketable === 0" md-selectable="multiple">
                 <md-table-cell md-label="Name" class="name-cell">
                     {{item.market_hash_name}}
                 </md-table-cell>
@@ -66,11 +66,10 @@
                 <md-table-cell md-label="Sell Count" class="numeric-cell" md-sort-by="sell_order_count" md-numeric>
                     {{item.sell_order_count}}
                 </md-table-cell>
-                <md-table-cell md-label="Buy Price" class="numeric-cell" md-sort-by="highest_buy_order" md-numeric>
-                    {{item.highest_buy_order}}
-                </md-table-cell>
-                <md-table-cell md-label="Buy Count" class="numeric-cell" md-sort-by="buy_order_count" md-numeric>
-                    {{item.buy_order_count}}
+                <md-table-cell md-label="Actions" class="action-cell">
+                    <md-button class="md-dense md-icon-button" :href="item.listing_url" target="_blank">
+                        <md-icon>link</md-icon>
+                    </md-button>
                 </md-table-cell>
 
                 <md-tooltip md-direction="right">
@@ -90,10 +89,10 @@
     }
 
     .action-cell {
-        width: 180px;
+        width: 100px;
     }
     .action-cell >>> .md-table-cell-container {
-        width: 180px;
+        width: 100px;
     }
 
     .md-tooltip {
