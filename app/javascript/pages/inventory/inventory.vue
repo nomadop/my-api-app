@@ -59,7 +59,7 @@
                             <md-option v-for="account in accounts" :value="account.id">{{account.bot_name}}</md-option>
                         </md-select>
                     </md-field>
-                    <md-button class="md-raised md-primary"
+                    <md-button class="md-raised md-primary" @click="send_trade_offer"
                                :disabled="fetching || selected.length === 0 || selected_account === ''">
                         Trade
                     </md-button>

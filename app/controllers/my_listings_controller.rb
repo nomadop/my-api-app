@@ -27,6 +27,6 @@ class MyListingsController < ActionController::Base
 
   def cancel
     JobConcurrence.start_and_wait_for { MyListing.where(id: params[:ids]).cancel_later }
-    render text: :success
+    render plain: 'success'
   end
 end

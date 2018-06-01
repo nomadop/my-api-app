@@ -25,4 +25,10 @@ class InventoryController < ActionController::Base
     assets.find_each { |asset| asset.sell_by_ppg(params[:sell_ppg]) }
     render json: { success: true }
   end
+
+  def send_trade_offer
+    target = Account.find(params[:target])
+    InventoryAsset.where(id: params[:ids]).send_offer_to(target)
+    render plain: 'success'
+  end
 end

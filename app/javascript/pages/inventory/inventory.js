@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import { wrap_fetch } from '../../utilities/wrapper';
 
 function on_response(response) {
@@ -23,6 +24,23 @@ function sell_by_ppg() {
       body: JSON.stringify({
         sell_ppg: this.sell_ppg,
         asset_ids: this.selected.map(item => item.id),
+      }),
+      headers: {
+        'content-type': 'application/json'
+      }
+    }).then(() => window.location.reload(true))).bind(this),
+  });
+}
+
+function send_trade_offer() {
+  const target_name = _.find(this.accounts, { id: this.selected_account }).bot_name;
+  this.$emit('confirm', {
+    title: `confirm to trade ${this.selected.length} items to ${target_name}?`,
+    callback: wrap_fetch(() => fetch('/inventory/send_trade_offer', {
+      method: 'post',
+      body: JSON.stringify({
+        target: this.selected_account,
+        ids: this.selected.map(item => item.id),
       }),
       headers: {
         'content-type': 'application/json'
@@ -87,6 +105,7 @@ export default {
     fetch_assets: wrap_fetch(fetch_assets),
     reload_assets: wrap_fetch(reload_assets),
     sell_by_ppg,
+    send_trade_offer,
     get_class,
     on_select,
     on_filter,
