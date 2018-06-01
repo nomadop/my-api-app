@@ -9,7 +9,9 @@ function on_response(response) {
 }
 
 function fetch_all() {
-  return fetch('/account_histories/all').then(on_response.bind(this));
+  const params = new URLSearchParams();
+  params.append('from_date', this.from_date.getTime() / 1000);
+  return fetch(`/account_histories/all?${params}`).then(on_response.bind(this));
 }
 
 function reload_all() {
@@ -38,6 +40,13 @@ function on_filter(filter = {}) {
   }
 }
 
+function get_initial_from_date() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setTime(date.getTime() - 1000 * 60 * 60 * 24 * 14);
+  return date;
+}
+
 export default {
   props: ['accounts'],
   data: () => ({
@@ -50,6 +59,7 @@ export default {
       payment: '',
       account: '',
     },
+    from_date: get_initial_from_date(),
   }),
   watch: {
     'filter.type': function (type) {
