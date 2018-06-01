@@ -1,7 +1,7 @@
 <template>
     <div id="account-histories">
         <md-table v-model="items" md-card md-fixed-header
-                  md-sort="date" md-sort-order="desc">
+                  md-sort="date" md-sort-order="asc">
 
             <md-table-toolbar class="md-elevation-2">
                 <div class="md-toolbar-section-start">
@@ -18,6 +18,28 @@
                 </div>
 
                 <div class="md-toolbar-section-end">
+                    <md-field md-clearable>
+                        <label>Type</label>
+                        <md-select v-model="filter.type">
+                            <md-option value="购买">购买</md-option>
+                            <md-option value="退款">退款</md-option>
+                            <md-option value="礼物购买">礼物购买</md-option>
+                        </md-select>
+                    </md-field>
+
+                    <md-field md-clearable>
+                        <label>Payment</label>
+                        <md-select v-model="filter.payment">
+                            <md-option value="钱包">钱包</md-option>
+                            <md-option value="支付宝">支付宝</md-option>
+                            <md-option value="微信">微信</md-option>
+                            <md-option value="Visa">Visa</md-option>
+                            <md-option value="万事达">万事达</md-option>
+                            <md-option value="零售">零售</md-option>
+                            <md-option value="贝宝">贝宝</md-option>
+                        </md-select>
+                    </md-field>
+
                     <md-field class="account-selector" md-clearable>
                         <label>Account</label>
                         <md-select v-model="filter.account">
@@ -66,10 +88,10 @@
     }
 
     .type-cell {
-        width: 150px;
+        width: 240px;
     }
     .type-cell >>> .md-table-cell-container {
-        width: 150px;
+        width: 240px;
     }
 
     .numeric-cell {

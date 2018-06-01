@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import { wrap_fetch } from '../../utilities/wrapper';
 
 function on_response(response) {
@@ -26,8 +27,14 @@ function on_select(items) {
 function on_filter(filter = {}) {
   const filters = { ...this.filter, ...filter };
   this.items = this.account_histories;
+  if (filters.type !== '') {
+    this.items = this.items.filter(item => _.startsWith(item.type, filters.type));
+  }
+  if (filters.payment !== '') {
+    this.items = this.items.filter(item => item.payment.match(filters.payment));
+  }
   if (filters.account !== '') {
-    this.items = this.items.filter(item => item.bot_name === filters.account);
+    this.items = this.items.filter(item => item.account.bot_name === filters.account);
   }
 }
 
@@ -39,10 +46,18 @@ export default {
     account_histories: [],
     fetching: false,
     filter: {
-      confirming: false,
+      type: '',
+      payment: '',
+      account: '',
     },
   }),
   watch: {
+    'filter.type': function (type) {
+      this.on_filter({ type })
+    },
+    'filter.payment': function (payment) {
+      this.on_filter({ payment })
+    },
     'filter.account': function (account) {
       this.on_filter({ account })
     },
