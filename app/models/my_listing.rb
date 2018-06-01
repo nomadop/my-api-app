@@ -17,8 +17,8 @@ class MyListing < ApplicationRecord
   scope :non_sack_of_gems, -> { where.not(market_hash_name: '753-Sack of Gems') }
   scope :foil_card, -> { joins(:market_asset).where('market_assets.type like ?', '%Foil Trading Card') }
   scope :non_foil_card, -> { joins(:market_asset).where('market_assets.type like ?', '%Trading Card').where.not('market_assets.type like ?', '%Foil Trading Card') }
-  scope :without_app, -> { left_outer_joins(:steam_app).where(steam_apps: {steam_appid: nil}) }
-  scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {market_hash_name: nil}) }
+  scope :without_app, -> { left_outer_joins(:steam_app).where(steam_apps: { steam_appid: nil }) }
+  scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: { market_hash_name: nil }) }
   scope :cancelable, -> do
     joins(:order_histogram).where <<-SQL
         (price > order_histograms.lowest_sell_order OR (
@@ -44,7 +44,7 @@ class MyListing < ApplicationRecord
   scope :confirming, -> { where(confirming: true) }
 
   delegate :load_order_histogram, :find_sell_balance, :goo_value, :booster_pack?,
-           :market_name, :market_fee_app, :type, to: :market_asset
+    :market_name, :market_fee_app, :type, to: :market_asset
   delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
   delegate :name, :booster_creator_cost, to: :booster_creator, allow_nil: true
   delegate :bot_name, to: :account
@@ -69,9 +69,9 @@ class MyListing < ApplicationRecord
 
     def reload_all!
       Account.delegate_all([
-                             {class_name: :MyListing, method: :reload!},
-                             {class_name: :MyListing, method: :reload_confirming!},
-                           ])
+        { class_name: :MyListing, method: :reload! },
+        { class_name: :MyListing, method: :reload_confirming! },
+      ])
     end
 
     def reload_confirming(account = Account::DEFAULT)
@@ -85,7 +85,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload_all_confirming!
-      Account.delegate_all({ class_name: :MyListing, method: :reload_confirming!})
+      Account.delegate_all({ class_name: :MyListing, method: :reload_confirming! })
     end
 
     def refresh_order_histogram(account)
@@ -165,7 +165,7 @@ class MyListing < ApplicationRecord
     end
 
     price > order_histogram.lowest_sell_order ||
-        (price > 100 && price == order_histogram.lowest_sell_order && order_histogram.sell_order_graph[0][1] > 1)
+      (price > 100 && price == order_histogram.lowest_sell_order && order_histogram.sell_order_graph[0][1] > 1)
   end
 
   def sell_balance(with_in: 1.week)
