@@ -350,8 +350,8 @@ class Steam
         change = change_text_match && change_text_match[:price].to_f * 100
         change = -change if change_text_match && change_text_match[:type] == '-'
         balance_text = row.search('.wht_wallet_balance').inner_text.strip
-        balance_text_match = balance_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
-        balance = balance_text_match && balance_text_match[:price].to_f * 100
+        balance_text_match = balance_text.match(/¥\s+(?<price>\d+(,\d+)*?(\.\d+)?)/)
+        balance = balance_text_match && balance_text_match[:price].gsub(',', '').to_f * 100
         {
             account_id: account.id,
             date: date,
@@ -369,12 +369,12 @@ class Steam
 
     def scan_account_history(account = Account::DEFAULT)
       AccountHistory.belongs(account).delete_all
-      LoadAccountHistoryJob.perform_later(account)
+      LoadAccountHistoryJob.perform_later(account.id)
     end
 
     def scan_all_account_history
       AccountHistory.truncate
-      Account.find_each { |account| LoadAccountHistoryJob.perform_later(account) }
+      Account.find_each { |account| LoadAccountHistoryJob.perform_later(account.id) }
     end
 
     def get_notification_counts(account = Account::DEFAULT)
