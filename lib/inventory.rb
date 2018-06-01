@@ -58,7 +58,7 @@ class Inventory
 
     def reload_all!
       InventoryAsset.truncate
-      Account.delegate_all(:Inventory, :reload!)
+      Account.delegate_all({class_name: :Inventory, method: :reload!})
     end
 
     def auto_sell_and_grind(account = Account::DEFAULT)

@@ -68,7 +68,10 @@ class MyListing < ApplicationRecord
     end
 
     def reload_all!
-      Account.delegate_all(:MyListing, [:reload!, :reload_confirming!])
+      Account.delegate_all([
+                             {class_name: :MyListing, method: :reload!},
+                             {class_name: :MyListing, method: :reload_confirming!},
+                           ])
     end
 
     def reload_confirming(account = Account::DEFAULT)
@@ -82,7 +85,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload_all_confirming!
-      Account.delegate_all(:MyListing, :reload_confirming!)
+      Account.delegate_all({ class_name: :MyListing, method: :reload_confirming!})
     end
 
     def refresh_order_histogram(account)

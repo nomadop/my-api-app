@@ -14,11 +14,11 @@ class Account < ApplicationRecord
   default_scope -> { enabled }
 
   class << self
-    def delegate_all(class_name, methods)
-      methods = Array(methods)
+    def delegate_all(class_methods)
+      class_methods = [class_methods] unless class_methods.is_a?(Array)
       JobConcurrence.start_and_wait_for do
-        methods.flat_map do |method|
-          all.map { |account| DelegateJob.perform_later(class_name.to_s, method.to_s, account.id) }
+        class_methods.flat_map do |class_method|
+          all.map { |account| DelegateJob.perform_later(class_method[:class_name].to_s, class_method[:method].to_s, account.id) }
         end
       end
     end
@@ -28,7 +28,7 @@ class Account < ApplicationRecord
     end
 
     def load_all_booster_creators
-      delegate_all(:Account, :load_booster_creators)
+      delegate_all({class_name: :Account, method: :load_booster_creators})
     end
 
     def asf(command)
@@ -40,7 +40,7 @@ class Account < ApplicationRecord
     end
 
     def refresh_all
-      delegate_all(:Account, :refresh)
+      delegate_all({class_name: :Account, method: :refresh})
     end
   end
 
