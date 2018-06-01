@@ -56,3 +56,21 @@
     width: 120px;
   }
 }
+
+.md-table-cell-container {
+  padding: 6px 18px 6px 12px;
+}
+
+.md-table-head-label {
+  padding-right: 18px;
+  padding-left: 12px;
+}
+
+.md-table-sortable-icon {
+  left: auto;
+  right: 0;
+}
+
+.md-table-head.md-sortable:first-of-type .md-table-sortable-icon {
+  right: 0;
+}

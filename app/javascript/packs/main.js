@@ -16,6 +16,10 @@ Vue.component('my-listings', function (resolve) {
   require(['../pages/my_listings/my_listings.vue'], resolve)
 });
 
+Vue.component('account-histories', function (resolve) {
+  require(['../pages/account_histories/account_histories.vue'], resolve)
+});
+
 function fetch_accounts() {
   return fetch('/accounts')
     .then(response => response.json())

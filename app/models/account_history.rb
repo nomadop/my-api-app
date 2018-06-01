@@ -10,6 +10,7 @@ class AccountHistory < ApplicationRecord
   scope :with_in, ->(duration) { since(duration.ago) }
   scope :between, ->(from, to) { where(date: (from..to)) }
   scope :market, -> { where("items->>0 = 'Steam 社区市场'") }
+  scope :non_market, -> { where.not("items->>0 = 'Steam 社区市场'") }
   scope :wallet, -> { where('items->>0 like ?', '已购买%钱包资金') }
   scope :non_wallet, -> { where.not('items->>0 like ?', '已购买%钱包资金') }
   scope :income, -> { where('change > 0') }
@@ -82,5 +83,9 @@ class AccountHistory < ApplicationRecord
       end
       true
     end
+  end
+
+  def formatted_date
+    date.getlocal('+08:00').strftime('%y-%m-%d')
   end
 end

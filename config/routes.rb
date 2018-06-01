@@ -11,6 +11,8 @@ Rails.application.routes.draw do
   get '/inventory/assets', to: 'inventory#assets'
   get '/my_listings', to: 'my_listings#show'
   get '/my_listings/list', to: 'my_listings#list'
+  get '/account_histories', to: 'account_histories#show'
+  get '/account_histories/all', to: 'account_histories#all'
   get '/booster_creators', to: 'booster_creators#show'
   get '/booster_creators/creatable', to: 'booster_creators#creatable'
   post '/inventory/reload', to: 'inventory#reload'
