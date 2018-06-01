@@ -11,6 +11,7 @@ function on_response(response) {
 function fetch_all() {
   const params = new URLSearchParams();
   params.append('from_date', this.from_date.getTime() / 1000);
+  params.append('include_market', this.include_market);
   return fetch(`/account_histories/all?${params}`).then(on_response.bind(this));
 }
 
@@ -60,6 +61,7 @@ export default {
       account: '',
     },
     from_date: get_initial_from_date(),
+    include_market: false,
   }),
   watch: {
     'filter.type': function (type) {

@@ -16,6 +16,7 @@
                         Reload
                     </md-button>
                     <md-datepicker class="date-selector" v-model="from_date" md-immediately />
+                    <md-switch v-model="include_market">Market</md-switch>
                 </div>
 
                 <div class="md-toolbar-section-end">

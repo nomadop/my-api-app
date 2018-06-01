@@ -45,7 +45,9 @@
 
           <md-snackbar :class="snackbar.type" md-position="left" :md-duration="5000" :md-active.sync="snackbar.active">
             <span>{{snackbar.message}}</span>
-            <md-button class="md-primary" @click="snackbar.active = false">Close</md-button>
+            <md-button class="md-dense md-icon-button md-primary" @click="snackbar.active = false">
+              <md-icon>close</md-icon>
+            </md-button>
           </md-snackbar>
           <md-dialog-confirm :md-active.sync="confirm.active"
                              :md-title="confirm.title"
