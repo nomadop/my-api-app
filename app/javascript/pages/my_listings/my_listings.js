@@ -45,12 +45,16 @@ function on_select(items) {
 function on_filter(filter = {}) {
   const filters = { ...this.filter, ...filter };
   this.items = this.my_listings;
+  if (filters.account !== '') {
+    this.items = this.items.filter(item => item.bot_name === filters.account);
+  }
   if (filters.confirming !== '') {
     this.items = this.items.filter(item => item.confirming === filters.confirming);
   }
 }
 
 export default {
+  props: ['accounts'],
   data: () => ({
     items: [],
     selected: [],
@@ -61,6 +65,9 @@ export default {
     },
   }),
   watch: {
+    'filter.account': function (account) {
+      this.on_filter({ account });
+    },
     'filter.confirming': function (confirming) {
       this.on_filter({ confirming });
     },

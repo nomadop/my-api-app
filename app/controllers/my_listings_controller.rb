@@ -1,6 +1,6 @@
 class MyListingsController < ActionController::Base
   def list
-    render json: MyListing.includes(:market_asset, :order_histogram, :account, :booster_creator,).as_json(
+    render json: MyListing.order(created_at: :desc).includes(:market_asset, :order_histogram, :account, :booster_creator,).as_json(
       only: [:id, :listingid, :market_hash_name, :price, :listed_date, :confirming],
       methods: [
         :price_exclude_vat, :price_per_goo_exclude_vat,

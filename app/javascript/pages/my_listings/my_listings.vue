@@ -19,6 +19,13 @@
                 </div>
 
                 <div class="md-toolbar-section-end">
+                    <md-field class="account-selector" md-clearable>
+                        <label>Account</label>
+                        <md-select v-model="filter.account">
+                            <md-option v-for="account in accounts" :value="account.bot_name">{{account.bot_name}}</md-option>
+                        </md-select>
+                    </md-field>
+
                     <md-switch v-model="filter.confirming">Confirming</md-switch>
                 </div>
             </md-table-toolbar>
