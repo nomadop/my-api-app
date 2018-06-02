@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180529025251) do
+ActiveRecord::Schema.define(version: 20180602082614) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,6 +48,7 @@ ActiveRecord::Schema.define(version: 20180529025251) do
     t.string   "email_password"
     t.integer  "status",         default: 0
     t.string   "bot_name"
+    t.index ["account_id"], name: "index_accounts_on_account_id", unique: true, using: :btree
   end
 
   create_table "booster_creations", force: :cascade do |t|
