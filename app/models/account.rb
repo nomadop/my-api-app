@@ -9,6 +9,7 @@ class Account < ApplicationRecord
   has_many :emails, primary_key: :email_address, foreign_key: :to
   has_many :account_histories
   has_many :my_listings
+  has_one :steam_user, primary_key: :account_id, foreign_key: :steamid
 
   enum status: [:enabled, :disabled, :expired]
   default_scope -> { enabled }
