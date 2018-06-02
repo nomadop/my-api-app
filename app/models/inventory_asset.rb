@@ -111,6 +111,7 @@ class InventoryAsset < ApplicationRecord
   def quick_sell
     price = begin
       lowest = order_histogram.lowest_sell_order_exclude_vat
+      raise 'failed to quick sell cause of no lowest price' if lowest.nil?
       equals_listing = my_listings.exists? && my_listings.take.price_exclude_vat == lowest
       lowest <= 50 || equals_listing ? lowest : lowest - 1
     end
