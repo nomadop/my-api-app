@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180602082614) do
+ActiveRecord::Schema.define(version: 20180602090157) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -33,9 +33,12 @@ ActiveRecord::Schema.define(version: 20180602082614) do
     t.integer  "total"
     t.integer  "change"
     t.integer  "balance"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
     t.jsonb    "items"
+    t.string   "total_text"
+    t.string   "change_text"
+    t.string   "balance_text"
   end
 
   create_table "accounts", force: :cascade do |t|

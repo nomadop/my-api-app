@@ -69,12 +69,12 @@
                     </div>
                 </md-table-cell>
                 <md-table-cell md-label="Total" class="numeric-cell" md-sort-by="total" md-numeric>
-                    <span>{{item.total}}</span>
+                    <span>{{item.total_text}}</span>
                 </md-table-cell>
                 <md-table-cell md-label="Change" class="numeric-cell" md-sort-by="change" md-numeric>
                     <div class="md-list-item-text">
-                        <span>{{item.change}}</span>
-                        <span>{{item.balance}}</span>
+                        <span>{{item.change_text}}</span>
+                        <span>{{item.balance_text}}</span>
                     </div>
                 </md-table-cell>
             </md-table-row>
@@ -95,13 +95,6 @@
     }
     .type-cell >>> .md-table-cell-container {
         width: 240px;
-    }
-
-    .numeric-cell {
-        width: 80px;
-    }
-    .numeric-cell >>> .md-table-cell-container {
-        width: 80px;
     }
 
     .md-tooltip {

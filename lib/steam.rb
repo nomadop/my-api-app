@@ -9,7 +9,7 @@ class Steam
       option = {
           method: :get,
           url: "http://store.steampowered.com/api/appdetails/?appids=#{appid}",
-          proxy: 'http://127.0.0.1:3213',
+          proxy: 'http://127.0.0.1:8888',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)[appid.to_s]['data']
@@ -345,7 +345,7 @@ class Steam
         total_text = row.search('.wht_total').inner_text.strip
         total_text_match = total_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
         total = total_text_match && total_text_match[:price].to_f * 100
-        change_text = row.search('.wht_wallet_change').inner_text
+        change_text = row.search('.wht_wallet_change').inner_text.strip
         change_text_match = change_text.match(/(?<type>[+-])¥\s+(?<price>\d+(\.\d+)?)/)
         change = change_text_match && change_text_match[:price].to_f * 100
         change = -change if change_text_match && change_text_match[:type] == '-'
@@ -361,6 +361,9 @@ class Steam
             total: total,
             change: change,
             balance: balance,
+            total_text: total_text,
+            change_text: change_text,
+            balance_text: balance_text,
         }
       end
       AccountHistory.import(account_histories)
