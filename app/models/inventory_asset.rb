@@ -130,13 +130,15 @@ class InventoryAsset < ApplicationRecord
   end
 
   def grind_into_goo
-    account_name = account.account_name
+    profile_url = account.account_name.blank? ?
+      "https://steamcommunity.com/profiles/#{account.account_id}" :
+      "https://steamcommunity.com/id/#{account.account_name}"
     cookie = account.cookie
     sessionid = account.session_id
 
     option = {
         method: :post,
-        url: "https://steamcommunity.com/id/#{account_name}/ajaxgrindintogoo/",
+        url: "#{profile_url}/ajaxgrindintogoo/",
         headers: {
             :Accept => '*/*',
             :'Accept-Encoding' => 'gzip, deflate, br',
@@ -148,7 +150,7 @@ class InventoryAsset < ApplicationRecord
             :'Host' => 'steamcommunity.com',
             :'Origin' => 'http://steamcommunity.com',
             :'Pragma' => 'no-cache',
-            :'Referer' => "http://steamcommunity.com/id/#{account_name}/inventory/",
+            :'Referer' => "#{profile_url}/inventory/",
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
             :'X-Requested-With' => 'XMLHttpRequest',
         },
