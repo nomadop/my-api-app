@@ -3,6 +3,7 @@
         <md-table v-model="items" md-card md-fixed-header
                   md-sort="open_price_per_goo" md-sort-order="desc">
             <md-table-toolbar class="md-elevation-2">
+                <md-badge class="md-primary" :md-content="items.length" />
                 <div class="md-toolbar-section-start">
                     <md-button class="md-raised md-primary"
                                @click="fetch_creatable(false)"

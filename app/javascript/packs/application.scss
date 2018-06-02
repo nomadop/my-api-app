@@ -78,3 +78,10 @@
 .md-table-head.md-sortable:first-of-type .md-table-sortable-icon {
   right: 0;
 }
+
+.md-toolbar {
+  .md-badge {
+    top: -4px;
+    right: -4px;
+  }
+}

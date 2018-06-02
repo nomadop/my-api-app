@@ -4,6 +4,7 @@
                   md-sort="date" md-sort-order="asc">
 
             <md-table-toolbar class="md-elevation-2">
+                <md-badge class="md-primary" :md-content="items.length" />
                 <div class="md-toolbar-section-start">
                     <md-button class="md-raised md-primary"
                                @click="fetch_all"

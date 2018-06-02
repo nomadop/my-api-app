@@ -61,6 +61,7 @@ export default {
     my_listings: [],
     fetching: false,
     filter: {
+      account: '',
       confirming: false,
     },
   }),
