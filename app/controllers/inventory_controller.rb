@@ -27,7 +27,7 @@ class InventoryController < ActionController::Base
   end
 
   def send_trade_offer
-    target = Account.find(params[:target])
+    target = Account.enabled.find(params[:target])
     InventoryAsset.where(id: params[:ids]).send_offer_to(target)
     render plain: 'success'
   end

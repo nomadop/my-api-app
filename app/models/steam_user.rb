@@ -1,10 +1,6 @@
 class SteamUser < ApplicationRecord
   belongs_to :account, primary_key: :account_id, foreign_key: :steamid
 
-  def account
-    Account.unscoped { super }
-  end
-
   def load_profile_data
     profile_data = Steam.get_profile_data(profile_url)
     update(steamid: profile_data['steamid'])

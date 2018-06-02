@@ -3,7 +3,7 @@ class GetNotificationCountsJob < ApplicationJob
 
   def perform(account_id)
     Utility.timeout(10) do
-      @account = Account.find(account_id)
+      @account = Account.enabled.find(account_id)
       Steam.get_notification_counts(@account)
     end
     GetNotificationCountsJob.perform_later(account_id)

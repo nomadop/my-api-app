@@ -40,6 +40,6 @@ class BoosterCreatorsController < ActionController::Base
   end
 
   def account
-    @account ||= Account.find_by(bot_name: params[:bot_name])
+    @account ||= Account.enabled.find_by(bot_name: params[:bot_name])
   end
 end

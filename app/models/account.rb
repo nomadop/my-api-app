@@ -12,14 +12,13 @@ class Account < ApplicationRecord
   has_one :steam_user, primary_key: :account_id, foreign_key: :steamid
 
   enum status: [:enabled, :disabled, :expired]
-  default_scope -> { enabled }
 
   class << self
     def delegate_all(class_methods)
       class_methods = [class_methods] unless class_methods.is_a?(Array)
       JobConcurrence.start_and_wait_for do
         class_methods.flat_map do |class_method|
-          all.map { |account| DelegateJob.perform_later(class_method[:class_name].to_s, class_method[:method].to_s, account.id) }
+          enabled.map { |account| DelegateJob.perform_later(class_method[:class_name].to_s, class_method[:method].to_s, account.id) }
         end
       end
     end
@@ -33,7 +32,7 @@ class Account < ApplicationRecord
     end
 
     def asf(command)
-      find_each { |account| puts account.asf(command) }
+      enabled.find_each { |account| puts account.asf(command) }
     end
 
     def refresh(account_id)

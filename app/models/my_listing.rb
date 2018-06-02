@@ -60,7 +60,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload!(account = Account::DEFAULT)
-      account = Account.find(account) unless account.is_a?(Account)
+      account = Account.enabled.find(account) unless account.is_a?(Account)
       transaction do
         belongs(account).delete_all
         reload(0, 100, account)
@@ -79,7 +79,7 @@ class MyListing < ApplicationRecord
     end
 
     def reload_confirming!(account = Account::DEFAULT)
-      account = Account.find(account) unless account.is_a?(Account)
+      account = Account.enabled.find(account) unless account.is_a?(Account)
       where(account: account).confirming.delete_all
       reload_confirming(account)
     end
