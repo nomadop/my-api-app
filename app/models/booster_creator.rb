@@ -36,11 +36,6 @@ class BoosterCreator < ApplicationRecord
       AND (NOT("market_assets"."type" like '%Foil Trading Card'))
       INNER JOIN "order_histograms" 
       ON "order_histograms"."item_nameid" = "market_assets"."item_nameid"
-      AND "order_histograms"."id" = (
-        SELECT oh.id FROM order_histograms oh
-        WHERE oh.item_nameid = market_assets.item_nameid
-        ORDER BY oh.created_at DESC LIMIT 1
-      )
     SQL
     joins(join_sql).group('booster_creators.id')
   end

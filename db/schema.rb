@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180603032347) do
+ActiveRecord::Schema.define(version: 20180603092435) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -268,16 +268,13 @@ ActiveRecord::Schema.define(version: 20180603032347) do
     t.integer  "lowest_sell_order"
     t.jsonb    "buy_order_graph"
     t.jsonb    "sell_order_graph"
-    t.datetime "created_at",                          null: false
-    t.datetime "updated_at",                          null: false
-    t.boolean  "latest"
-    t.boolean  "truncate_lock",       default: false
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
     t.integer  "cached_highest_buy"
     t.integer  "cached_lowest_buy"
     t.integer  "cached_highest_sell"
     t.integer  "cached_lowest_sell"
-    t.index ["item_nameid", "created_at"], name: "index_order_histograms_on_item_nameid_and_created_at", using: :btree
-    t.index ["item_nameid", "latest"], name: "index_order_histograms_on_item_nameid_and_latest", unique: true, using: :btree
+    t.index ["item_nameid"], name: "index_order_histograms_on_item_nameid", unique: true, using: :btree
   end
 
   create_table "sell_histories", force: :cascade do |t|

@@ -3,17 +3,8 @@ class OrderHistogram < ApplicationRecord
   has_many :my_listings, through: :market_asset
 
   scope :with_my_listing, -> { find(joins(:my_listing).distinct.pluck(:id)) }
-  scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: {classid: nil}) }
-  scope :latest, -> { where(latest: true) }
+  scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: { classid: nil }) }
   scope :sack_of_gems, -> { joins(:market_asset).where(market_assets: { market_hash_name: '753-Sack of Gems' }) }
-  scope :with_lowest_buy_order, -> do
-    from_sql = OrderHistogram.group(:item_nameid).select('item_nameid, MIN(highest_buy_order) as highest_buy_order').to_sql
-    select('m.id').from("(#{from_sql}) t").joins('JOIN order_histograms ON order_histograms.item_nameid = t.item_nameid AND order_histograms.highest_buy_order = t.highest_buy_order')
-  end
-  scope :with_lowest_sell_order, -> do
-    from_sql = OrderHistogram.group(:item_nameid).select('item_nameid, MIN(lowest_sell_order) as lowest_sell_order').to_sql
-    select('m.id').from("(#{from_sql}) t").joins('JOIN order_histograms ON order_histograms.item_nameid = t.item_nameid AND order_histograms.lowest_sell_order = t.lowest_sell_order')
-  end
 
   class << self
     def refresh_all
@@ -29,14 +20,6 @@ class OrderHistogram < ApplicationRecord
   end
 
   class OrderGraph < Struct.new(:price, :amount); end
-
-  def latest!
-    update(latest: true)
-  end
-
-  def overdue!
-    update(latest: false)
-  end
 
   def proportion
     1.0 * highest_buy_order / lowest_sell_order

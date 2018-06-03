@@ -18,9 +18,7 @@ class MarketAsset < ApplicationRecord
   has_many :marketable_inventory_description, -> { where(marketable: 1) },
            class_name: 'InventoryDescription', foreign_key: :classid
   has_many :marketable_inventory_asset, through: :marketable_inventory_description, source: :assets
-  has_many :order_histograms, primary_key: :item_nameid, foreign_key: :item_nameid
-  has_one :order_histogram, -> { where(latest: true) },
-          primary_key: :item_nameid, foreign_key: :item_nameid
+  has_one :order_histogram, primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :buy_orders, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :active_buy_orders, -> { where(active: 1) },
            class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
@@ -35,33 +33,20 @@ class MarketAsset < ApplicationRecord
   scope :booster_pack, -> { where(type: 'Booster Pack') }
   scope :with_my_listing, -> { joins(:my_listings).distinct }
   scope :without_my_listing, -> { left_outer_joins(:my_listings).where(my_listings: {classid: nil}) }
-  scope :buyable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histograms).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg).distinct }
-  scope :orderable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histograms).where('1.0 * order_histograms.highest_buy_order / goo_value < ?', ppg).distinct }
+  scope :buyable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg) }
+  scope :orderable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histogram).where('1.0 * order_histograms.cached_lowest_buy / goo_value < ?', ppg) }
   scope :with_active_buy_order, -> { joins(:active_buy_orders).distinct }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
-  scope :without_order_histogram, -> { left_outer_joins(:order_histograms).where(order_histograms: {item_nameid: nil}) }
+  scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
   scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
   scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
   scope :with_sell_histories, -> { joins(:sell_histories).distinct }
   scope :with_my_buy_histories, ->(duration) { joins(:my_buy_histories).where('my_histories.created_at > ?', duration.ago).distinct }
   scope :with_my_sell_histories, ->(duration) { joins(:my_sell_histories).where('my_histories.created_at > ?', duration.ago).distinct }
 
-  JOIN_LATEST_ORDER_HISTOGRAM_SQL = <<-SQL
-      JOIN order_histograms
-      ON order_histograms.item_nameid = market_assets.item_nameid
-      AND order_histograms.id = (
-        SELECT id FROM order_histograms oh 
-        WHERE oh.item_nameid = market_assets.item_nameid 
-        ORDER BY oh.created_at DESC 
-        LIMIT 1
-      )
-  SQL
-  scope :buy_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).where.not(goo_value: nil).order('1.0 * order_histograms.highest_buy_order / goo_value') }
-  scope :sell_ppg_order, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL).where.not(goo_value: nil).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
+  scope :buy_ppg_order, -> { joins(:order_histogram).where.not(goo_value: nil).order('1.0 * order_histograms.cached_lowest_buy / goo_value') }
+  scope :sell_ppg_order, -> { joins(:order_histogram).where.not(goo_value: nil).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
   scope :with_booster_creator, -> { joins(:booster_creator).distinct }
-  scope :joins_latest_order_histogram, -> { joins(JOIN_LATEST_ORDER_HISTOGRAM_SQL) }
-  scope :proportion_more_than, ->(proportion) { where('1.0 * (order_histograms.lowest_sell_order - 1) / (order_histograms.highest_buy_order + 1) > ?', proportion) }
-  scope :sell_count_more_than, ->(count) { where('CAST(order_histograms.sell_order_graph->(jsonb_array_length(order_histograms.sell_order_graph) - 1)->>1 AS int) > ?', count) }
 
   after_create :load_order_histogram, :load_goo_value
 
