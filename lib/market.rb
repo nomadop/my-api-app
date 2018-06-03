@@ -101,17 +101,16 @@ class Market
       result = JSON.parse(response.body)
       raise "load order histogram failed with code #{result['success']}" unless result['success'] == 1
 
-      OrderHistogram.where(item_nameid: item_nameid).update_all(latest: false)
-      OrderHistogram.create(
-          result.slice(
-              'highest_buy_order',
-              'lowest_sell_order',
-              'buy_order_graph',
-              'sell_order_graph',
-          ).merge(
-              item_nameid: item_nameid,
-              latest: true,
-          )
+      order_histogram = OrderHistogram.find_by(item_nameid: item_nameid)
+      order_histogram.update(
+        highest_buy_order: result['highest_buy_order'],
+        lowest_sell_order: result['lowest_sell_order'],
+        buy_order_graph: result['buy_order_graph'],
+        sell_order_graph: result['sell_order_graph'],
+        cached_lowest_buy: [order_histogram.cached_lowest_buy, result['highest_buy_order'].to_i].min,
+        cached_highest_buy: [order_histogram.cached_highest_buy, result['highest_buy_order'].to_i].max,
+        cached_lowest_sell: [order_histogram.cached_lowest_sell, result['lowest_sell_order'].to_i].min,
+        cached_highest_sell: [order_histogram.cached_highest_sell, result['lowest_sell_order'].to_i].max,
       )
     rescue RestClient::TooManyRequests, RestClient::Forbidden
       TorNewnymJob.perform_later
