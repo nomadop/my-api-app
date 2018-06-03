@@ -1,5 +1,7 @@
 import Vue from 'vue/dist/vue.esm';
 import VueMaterial from 'vue-material';
+import * as _ from 'lodash';
+
 import { wrap_fetch } from "../utilities/wrapper";
 
 Vue.use(VueMaterial);
@@ -39,9 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
       confirm: {
         title: null,
         active: false,
-        callback: () => {},
+        callback: _.noop,
       },
     }),
+    computed: {
+      enabled_accounts: function () {
+        return _.filter(this.accounts, { status: 'enabled' });
+      }
+    },
     methods: {
       fetch_accounts: wrap_fetch(fetch_accounts),
       on_confirm: function (confirm) {
