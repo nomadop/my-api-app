@@ -16,7 +16,7 @@ class InventoryController < ActionController::Base
   end
 
   def reload
-    Inventory.reload!
+    Inventory.reload_all!
     redirect_to action: 'assets'
   end
 
