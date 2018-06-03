@@ -19,25 +19,16 @@ class MyListing < ApplicationRecord
   scope :non_foil_card, -> { joins(:market_asset).where('market_assets.type like ?', '%Trading Card').where.not('market_assets.type like ?', '%Foil Trading Card') }
   scope :without_app, -> { left_outer_joins(:steam_app).where(steam_apps: { steam_appid: nil }) }
   scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: { market_hash_name: nil }) }
+  scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: { item_nameid: nil }) }
   scope :cancelable, -> do
     joins(:order_histogram).where <<-SQL
-        (price > order_histograms.lowest_sell_order OR (
-          price > 100 AND 
-          price = order_histograms.lowest_sell_order AND 
+        my_listings.price > order_histograms.lowest_sell_order OR (
+          my_listings.price > 100 AND 
+          my_listings.price = order_histograms.lowest_sell_order AND 
           CAST(order_histograms.sell_order_graph->0->>1 AS int) - (
-            SELECT COUNT(*) FROM "my_listings" 
-            INNER JOIN "market_assets" 
-            ON "my_listings"."market_hash_name" = "market_assets"."market_hash_name" 
-            WHERE "market_assets"."item_nameid" = order_histograms.item_nameid
+            SELECT COUNT(*) FROM "my_listings" AS "ml"
+            WHERE "ml"."market_hash_name" = my_listings.market_hash_name
           ) > 3
-        )) AND (
-          order_histograms.id = (
-            SELECT id FROM order_histograms oh 
-            INNER JOIN market_assets ma 
-            ON oh.item_nameid = ma.item_nameid 
-            WHERE ma.market_hash_name = market_assets.market_hash_name 
-            ORDER BY oh.created_at DESC LIMIT 1
-          )
         )
     SQL
   end
@@ -46,7 +37,7 @@ class MyListing < ApplicationRecord
   delegate :load_order_histogram, :find_sell_balance, :goo_value, :booster_pack?,
     :market_name, :market_fee_app, :type, to: :market_asset
   delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
-  delegate :name, :booster_creator_cost, to: :booster_creator, allow_nil: true
+  delegate :name, :booster_creator_cost, :booster_creations_count, to: :booster_creator, allow_nil: true
   delegate :bot_name, to: :account
 
   class << self
@@ -111,7 +102,7 @@ class MyListing < ApplicationRecord
       JobConcurrence.start do
         my_listings = account.nil? ? all : belongs(account)
         my_listings.non_sack_of_gems.cancelable
-          .includes(:booster_creator)
+          .includes(:booster_creator, :market_asset, :order_histogram)
           .to_a.select(&:cancelable?)
           .map { |my_listing| my_listing.cancel_later }
       end
@@ -159,7 +150,7 @@ class MyListing < ApplicationRecord
   end
 
   def cancelable?
-    if booster_creations.size > 0
+    if booster_creations_count&.>(0)
       return false if booster_pack? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * 0.55).ceil
       return false if !booster_pack? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * 0.525 / 3).ceil
     end

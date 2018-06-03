@@ -28,15 +28,7 @@ class BuyOrder < ApplicationRecord
         (price < order_histograms.highest_buy_order OR (
           price = order_histograms.highest_buy_order AND 
           CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
-        )) AND (
-          order_histograms.id = (
-            SELECT id FROM order_histograms oh 
-            INNER JOIN market_assets ma 
-            ON oh.item_nameid = ma.item_nameid 
-            WHERE ma.market_hash_name = market_assets.market_hash_name 
-            ORDER BY oh.created_at DESC LIMIT 1
-          )
-        ) AND ( buy_orders.active = 1 )
+        )) AND ( buy_orders.active = 1 )
     SQL
   end
 
