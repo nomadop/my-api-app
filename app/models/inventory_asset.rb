@@ -15,6 +15,7 @@ class InventoryAsset < ApplicationRecord
   has_one :steam_app, through: :market_asset
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
 
+  scope :belongs, ->(account) { where(account: account) }
   scope :booster_pack, -> { joins(:market_asset).where(market_assets: {type: 'Booster Pack'}) }
   scope :non_booster_pack, -> { joins(:market_asset).where.not(market_assets: {type: 'Booster Pack'}) }
   scope :marketable, -> { joins(:description).where(inventory_descriptions: {marketable: 1}) }
@@ -44,6 +45,10 @@ class InventoryAsset < ApplicationRecord
   class << self
     def total_goo_value
       joins(:market_asset).sum(:goo_value)
+    end
+
+    def tradable_gems(account = Account::DEFAULT)
+      belongs(account).gems.tradable.order('cast(amount as int) desc')
     end
 
     def auto_sell_and_grind_later
@@ -269,6 +274,7 @@ class InventoryAsset < ApplicationRecord
 
   def send_offer_to(friend, amount = 1)
     friend = Friend.find_by(steamid: friend.account_id) if friend.is_a?(Account)
+    friend = Friend.find_by(account_name: friend) if friend.is_a?(String)
     Market.send_trade(account, friend.profile, friend.steamid, generate_trade_offer(amount))
     remaining_amount = self.amount.to_i - amount
     remaining_amount > 0 ? update(amount: remaining_amount) : destroy
