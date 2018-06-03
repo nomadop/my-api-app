@@ -402,5 +402,9 @@ class Steam
       }
       RestClient::Request.execute(option)
     end
+
+    def help_url(appid)
+      "https://help.steampowered.com/zh-cn/wizard/HelpWithGame/?appid=#{appid}"
+    end
   end
 end

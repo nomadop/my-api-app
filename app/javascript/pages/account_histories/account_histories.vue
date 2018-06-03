@@ -91,10 +91,10 @@
     }
 
     .type-cell {
-        width: 240px;
+        width: 150px;
     }
     .type-cell >>> .md-table-cell-container {
-        width: 240px;
+        width: 150px;
     }
 
     .md-tooltip {
