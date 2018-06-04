@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  item_nameid: MyString
+  highest_buy_order: 1
+  lowest_sell_order: 1
+
+two:
+  item_nameid: MyString
+  highest_buy_order: 1
+  lowest_sell_order: 1

@@ -1,0 +1,2 @@
+class OrderHistogramHistory < ApplicationRecord
+end
