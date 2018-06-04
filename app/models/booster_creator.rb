@@ -4,26 +4,26 @@ class BoosterCreator < ApplicationRecord
 
   has_one :steam_app, primary_key: :appid, foreign_key: :steam_appid
   has_one :booster_pack, -> { where(type: 'Booster Pack') },
-          class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
+    class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :trading_cards, -> { where('type like ?', '%Trading Card').where.not('type like ?', '%Foil Trading Card') },
-           class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
+    class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :foil_trading_cards, -> { where('type like ?', '%Foil Trading Card') },
-           class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
+    class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :trading_card_order_histograms, class_name: 'OrderHistogram',
-           through: :trading_cards, source: :order_histogram
+    through: :trading_cards, source: :order_histogram
   has_many :foil_trading_card_order_histograms, class_name: 'OrderHistogram',
-           through: :foil_trading_cards, source: :order_histogram
+    through: :foil_trading_cards, source: :order_histogram
   has_many :listing_trading_cards, class_name: 'MyListing',
-           through: :trading_cards, source: :my_listings
+    through: :trading_cards, source: :my_listings
   has_many :listing_booster_packs, class_name: 'MyListing',
-           through: :booster_pack, source: :my_listings
+    through: :booster_pack, source: :my_listings
   has_many :account_booster_creators, primary_key: :appid, foreign_key: :appid
   has_many :accounts, through: :account_booster_creators
   has_many :inventory_assets, through: :booster_pack
   has_many :booster_creations
 
-  scope :without_app, -> { left_outer_joins(:steam_app).where({steam_apps: {steam_appid: nil}}) }
-  scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: {type: nil}) }
+  scope :without_app, -> { left_outer_joins(:steam_app).where({ steam_apps: { steam_appid: nil } }) }
+  scope :no_trading_cards, -> { left_outer_joins(:trading_cards).where(market_assets: { type: nil }) }
   scope :unavailable, -> { where(unavailable: true) }
   scope :available, -> { where(unavailable: false) }
   scope :with_inventory_assets, -> { joins(:inventory_assets).distinct }
@@ -69,7 +69,7 @@ class BoosterCreator < ApplicationRecord
   scope :ppg_over, ->(ppg) { ppg_group.where("(#{ppg_sql}) > #{ppg}") }
 
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
-           :sell_order_count, :buy_order_count, :order_count, :listing_url, to: :booster_pack, allow_nil: true
+    :sell_order_count, :buy_order_count, :order_count, :listing_url, to: :booster_pack, allow_nil: true
 
   class << self
     def refresh_price
@@ -82,13 +82,13 @@ class BoosterCreator < ApplicationRecord
 
     def refresh_by_ppg_order(limit = 100)
       includes(trading_cards: :order_histogram, foil_trading_cards: :order_histogram, booster_pack: :order_histogram)
-          .first_ppg_order(limit)
-          .each(&:refresh_price_later)
+        .first_ppg_order(limit)
+        .each(&:refresh_price_later)
     end
 
     def refresh_all
       includes(:trading_cards, :foil_trading_cards, :booster_pack)
-          .each(&:refresh_price_later)
+        .each(&:refresh_price_later)
     end
 
     def scan_market
@@ -97,13 +97,13 @@ class BoosterCreator < ApplicationRecord
 
     def creatable(limit: 100, ppg: 0.6)
       includes(
-          :accounts,
-          :account_booster_creators,
-          :trading_card_order_histograms,
-          :foil_trading_card_order_histograms,
-          :listing_trading_cards,
-          :listing_booster_packs,
-          booster_pack: :order_histogram,
+        :accounts,
+        :account_booster_creators,
+        :trading_card_order_histograms,
+        :foil_trading_card_order_histograms,
+        :listing_trading_cards,
+        :listing_booster_packs,
+        booster_pack: :order_histogram,
       ).ppg_over(ppg)
     end
 
@@ -164,13 +164,13 @@ class BoosterCreator < ApplicationRecord
     prices_over_baseline = prices.select { |price| price >= baseline }
     prices_over_average = prices.select { |price| price >= average }
     {
-        total: (average * 3).round(3),
-        variance: variance.round(3),
-        standard_variance: standard_variance.round(3),
-        coefficient_of_variation: coefficient_of_variation.round(3),
-        over_baseline_rate: (1.0 * prices_over_baseline.size / prices.size).round(3),
-        over_average_rate: (1.0 * prices_over_average.size / prices.size).round(3),
-        foil_average: foil_average.round(3),
+      total: (average * 3).round(3),
+      variance: variance.round(3),
+      standard_variance: standard_variance.round(3),
+      coefficient_of_variation: coefficient_of_variation.round(3),
+      over_baseline_rate: (1.0 * prices_over_baseline.size / prices.size).round(3),
+      over_average_rate: (1.0 * prices_over_average.size / prices.size).round(3),
+      foil_average: foil_average.round(3),
     }
   end
 
@@ -227,19 +227,19 @@ class BoosterCreator < ApplicationRecord
   def booster_pack_info
     return nil if trading_card_order_histograms.blank?
     as_json(
-        only: [:appid, :name, :price],
-        include: {
-          account_booster_creators: {
-            only: [],
-            methods: [:bot_name, :available_time],
-          },
+      only: [:appid, :name, :price],
+      include: {
+        account_booster_creators: {
+          only: [],
+          methods: [:bot_name, :available_time],
         },
-        methods: [
-            :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
-            :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :listing_booster_pack_count,
-            :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion, :listing_url,
-            :min_available_time, :inventory_assets_count, :inventory_cards_count,
-        ]
+      },
+      methods: [
+        :price_per_goo, :open_price_per_goo, :open_price, :trading_card_prices_proportion,
+        :open_sell_order_count, :open_buy_order_count, :listing_trading_card_count, :listing_booster_pack_count,
+        :lowest_sell_order, :sell_order_count, :buy_order_count, :sell_proportion, :listing_url,
+        :min_available_time, :inventory_assets_count, :inventory_cards_count,
+      ]
     )
   end
 
@@ -314,7 +314,7 @@ class BoosterCreator < ApplicationRecord
 
   def all_assets(account = Account::DEFAULT)
     assets = account.nil? ? InventoryAsset.all : account.inventory_assets
-    assets.includes(:market_asset).where(market_assets: {market_fee_app: appid})
+    assets.includes(:market_asset).where(market_assets: { market_fee_app: appid })
   end
 
   def sell_all_assets(account = Account::DEFAULT)
