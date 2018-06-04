@@ -19,7 +19,7 @@ class BoosterCreator < ApplicationRecord
            through: :booster_pack, source: :my_listings
   has_many :account_booster_creators, primary_key: :appid, foreign_key: :appid
   has_many :accounts, through: :account_booster_creators
-  has_many :inventory_assets, -> { where(account_id: 1) }, through: :booster_pack
+  has_many :inventory_assets, through: :booster_pack
   has_many :booster_creations
 
   scope :without_app, -> { left_outer_joins(:steam_app).where({steam_apps: {steam_appid: nil}}) }
@@ -29,19 +29,44 @@ class BoosterCreator < ApplicationRecord
   scope :with_inventory_assets, -> { joins(:inventory_assets).distinct }
 
   scope :ppg_group, -> do
-    join_sql = <<-SQL
-      INNER JOIN "market_assets" 
-      ON "market_assets"."market_fee_app" = "booster_creators"."appid"
-      AND ("market_assets"."type" like '%Trading Card')
-      AND (NOT("market_assets"."type" like '%Foil Trading Card'))
-      INNER JOIN "order_histograms" 
-      ON "order_histograms"."item_nameid" = "market_assets"."item_nameid"
+    select_trading_cards_sql = <<-SQL
+      SELECT 
+        "ma1"."market_fee_app",
+        COUNT("ma1"."classid") AS "trading_cards_count",
+        SUM("oh1"."lowest_sell_order") AS "trading_cards_price_sum"
+      FROM "market_assets" AS "ma1"
+      INNER JOIN "order_histograms" "oh1"
+        ON "oh1"."item_nameid" = "ma1"."item_nameid"
+      WHERE ("ma1"."type" like '%Trading Card')
+        AND (NOT("ma1"."type" like '%Foil Trading Card'))
+      GROUP BY "ma1"."market_fee_app"
     SQL
-    joins(join_sql).group('booster_creators.id')
+    select_booster_pack_sql = <<-SQL
+      SELECT 
+        "ma2"."market_fee_app",
+        "oh2"."lowest_sell_order" AS "booster_pack_price"
+      FROM "market_assets" AS "ma2"
+      INNER JOIN "order_histograms" "oh2"
+        ON "oh2"."item_nameid" = "ma2"."item_nameid"
+      WHERE "ma2"."type" = 'Booster Pack'
+    SQL
+    join_sql = <<-SQL
+      LEFT OUTER JOIN (#{select_trading_cards_sql}) "tcs"
+        ON "tcs"."market_fee_app" = "booster_creators"."appid"
+      LEFT OUTER JOIN (#{select_booster_pack_sql}) "bp"
+        ON "bp"."market_fee_app" = "booster_creators"."appid"
+    SQL
+    joins(join_sql)
   end
-  ppg_sql = '1.0 * SUM(order_histograms.lowest_sell_order) / COUNT(order_histograms.id) * 3 / price'
+  ppg_sql = <<-SQL
+    GREATEST(
+      1.0 * trading_cards_price_sum / trading_cards_count * 3 / price,
+      1.0 * booster_pack_price / price
+    )
+  SQL
+
   scope :ppg_order, -> { ppg_group.order("#{ppg_sql} desc") }
-  scope :ppg_having, ->(ppg) { ppg_group.having("(#{ppg_sql}) > #{ppg}") }
+  scope :ppg_over, ->(ppg) { ppg_group.where("(#{ppg_sql}) > #{ppg}") }
 
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
            :sell_order_count, :buy_order_count, :order_count, :listing_url, to: :booster_pack, allow_nil: true
@@ -79,8 +104,7 @@ class BoosterCreator < ApplicationRecord
           :listing_trading_cards,
           :listing_booster_packs,
           booster_pack: :order_histogram,
-      )
-          .ppg_having(ppg)
+      ).ppg_over(ppg)
     end
 
     def set_trading_card_type
@@ -177,11 +201,11 @@ class BoosterCreator < ApplicationRecord
   end
 
   def inventory_assets_count
-    inventory_assets.count
+    inventory_assets.size
   end
 
   def all_inventory_assets_count
-    all_assets.count
+    all_assets.size
   end
 
   def inventory_cards_count
