@@ -107,10 +107,10 @@ class Market
         lowest_sell_order: result['lowest_sell_order'],
         buy_order_graph: result['buy_order_graph'],
         sell_order_graph: result['sell_order_graph'],
-        cached_lowest_buy: [order_histogram.cached_lowest_buy, result['highest_buy_order'].to_i].min,
-        cached_highest_buy: [order_histogram.cached_highest_buy, result['highest_buy_order'].to_i].max,
-        cached_lowest_sell: [order_histogram.cached_lowest_sell, result['lowest_sell_order'].to_i].min,
-        cached_highest_sell: [order_histogram.cached_highest_sell, result['lowest_sell_order'].to_i].max,
+        cached_lowest_buy: [order_histogram.cached_lowest_buy, result['highest_buy_order']].map(&Utility.method(:int_or_inf)).min,
+        cached_highest_buy: [order_histogram.cached_highest_buy, result['highest_buy_order']].map(&Utility.method(:int_or_zero)).max,
+        cached_lowest_sell: [order_histogram.cached_lowest_sell, result['lowest_sell_order']].map(&Utility.method(:int_or_inf)).min,
+        cached_highest_sell: [order_histogram.cached_highest_sell, result['lowest_sell_order']].map(&Utility.method(:int_or_zero)).max,
       )
     rescue RestClient::TooManyRequests, RestClient::Forbidden
       TorNewnymJob.perform_later

@@ -57,5 +57,17 @@ class Utility
     def format_price(price)
       ActionController::Base.helpers.number_to_currency(price / 100.0, locale: :cn)
     end
+
+    def parse_int(number, default = nil)
+      number.nil? ? default : number.to_i
+    end
+
+    def int_or_inf(number)
+      parse_int(number, Float::INFINITY)
+    end
+
+    def int_or_zero(number)
+      parse_int(number, 0)
+    end
   end
 end
