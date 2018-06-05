@@ -68,6 +68,23 @@ class BoosterCreator < ApplicationRecord
   scope :ppg_order, -> { ppg_group.order("#{ppg_sql} desc") }
   scope :ppg_over, ->(ppg) { ppg_group.where("(#{ppg_sql}) > #{ppg}") }
 
+  scope :with_assets_count, -> do
+    select_assets_sql = <<-SQL
+      SELECT 
+        "ma3"."market_fee_app",
+        COUNT("ia1"."assetid") AS "all_assets_count"
+      FROM "market_assets" AS "ma3"
+      INNER JOIN "inventory_assets" "ia1"
+        ON "ia1"."classid" = "ma3"."classid"
+      GROUP BY "ma3"."market_fee_app"
+    SQL
+    join_sql = <<-SQL
+      LEFT OUTER JOIN (#{select_assets_sql}) "ias1"
+        ON "ias1"."market_fee_app" = "booster_creators"."appid"
+    SQL
+    select('"booster_creators".*, "ias1"."all_assets_count"').joins(join_sql)
+  end
+
   delegate :lowest_sell_order, :highest_buy_order, :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
     :sell_order_count, :buy_order_count, :order_count, :listing_url, to: :booster_pack, allow_nil: true
 
@@ -96,15 +113,16 @@ class BoosterCreator < ApplicationRecord
     end
 
     def creatable(limit: 100, ppg: 0.6)
-      includes(
+      with_assets_count.ppg_over(ppg).includes(
         :accounts,
         :account_booster_creators,
         :trading_card_order_histograms,
         :foil_trading_card_order_histograms,
         :listing_trading_cards,
         :listing_booster_packs,
+        :inventory_assets,
         booster_pack: :order_histogram,
-      ).ppg_over(ppg)
+      )
     end
 
     def set_trading_card_type
@@ -209,7 +227,7 @@ class BoosterCreator < ApplicationRecord
   end
 
   def inventory_cards_count
-    all_inventory_assets_count - inventory_assets_count
+    all_assets_count.nil? ? 0 : all_assets_count - inventory_assets_count
   end
 
   def sell_proportion
