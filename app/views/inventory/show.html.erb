@@ -1,5 +1,4 @@
-<% content_for :title do %>
-    <span class="md-title">Inventory</span>
-<% end %>
+<% content_for :title do %>Inventory<% end %>
+<% content_for :navigation do %>navigation-inventory<% end %>
 
 <inventory :accounts="enabled_accounts" @confirm="on_confirm" @message="on_message"></inventory>

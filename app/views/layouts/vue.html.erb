@@ -7,16 +7,25 @@
     <%= stylesheet_pack_tag 'vendor' %>
     <%= stylesheet_pack_tag 'application' %>
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,500,700,400italic|Material+Icons">
+    <title><%= yield :title %></title>
   </head>
 
   <body>
     <div id="vue-app" class="page-container">
       <md-app>
         <md-app-toolbar class="md-primary">
-          <md-button class="md-icon-button" @click="nav_visible = !nav_visible">
-            <md-icon>menu</md-icon>
-          </md-button>
-          <%= yield :title %>
+          <div class="md-toolbar-section-start">
+            <md-button class="md-icon-button" @click="nav_visible = !nav_visible">
+              <md-icon>menu</md-icon>
+            </md-button>
+
+            <md-bottom-bar md-type="shift" md-active-item="<%= yield :navigation %>">
+              <md-bottom-bar-item id="navigation-inventory" md-label="Inventory" md-icon="collections"></md-bottom-bar-item>
+              <md-bottom-bar-item id="navigation-booster-creators" md-label="Booster Creators" md-icon="add_to_photos"></md-bottom-bar-item>
+              <md-bottom-bar-item id="navigation-my-listings" md-label="My Listings" md-icon="store_mall_directory"></md-bottom-bar-item>
+              <md-bottom-bar-item id="navigation-account-histories" md-label="Account Histories" md-icon="account_balance_wallet"></md-bottom-bar-item>
+            </md-bottom-bar>
+          </div>
         </md-app-toolbar>
         <md-app-drawer :md-active.sync="nav_visible">
           <md-toolbar class="md-transparent" md-elevation="0">Navigation</md-toolbar>

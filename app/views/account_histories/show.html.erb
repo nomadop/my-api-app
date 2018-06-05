@@ -1,6 +1,5 @@
-<% content_for :title do %>
-    <span class="md-title">Account Histories</span>
-<% end %>
+<% content_for :title do %>Account Histories<% end %>
+<% content_for :navigation do %>navigation-account-histories<% end %>
 
 <account-histories :accounts="enabled_accounts" @confirm="on_confirm" @message="on_message"></account-histories>
 

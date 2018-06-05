@@ -1,5 +1,4 @@
-<% content_for :title do %>
-    <span class="md-title">My Listings</span>
-<% end %>
+<% content_for :title do %>My Listings<% end %>
+<% content_for :navigation do %>navigation-my-listings<% end %>
 
 <my-listings :accounts="enabled_accounts" @confirm="on_confirm" @message="on_message"></my-listings>
