@@ -18,13 +18,16 @@
             <md-button class="md-icon-button" @click="nav_visible = !nav_visible">
               <md-icon>menu</md-icon>
             </md-button>
+            <span class="md-title"><%= yield :title %></span>
+          </div>
 
-            <md-bottom-bar md-type="shift" md-active-item="<%= yield :navigation %>">
-              <md-bottom-bar-item id="navigation-inventory" md-label="Inventory" md-icon="collections"></md-bottom-bar-item>
-              <md-bottom-bar-item id="navigation-booster-creators" md-label="Booster Creators" md-icon="add_to_photos"></md-bottom-bar-item>
-              <md-bottom-bar-item id="navigation-my-listings" md-label="My Listings" md-icon="store_mall_directory"></md-bottom-bar-item>
-              <md-bottom-bar-item id="navigation-account-histories" md-label="Account Histories" md-icon="account_balance_wallet"></md-bottom-bar-item>
-            </md-bottom-bar>
+          <div class="md-toolbar-section-end">
+            <md-tabs md-type="fixed" md-active-tab="<%= yield :navigation %>">
+              <md-tab id="navigation-inventory" href="/inventory" md-icon="collections"></md-tab>
+              <md-tab id="navigation-booster-creators" href="/booster_creators" md-icon="add_to_photos"></md-tab>
+              <md-tab id="navigation-my-listings" href="/my_listings" md-icon="store_mall_directory"></md-tab>
+              <md-tab id="navigation-account-histories" href="/account_histories" md-icon="account_balance_wallet"></md-tab>
+            </md-tabs>
           </div>
         </md-app-toolbar>
         <md-app-drawer :md-active.sync="nav_visible">

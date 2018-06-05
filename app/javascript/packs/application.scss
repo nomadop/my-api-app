@@ -85,3 +85,13 @@
     right: -4px;
   }
 }
+
+.md-app-toolbar {
+  .md-tabs.md-theme-default .md-tabs-navigation {
+    background-color: inherit;
+
+    .md-button.md-active .md-icon {
+      color: #fff;
+    }
+  }
+}
