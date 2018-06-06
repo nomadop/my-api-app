@@ -101,7 +101,7 @@ class Market
       result = JSON.parse(response.body)
       raise "load order histogram failed with code #{result['success']}" unless result['success'] == 1
 
-      order_histogram = OrderHistogram.find_by(item_nameid: item_nameid)
+      order_histogram = OrderHistogram.find_or_create_by(item_nameid: item_nameid)
       order_histogram.update(
         highest_buy_order: result['highest_buy_order'],
         lowest_sell_order: result['lowest_sell_order'],
