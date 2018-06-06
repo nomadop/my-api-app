@@ -20,17 +20,11 @@
                 </div>
 
                 <div class="md-toolbar-section-end">
+                    <md-switch v-model="filter.marketable">Marketable</md-switch>
+
                     <md-field md-clearable>
                         <label>Sell PPG</label>
                         <md-input v-model="filter.sell_ppg"></md-input>
-                    </md-field>
-
-                    <md-field md-clearable>
-                        <label>Marketable</label>
-                        <md-select v-model="filter.marketable">
-                            <md-option :value="1">True</md-option>
-                            <md-option :value="0">False</md-option>
-                        </md-select>
                     </md-field>
 
                     <md-field class="account-selector" md-clearable>
@@ -70,16 +64,20 @@
             <md-table-row slot="md-table-row" slot-scope="{ item }"
                           :md-disabled="item.marketable === 0" md-selectable="multiple">
                 <md-table-cell md-label="Name" class="name-cell">
-                    {{item.market_hash_name}}
+                    <div class="md-list-item-text">
+                        <span>{{item.market_hash_name}}</span>
+                        <span>id: {{item.id}} | Asset id: {{item.assetid}}</span>
+                        <p>{{item.type}}</p>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="Account" class="name-cell" md-sort-by="bot_name">
                     {{item.bot_name}}
                 </md-table-cell>
-                <md-table-cell md-label="Goo Value" class="numeric-cell" md-sort-by="goo_value" md-numeric>
-                    {{item.goo_value}}
-                </md-table-cell>
                 <md-table-cell md-label="Sell Price" class="numeric-cell" md-sort-by="lowest_sell_order" md-numeric>
-                    {{item.lowest_sell_order_exclude_vat}}
+                    <div class="md-list-item-text">
+                        <span>{{item.lowest_sell_order_exclude_vat}}</span>
+                        <span>({{item.goo_value}})</span>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="Sell PPG" class="numeric-cell" md-sort-by="price_per_goo_exclude_vat" md-numeric>
                     {{item.price_per_goo_exclude_vat | round }}
@@ -92,10 +90,6 @@
                         <md-icon>link</md-icon>
                     </md-button>
                 </md-table-cell>
-
-                <md-tooltip md-direction="right">
-                    {{item.assetid}} | {{item.type}}
-                </md-tooltip>
             </md-table-row>
         </md-table>
     </div>

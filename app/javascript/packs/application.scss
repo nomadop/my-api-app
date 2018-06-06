@@ -96,7 +96,7 @@
   }
 }
 
-.md-list-item-text :nth-child(2) {
+.md-list-item-text :nth-child(2), .md-list-item-text :nth-child(3) {
   font-size: 12px;
   color: #9E9E9E;
 }

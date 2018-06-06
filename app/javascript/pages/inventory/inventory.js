@@ -63,10 +63,7 @@ function on_select(items) {
 
 function on_filter(filter = {}) {
   const filters = { ...this.filter, ...filter };
-  this.items = this.inventory_assets;
-  if (filters.marketable !== '') {
-    this.items = this.items.filter(item => item.marketable === filters.marketable);
-  }
+  this.items = this.inventory_assets.filter(item => item.marketable === (filters.marketable ? 1 : 0));
   if (filters.sell_ppg !== '') {
     this.items = this.items.filter(item => item.price_per_goo_exclude_vat >= +filters.sell_ppg);
   }
@@ -83,7 +80,7 @@ export default {
     inventory_assets: [],
     fetching: false,
     filter: {
-      marketable: 1,
+      marketable: true,
       sell_ppg: '',
       account: '',
     },
