@@ -38,14 +38,21 @@
 
               <md-list slot="md-expand">
                 <md-list-item class="md-inset" v-for="account in accounts" :key="account.id">
-                  <md-icon class="md-size-2x">account_circle</md-icon>
+                  <md-icon>account_circle</md-icon>
                   <div class="md-list-item-text">
                     <span>{{account.bot_name || account.account_id}}</span>
+                    <span>{{account.status}}</span>
                   </div>
 
-                  <md-switch :value="account.status !== 'enabled'"
-                             :disabled="account.status === 'expired'"
-                  />
+                  <md-speed-dial-content v-if="account.bot_name">
+                    <md-button class="md-dense md-icon-button">
+                      <md-icon>check</md-icon>
+                    </md-button>
+
+                    <md-button class="md-dense md-icon-button">
+                      <md-icon>close</md-icon>
+                    </md-button>
+                  </md-speed-dial-content>
                 </md-list-item>
               </md-list>
             </md-list-item>
