@@ -15,7 +15,7 @@
       <md-app>
         <md-app-toolbar class="md-primary">
           <div class="md-toolbar-section-start">
-            <md-button class="md-icon-button" @click="nav_visible = !nav_visible">
+            <md-button class="md-icon-button" @click="drawer.active = !drawer.active">
               <md-icon>menu</md-icon>
             </md-button>
             <span class="md-title"><%= yield :title %></span>
@@ -30,25 +30,24 @@
             </md-tabs>
           </div>
         </md-app-toolbar>
-        <md-app-drawer :md-active.sync="nav_visible">
-          <md-toolbar class="md-transparent" md-elevation="0">Navigation</md-toolbar>
-
+        <md-app-drawer :md-active.sync="drawer.active">
           <md-list>
-            <md-list-item href="/inventory">
-              <md-icon>collections</md-icon>
-              <span class="md-list-item-text">Inventory</span>
-            </md-list-item>
-            <md-list-item href="/booster_creators">
-              <md-icon>add_to_photos</md-icon>
-              <span class="md-list-item-text">Booster Creators</span>
-            </md-list-item>
-            <md-list-item href="/my_listings">
-              <md-icon>store_mall_directory</md-icon>
-              <span class="md-list-item-text">My Listings</span>
-            </md-list-item>
-            <md-list-item href="/account_histories">
-              <md-icon>account_balance_wallet</md-icon>
-              <span class="md-list-item-text">Account Histories</span>
+            <md-list-item md-expand :md-expanded="drawer.accounts_enabled">
+              <md-icon>supervised_user_circle</md-icon>
+              <span class="md-list-item-text">Accounts</span>
+
+              <md-list slot="md-expand">
+                <md-list-item class="md-inset" v-for="account in accounts" :key="account.id">
+                  <md-icon class="md-size-2x">account_circle</md-icon>
+                  <div class="md-list-item-text">
+                    <span>{{account.bot_name || account.account_id}}</span>
+                  </div>
+
+                  <md-switch :value="account.status !== 'enabled'"
+                             :disabled="account.status === 'expired'"
+                  />
+                </md-list-item>
+              </md-list>
             </md-list-item>
           </md-list>
         </md-app-drawer>

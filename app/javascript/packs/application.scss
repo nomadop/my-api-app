@@ -6,7 +6,7 @@
   height: 100%;
 
   .md-drawer {
-    width: 25%;
+    min-width: 320px;
   }
 }
 
@@ -99,4 +99,10 @@
 .md-list-item-text :nth-child(2) {
   font-size: 12px;
   color: #9E9E9E;
+}
+
+.md-inset {
+  .md-list-item-content > .md-icon:first-child {
+    margin-right: 16px;
+  }
 }

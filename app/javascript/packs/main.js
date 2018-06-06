@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     el: '#vue-app',
     data: () => ({
       accounts: [],
-      nav_visible: false,
       snackbar: {
         active: false,
         message: null,
@@ -43,6 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
         active: false,
         callback: _.noop,
       },
+      drawer: {
+        active: false,
+        accounts_enabled: true,
+      }
     }),
     computed: {
       enabled_accounts: function () {
