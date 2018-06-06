@@ -31,44 +31,69 @@
                 </div>
             </md-table-toolbar>
             <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)">
-                <md-table-cell md-label="Name" class="name-cell">{{item.name}}</md-table-cell>
+                <md-table-cell md-label="Name" class="name-cell">
+                    <div class="md-list-item-text">
+                        <span>{{item.name}}</span>
+                        <span>Appid: {{item.appid}} | Cost: {{item.price}} | Foil: {{item.open_price.foil_average}}</span>
+                    </div>
+                </md-table-cell>
                 <md-table-cell md-label="PPG"  class="ppg-cell" md-sort-by="price_per_goo" md-numeric>
-                    <color-text color_class="text-primary"
-                                :content="item.price_per_goo"
-                                :condition="content => content > 0.57"/>
+                    <div class="md-list-item-text">
+                        <color-text color_class="text-primary"
+                                    :content="item.price_per_goo"
+                                    :condition="content => content > 0.57"/>
+                        <color-text color_class="text-danger"
+                                    :content="item.sell_proportion"
+                                    :condition="content => content < 0.1"/>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="Open PPG" class="open-ppg-cell" md-sort-by="open_price_per_goo" md-numeric>
-                    <color-text color_class="text-primary"
-                                :content="item.open_price_per_goo"
-                                :condition="content => content > base_ppg"/>
+                    <div class="md-list-item-text">
+                        <color-text color_class="text-primary"
+                                    :content="item.open_price_per_goo"
+                                    :condition="content => content > base_ppg"/>
+                        <color-text color_class="text-danger"
+                                    :content="item.trading_card_prices_proportion"
+                                    :condition="content => content < 0.1"/>
+                    </div>
                 </md-table-cell>
-                <md-table-cell md-label="Open COV" class="open-cov-cell" md-sort-by="open_price.coefficient_of_variation" md-numeric>
-                    <color-text color_class="text-primary"
-                                :content="item.open_price.coefficient_of_variation"
-                                :condition="content => content < 0.5"/>
-                </md-table-cell>
-                <md-table-cell md-label="Open OBR" class="open-obr-cell" md-sort-by="open_price.over_baseline_rate" md-numeric>
-                    <color-text color_class="text-primary"
-                                :content="item.open_price.over_baseline_rate"
-                                :condition="content => content > 0.5"/>
+                <md-table-cell md-label="COV/OBR" class="open-cov-cell" md-sort-by="open_price.coefficient_of_variation" md-numeric>
+                    <div class="md-list-item-text">
+                        <color-text color_class="text-primary"
+                                    :content="item.open_price.coefficient_of_variation"
+                                    :condition="content => content < 0.5"/>
+                        <color-text color_class="text-primary"
+                                    :content="item.open_price.over_baseline_rate"
+                                    :condition="content => content > 0.5"/>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="L/I" class="li-count-cell">
-                    <color-text color_class="text-primary"
-                                :content="item.listing_booster_pack_count"
-                                :condition="content => content === 0 && item.price_per_goo > 0.57"/>
-                    /
-                    <color-text color_class="text-danger"
-                                :content="item.inventory_assets_count"
-                                :condition="content => content >= 1"/>
+                    <div class="md-list-item-text">
+                        <span>
+                            <color-text color_class="text-primary"
+                                        :content="item.listing_booster_pack_count"
+                                        :condition="content => content === 0 && item.price_per_goo > 0.57"/>
+                            /
+                            <color-text color_class="text-danger"
+                                        :content="item.inventory_assets_count"
+                                        :condition="content => content >= 1"/>
+                        </span>
+                        <span>{{item.sell_order_count}} / {{item.buy_order_count}}</span>
+                    </div>
                 </md-table-cell>
-                <md-table-cell md-label="Open L/I" class="open-li-count-cell">
-                    <color-text color_class="text-danger"
-                                :content="item.listing_trading_card_count"
-                                :condition="content => content >= 5"/>
-                    /
-                    <color-text color_class="text-danger"
-                                :content="item.inventory_cards_count"
-                                :condition="content => content >= 3"/>
+                <md-table-cell md-label="Open L/I" class="li-count-cell">
+                    <div class="md-list-item-text">
+                        <span>
+                            <color-text color_class="text-primary"
+                                        :content="item.listing_trading_card_count"
+                                        :condition="content => content < 5"/>
+                            /
+                            <color-text color_class="text-danger"
+                                        :content="item.inventory_cards_count"
+                                        :condition="content => content >= 3"/>
+                        </span>
+                        <span>{{item.open_sell_order_count}} / {{item.open_buy_order_count}}</span>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="Actions" class="action-cell">
                     <md-button class="md-dense md-icon-button" @click="create_and_unpack(item)" :disabled="item.account_booster_creators.length === 0">
@@ -81,21 +106,8 @@
                         <md-icon>shop_two</md-icon>
                     </md-button>
                 </md-table-cell>
-                <md-tooltip md-direction="bottom">
-                    <span class="tooltip-label">Appid:</span> {{item.appid}}
-                    | <span class="tooltip-label">Price:</span> {{item.price}}
-                    | <span class="tooltip-label">AVG Foil Price:</span> {{item.open_price.foil_average}}
-                    | <span class="tooltip-label">Order Count:</span> {{item.sell_order_count}} / {{item.buy_order_count}}
-                    | <span class="tooltip-label">Open Order Count:</span> {{item.open_sell_order_count}} / {{item.open_buy_order_count}}
-                    | <span class="tooltip-label">Proportion:</span>
-                    <color-text color_class="text-danger"
-                                :content="item.sell_proportion"
-                                :condition="content => content < 0.1"/>
-                    | <span class="tooltip-label">Open Proportion:</span>
-                    <color-text color_class="text-danger"
-                                :content="item.trading_card_prices_proportion"
-                                :condition="content => content < 0.1"/>
-                    | <span class="tooltip-label">Available Time:</span>
+                <md-tooltip v-if="item.available_time" md-direction="bottom">
+                    <span class="tooltip-label">Available Time:</span>
                     <color-text color_class="text-primary"
                                 :content="item.available_time ? new Date(item.available_time) : null"
                                 :condition="content => content < new Date()"
@@ -108,31 +120,24 @@
 
 <style scoped>
     .ppg-cell {
-        width: 84px;
+        width: 64px;
     }
     .ppg-cell >>> .md-table-cell-container {
-        width: 84px;
+        width: 64px;
     }
 
     .open-ppg-cell {
-        width: 120px;
+        width: 90px;
     }
     .open-ppg-cell >>> .md-table-cell-container {
-        width: 120px;
+        width: 90px;
     }
 
     .open-cov-cell {
-        width: 120px;
+        width: 90px;
     }
     .open-cov-cell >>> .md-table-cell-container  {
-        width: 120px;
-    }
-
-    .open-obr-cell {
-        width: 120px;
-    }
-    .open-obr-cell >>> .md-table-cell-container  {
-        width: 120px;
+        width: 90px;
     }
 
     .li-count-cell {
@@ -140,13 +145,6 @@
     }
     .li-count-cell >>> .md-table-cell-container {
         width: 100px;
-    }
-
-    .open-li-count-cell {
-        width: 105px;
-    }
-    .open-li-count-cell >>> .md-table-cell-container {
-        width: 105px;
     }
 
     .action-cell {

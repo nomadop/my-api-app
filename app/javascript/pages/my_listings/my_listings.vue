@@ -90,10 +90,6 @@
     .md-tooltip {
         transform: translate(48px, 32px);
     }
-    .md-list-item-text :nth-child(2) {
-        font-size: 12px;
-        color: #9E9E9E;
-    }
 </style>
 
 <script src="./my_listings.js"></script>

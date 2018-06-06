@@ -159,11 +159,11 @@ class BoosterCreator < ApplicationRecord
   end
 
   def open_sell_order_count
-    (1.0 * trading_card_order_histograms.map(&:sell_order_count).sum / trading_card_prices.count).round(3)
+    (1.0 * trading_card_order_histograms.map(&:sell_order_count).sum / trading_card_prices.count).round(1)
   end
 
   def open_buy_order_count
-    (1.0 * trading_card_order_histograms.map(&:buy_order_count).sum / trading_card_prices.count).round(3)
+    (1.0 * trading_card_order_histograms.map(&:buy_order_count).sum / trading_card_prices.count).round(1)
   end
 
   def open_order_count
