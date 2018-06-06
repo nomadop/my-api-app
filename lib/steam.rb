@@ -7,9 +7,10 @@ class Steam
 
     def request_app_detail(appid)
       option = {
-          method: :get,
-          url: "http://store.steampowered.com/api/appdetails/?appids=#{appid}",
-          proxy: 'http://127.0.0.1:8888',
+        method: :get,
+        url: "https://store.steampowered.com/api/appdetails/?appids=#{appid}",
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)[appid.to_s]['data']
@@ -41,23 +42,23 @@ class Steam
       account_name = account.account_name
 
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/actions/PlayerList/?type=friends',
-          headers: {
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate, sdch, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => "https://steamcommunity.com/id/#{account_name}/tradeoffers/sent/",
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-              :'X-Requested-With' => 'XMLHttpRequest',
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :get,
+        url: 'https://steamcommunity.com/actions/PlayerList/?type=friends',
+        headers: {
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, sdch, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => "https://steamcommunity.com/id/#{account_name}/tradeoffers/sent/",
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option)
     end
@@ -70,30 +71,30 @@ class Steam
         profile_url = div.search('.friendBlockLinkOverlay').attr('href').value
         account_id = profile_url.split('/').last
         account_name = div.search('.friendBlockContent').children.first.inner_text.strip
-        {profile: mini_profile, profile_url: profile_url, account_id: account_id, account_name: account_name}
+        { profile: mini_profile, profile_url: profile_url, account_id: account_id, account_name: account_name }
       end
       Friend.import(friends, on_duplicate_key_update: {
-          conflict_target: [:profile],
-          columns: [:account_id, :account_name],
+        conflict_target: [:profile],
+        columns: [:account_id, :account_name],
       })
     end
 
     def request_profile(url)
       option = {
-          method: :get,
-          url: url,
-          headers: {
-              :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-              :'Accept-Encoding' => 'gzip, deflate, sdch, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Host' => 'steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :get,
+        url: url,
+        headers: {
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, sdch, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option)
     end
@@ -109,29 +110,29 @@ class Steam
       session_id = SecureRandom.hex(12)
       cookie = "sessionid=#{session_id}; steamCountry=SG%7C93545f6e98fa197ebd322680db9cae25; _ga=GA1.2.694042473.1497528360; _gid=GA1.2.1424724967.1497528360; timezoneOffset=28800,0"
       option = {
-          method: :get,
-          url: 'http://steamcommunity.com/search/SearchCommunityAjax',
-          headers: {
-              :params => {
-                  text: query,
-                  filter: :users,
-                  sessionid: session_id,
-                  steamid_user: false,
-                  page: page,
-              },
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate, sdch',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => 'http://steamcommunity.com/search/users/',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-              :'X-Requested-With' => 'XMLHttpRequest',
+        method: :get,
+        url: 'http://steamcommunity.com/search/SearchCommunityAjax',
+        headers: {
+          :params => {
+            text: query,
+            filter: :users,
+            sessionid: session_id,
+            steamid_user: false,
+            page: page,
           },
-          proxy: 'http://127.0.0.1:8888',
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, sdch',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'http://steamcommunity.com/search/users/',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        proxy: 'http://127.0.0.1:8888',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -150,7 +151,7 @@ class Steam
         country = country_match && country_match[1]
         avatar_medium_url = row.search('.avatarMedium img').attr('src').value
         avatar_name = avatar_medium_url.match(/\/([^\/.]+)_medium\.jpg/)[1]
-        {account_name: account_name, profile_url: profile_url, account_id: account_id, avatar_name: avatar_name, country: country}
+        { account_name: account_name, profile_url: profile_url, account_id: account_id, avatar_name: avatar_name, country: country }
       end
     end
 
@@ -174,34 +175,34 @@ class Steam
 
     def set_nickname(user, nickname)
       url = user.account_id == user.steamid ?
-          "http://steamcommunity.com/profiles/#{user.account_id}/ajaxsetnickname/" :
-          "http://steamcommunity.com/id/#{user.account_id}/ajaxsetnickname/"
+        "http://steamcommunity.com/profiles/#{user.account_id}/ajaxsetnickname/" :
+        "http://steamcommunity.com/id/#{user.account_id}/ajaxsetnickname/"
       referer = user.account_id == user.steamid ?
-          "http://steamcommunity.com/profiles/#{user.account_id}" :
-          "http://steamcommunity.com/id/#{user.account_id}"
+        "http://steamcommunity.com/profiles/#{user.account_id}" :
+        "http://steamcommunity.com/id/#{user.account_id}"
       option = {
-          method: :post,
-          url: url,
-          headers: {
-              :Accept => 'application/json, text/javascript, */*; q=0.01',
-              :'Accept-Encoding' => 'gzip, deflate',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-              :'Cookie' => Authentication.cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Origin' => 'http://steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => referer,
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-              :'X-Requested-With' => 'XMLHttpRequest',
-          },
-          payload: {
-              nickname: nickname,
-              sessionid: Authentication.session_id
-          },
-          proxy: 'http://127.0.0.1:8888',
+        method: :post,
+        url: url,
+        headers: {
+          :Accept => 'application/json, text/javascript, */*; q=0.01',
+          :'Accept-Encoding' => 'gzip, deflate',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => Authentication.cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Origin' => 'http://steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => referer,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: {
+          nickname: nickname,
+          sessionid: Authentication.session_id
+        },
+        proxy: 'http://127.0.0.1:8888',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -209,33 +210,33 @@ class Steam
 
     def add_friend(user, account = Account::DEFAULT)
       referer = user.account_id == user.steamid ?
-          "https://steamcommunity.com/profiles/#{user.account_id}" :
-          "https://steamcommunity.com/id/#{user.account_id}"
+        "https://steamcommunity.com/profiles/#{user.account_id}" :
+        "https://steamcommunity.com/id/#{user.account_id}"
       option = {
-          method: :post,
-          url: 'https://steamcommunity.com/actions/AddFriendAjax',
-          headers: {
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-              :'Cookie' => account.cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Origin' => 'http://steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => referer,
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-              :'X-Requested-With' => 'XMLHttpRequest',
-          },
-          payload: {
-              steamid: user.steamid,
-              sessionID: account.session_id,
-              accept_invite: 0,
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :post,
+        url: 'https://steamcommunity.com/actions/AddFriendAjax',
+        headers: {
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => account.cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Origin' => 'http://steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => referer,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: {
+          steamid: user.steamid,
+          sessionID: account.session_id,
+          accept_invite: 0,
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -243,30 +244,30 @@ class Steam
 
     def send_comment(user, comment)
       option = {
-          method: :post,
-          url: "http://steamcommunity.com/comment/Profile/post/#{user.steamid}/-1/",
-          headers: {
-              :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
-              :'Accept-Encoding' => 'gzip, deflate',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-              :'Cookie' => Authentication.cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Origin' => 'http://steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => "http://steamcommunity.com/id/#{user.account_id}",
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-              :'X-Prototype-Version' => 1.7,
-              :'X-Requested-With' => 'XMLHttpRequest',
-          },
-          payload: {
-              comment: comment,
-              sessionid: Authentication.session_id,
-              count: 6,
-          },
-          proxy: 'http://127.0.0.1:8888',
+        method: :post,
+        url: "http://steamcommunity.com/comment/Profile/post/#{user.steamid}/-1/",
+        headers: {
+          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+          :'Accept-Encoding' => 'gzip, deflate',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => Authentication.cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Origin' => 'http://steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => "http://steamcommunity.com/id/#{user.account_id}",
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Prototype-Version' => 1.7,
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: {
+          comment: comment,
+          sessionid: Authentication.session_id,
+          count: 6,
+        },
+        proxy: 'http://127.0.0.1:8888',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -274,28 +275,28 @@ class Steam
 
     def request_account_history(account)
       option = {
-          method: :get,
-          url: 'https://store.steampowered.com/account/history/',
-          headers: {
-              :':authority' => 'store.steampowered.com',
-              :':method' => 'GET',
-              :':path' => '/account/history/',
-              :':scheme' => 'https',
-              :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-              :'Accept-Encoding' => 'gzip, deflate, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Cookie' => account.cookie,
-              :'Pragma' => 'no-cache',
-              :'upgrade-insecure-requests' => 1,
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :get,
+        url: 'https://store.steampowered.com/account/history/',
+        headers: {
+          :':authority' => 'store.steampowered.com',
+          :':method' => 'GET',
+          :':path' => '/account/history/',
+          :':scheme' => 'https',
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Cookie' => account.cookie,
+          :'Pragma' => 'no-cache',
+          :'upgrade-insecure-requests' => 1,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       cursor = Utility.match_json_var('g_historyCursor', response.body)
-      {cursor: cursor, html: response.body}
+      { cursor: cursor, html: response.body }
     end
 
     def request_more_account_history(account, cursor)
@@ -308,25 +309,25 @@ class Steam
       PATH
       param_str.gsub!(/\s/, '')
       option = {
-          method: :get,
-          url: "https://store.steampowered.com/account/AjaxLoadMoreHistory/?#{param_str}",
-          headers: {
-              :':authority' => 'store.steampowered.com',
-              :':method' => 'GET',
-              :':path' => "/account/history/?#{param_str}",
-              :':scheme' => 'https',
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Cookie' => account.cookie,
-              :'Pragma' => 'no-cache',
-              :'Referer' => 'https://store.steampowered.com/account/history/',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-              :'X-Requested-With' => 'XMLHttpRequest',
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :get,
+        url: "https://store.steampowered.com/account/AjaxLoadMoreHistory/?#{param_str}",
+        headers: {
+          :':authority' => 'store.steampowered.com',
+          :':method' => 'GET',
+          :':path' => "/account/history/?#{param_str}",
+          :':scheme' => 'https',
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Cookie' => account.cookie,
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'https://store.steampowered.com/account/history/',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body).symbolize_keys
@@ -353,17 +354,17 @@ class Steam
         balance_text_match = balance_text.match(/¥\s+(?<price>\d+(,\d+)*?(\.\d+)?)/)
         balance = balance_text_match && balance_text_match[:price].gsub(',', '').to_f * 100
         {
-            account_id: account.id,
-            date: date,
-            items: items,
-            type: type,
-            payment: payment,
-            total: total,
-            change: change,
-            balance: balance,
-            total_text: total_text,
-            change_text: change_text,
-            balance_text: balance_text,
+          account_id: account.id,
+          date: date,
+          items: items,
+          type: type,
+          payment: payment,
+          total: total,
+          change: change,
+          balance: balance,
+          total_text: total_text,
+          change_text: change_text,
+          balance_text: balance_text,
         }
       end
       AccountHistory.import(account_histories)
@@ -382,23 +383,23 @@ class Steam
 
     def get_notification_counts(account = Account::DEFAULT)
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/actions/GetNotificationCounts',
-          headers: {
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Cookie' => account.cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Origin' => 'http://store.steampowered.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => 'http://store.steampowered.com/',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :get,
+        url: 'https://steamcommunity.com/actions/GetNotificationCounts',
+        headers: {
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => account.cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Origin' => 'http://store.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'http://store.steampowered.com/',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option)
     end
