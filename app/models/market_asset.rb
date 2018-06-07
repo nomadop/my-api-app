@@ -7,6 +7,7 @@ class MarketAsset < ApplicationRecord
 
   DEFAULT_PPG_VALUE = 0.3
 
+  belongs_to :order_owner, class_name: 'Account'
   has_one :steam_app, primary_key: :market_fee_app, foreign_key: :steam_appid
   has_many :my_listings, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :my_histories, primary_key: :market_hash_name, foreign_key: :market_hash_name
@@ -29,7 +30,7 @@ class MarketAsset < ApplicationRecord
 
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
-  scope :trading_card, -> { where('type LIKE \'%Trading Card\'') }
+  scope :trading_card, -> { where('type like ?', '%Trading Card').where.not('type like ?', '%Foil Trading Card') }
   scope :booster_pack, -> { where(type: 'Booster Pack') }
   scope :with_my_listing, -> { joins(:my_listings).distinct }
   scope :without_my_listing, -> { left_outer_joins(:my_listings).where(my_listings: {classid: nil}) }

@@ -5,18 +5,19 @@ class BuyOrder < ApplicationRecord
 
   after_create :refresh_status_later
 
+  belongs_to :account
   belongs_to :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_one :order_histogram, through: :market_asset
   has_many :other_orders, class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_one :active_order, -> { where(active: 1) },
-          class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
+    class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
 
   scope :success, -> { where(success: 1) }
   scope :active, -> { where(active: 1) }
   scope :purchased, -> { where(purchased: 1) }
   scope :purchased_active, -> { active.where(market_hash_name: BuyOrder.purchased.distinct.pluck(:market_hash_name)) }
-  scope :without_active, -> { left_outer_joins(:active_order).where(active_orders_buy_orders: {market_hash_name: nil}) }
-  scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: {market_hash_name: nil}) }
+  scope :without_active, -> { left_outer_joins(:active_order).where(active_orders_buy_orders: { market_hash_name: nil }) }
+  scope :without_market_asset, -> { left_outer_joins(:market_asset).where(market_assets: { market_hash_name: nil }) }
   scope :with_in, ->(duration, table_name = :buy_orders) { where("#{table_name}.created_at > ?", duration.ago) }
   scope :with_in_ppg, ->(ppg = MarketAsset::DEFAULT_PPG_VALUE) { joins(:market_asset).where("#{PPG_SQL} < #{ppg}") }
 
@@ -81,14 +82,15 @@ class BuyOrder < ApplicationRecord
         price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
         price = price_text_match && price_text_match[:price].to_f * 100
         {
-            buy_orderid: buy_orderid,
-            market_hash_name: market_hash_name,
-            success: 1,
-            active: 1,
-            price: price,
-            purchased: 0,
-            quantity: quantity,
-            quantity_remaining: quantity,
+          account_id: account.id,
+          buy_orderid: buy_orderid,
+          market_hash_name: market_hash_name,
+          success: 1,
+          active: 1,
+          price: price,
+          purchased: 0,
+          quantity: quantity,
+          quantity_remaining: quantity,
         }
       end
       transaction do
@@ -130,9 +132,9 @@ class BuyOrder < ApplicationRecord
 
     def rebuy_cancelable
       cancelable = BuyOrder
-          .cancelable
-          .includes(:market_asset, :order_histogram)
-          .reject { |buy_order| buy_order.highest_buy_order >= buy_order.goo_value * MarketAsset::DEFAULT_PPG_VALUE }
+        .cancelable
+        .includes(:market_asset, :order_histogram)
+        .reject { |buy_order| buy_order.highest_buy_order >= buy_order.goo_value * MarketAsset::DEFAULT_PPG_VALUE }
       cancelable.each(&:rebuy_later)
     end
 

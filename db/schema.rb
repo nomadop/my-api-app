@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180604071019) do
+ActiveRecord::Schema.define(version: 20180607084623) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -95,6 +95,7 @@ ActiveRecord::Schema.define(version: 20180604071019) do
     t.datetime "updated_at",           null: false
     t.integer  "price"
     t.text     "purchase_amount_text"
+    t.integer  "account_id"
     t.index ["buy_orderid"], name: "index_buy_orders_on_buy_orderid", unique: true, using: :btree
   end
 
@@ -217,9 +218,11 @@ ActiveRecord::Schema.define(version: 20180604071019) do
     t.string   "unowned_contextid"
     t.string   "rollback_new_id"
     t.string   "rollback_new_contextid"
+    t.integer  "order_owner_id"
     t.index ["classid"], name: "index_market_assets_on_classid", unique: true, using: :btree
     t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
     t.index ["market_hash_name"], name: "index_market_assets_on_market_hash_name", using: :btree
+    t.index ["order_owner_id"], name: "index_market_assets_on_order_owner_id", using: :btree
     t.index ["type"], name: "index_market_assets_on_type", using: :btree
   end
 

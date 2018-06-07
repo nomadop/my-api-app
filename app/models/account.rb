@@ -9,6 +9,8 @@ class Account < ApplicationRecord
   has_many :emails, primary_key: :email_address, foreign_key: :to
   has_many :account_histories
   has_many :my_listings
+  has_many :buy_orders
+  has_many :owned_market_assets, class_name: 'MarketAsset', foreign_key: :order_owner_id
   has_one :steam_user, primary_key: :account_id, foreign_key: :steamid
 
   enum status: [:enabled, :disabled, :expired]
