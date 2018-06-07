@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   get '/account_histories/all', to: 'account_histories#all'
   get '/booster_creators', to: 'booster_creators#show'
   get '/booster_creators/creatable', to: 'booster_creators#creatable'
+  post '/accounts/asf', to: 'accounts#asf_command'
   post '/inventory/reload', to: 'inventory#reload'
   post '/inventory/sell_by_ppg', to: 'inventory#sell_by_ppg'
   post '/inventory/send_trade_offer', to: 'inventory#send_trade_offer'

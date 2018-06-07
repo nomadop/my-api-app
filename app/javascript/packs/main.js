@@ -28,6 +28,22 @@ function fetch_accounts() {
     .then(accounts => this.accounts = accounts);
 }
 
+function asf_command(account, command) {
+  this.on_confirm({
+    title: `confirm to send command "${command}" of ${account.bot_name} to ASF?`,
+    callback: wrap_fetch(() => fetch('/accounts/asf', {
+      method: 'post',
+      body: JSON.stringify({
+        id: account.id,
+        command: command,
+      }),
+      headers: {
+        'content-type': 'application/json'
+      }
+    }), false).bind(this),
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     el: '#vue-app',
@@ -65,7 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
           active: true,
           ...message,
         }
-      }
+      },
+      asf_command,
     },
     created() {
       this.fetch_accounts();

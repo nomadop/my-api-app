@@ -44,15 +44,15 @@
                     <span>{{account.status}}</span>
                   </div>
 
-                  <md-speed-dial-content v-if="account.bot_name">
-                    <md-button class="md-dense md-icon-button">
+                  <span v-if="account.bot_name">
+                    <md-button class="md-dense md-icon-button" @click="asf_command(account, '2faok')">
                       <md-icon>check</md-icon>
                     </md-button>
 
-                    <md-button class="md-dense md-icon-button">
+                    <md-button class="md-dense md-icon-button" @click="asf_command(account, '2fano')">
                       <md-icon>close</md-icon>
                     </md-button>
-                  </md-speed-dial-content>
+                  </span>
                 </md-list-item>
               </md-list>
             </md-list-item>
