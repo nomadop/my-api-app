@@ -215,6 +215,9 @@ class Market
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
       result['total_count'] == 0 && result['start'] > 0 ? request_my_listings(start, count, account) : result
+    rescue RestClient::BadRequest
+      account.refresh
+      request_my_listings(start, count, account = Account::DEFAULT)
     end
 
     def handle_my_listing_row(row, account = Account::DEFAULT, confirming = false)
