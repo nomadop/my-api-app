@@ -24,12 +24,14 @@ class BuyOrder < ApplicationRecord
 
   scope :part_purchased, -> { where('quantity_remaining < quantity AND active = 1') }
   scope :cancelable, -> do
-    joins(:order_histogram).where <<-SQL
+    where_sql = <<-SQL
+        order_histograms.highest_buy_order < #{MarketAsset::DEFAULT_PPG_VALUE} AND
         (price < order_histograms.highest_buy_order OR (
           price = order_histograms.highest_buy_order AND 
           CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
-        )) AND ( buy_orders.active = 1 )
+        )) AND buy_orders.active = 1
     SQL
+    joins(:order_histogram).where(where_sql)
   end
 
   delegate :load_order_histogram, :goo_value, :item_nameid, to: :market_asset
@@ -64,8 +66,8 @@ class BuyOrder < ApplicationRecord
       find_each(&:auto_rebuy_later)
     end
 
-    def refresh
-      doc = Nokogiri::HTML(Market.request_market)
+    def reload!(account = Account::DEFAULT)
+      doc = Nokogiri::HTML(Market.request_market(account))
       listing_rows = doc.search('.market_listing_row.market_recent_listing_row')
       order_rows = listing_rows.select { |row| /mybuyorder_\d+/ =~ row.attr(:id) }
       return if order_rows.blank?
@@ -75,21 +77,24 @@ class BuyOrder < ApplicationRecord
         market_url = row.search('.market_listing_item_name_link').attr('href').to_s
         market_hash_name = URI.decode(market_url.split('/').last)
         quantity = row.search('.market_listing_buyorder_qty .market_listing_price').inner_text.strip
+        price_text = row.search('.market_listing_my_price .market_listing_price')[0].children.last.inner_text.strip
+        price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
+        price = price_text_match && price_text_match[:price].to_f * 100
         {
             buy_orderid: buy_orderid,
             market_hash_name: market_hash_name,
             success: 1,
             active: 1,
+            price: price,
             purchased: 0,
             quantity: quantity,
             quantity_remaining: quantity,
         }
       end
-      active.update_all(active: 0, purchased: 1, quantity_remaining: 0)
-      import(orders, on_duplicate_key_update: {
-          conflict_target: [:buy_orderid],
-          columns: [:success, :active, :purchased, :quantity_remaining],
-      })
+      transaction do
+        truncate
+        import(orders)
+      end
     end
 
     def refresh_active
