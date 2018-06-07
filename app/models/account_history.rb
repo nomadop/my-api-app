@@ -9,8 +9,10 @@ class AccountHistory < ApplicationRecord
   scope :since, ->(time) { where('date > ?', time) }
   scope :with_in, ->(duration) { since(duration.ago) }
   scope :between, ->(from, to) { where(date: (from..to)) }
-  scope :market, -> { where("items->>0 = 'Steam 社区市场'") }
-  scope :non_market, -> { where.not("items->>0 = 'Steam 社区市场'") }
+  scope :with_item, ->(item) { where("items->>0 = '#{item}'") }
+  scope :without_item, ->(item) { where.not("items->>0 = '#{item}'") }
+  scope :market, -> { with_item('Steam 社区市场') }
+  scope :non_market, -> { without_item('Steam 社区市场') }
   scope :wallet, -> { where('items->>0 like ?', '已购买%钱包资金') }
   scope :non_wallet, -> { where.not('items->>0 like ?', '已购买%钱包资金') }
   scope :income, -> { where('change > 0') }
@@ -20,6 +22,31 @@ class AccountHistory < ApplicationRecord
   scope :refund, -> { where(type: '退款') }
   scope :payment, ->(payment) { where(payment: payment) }
   scope :refundable, -> { purchase.with_in(2.weeks) }
+  scope :not_refunded_purchase, -> do
+    limit_sql = <<-SQL
+      SELECT "ah1"."items"->>0 AS "item", (
+        COUNT(CASE WHEN "type" like '购买%' THEN 1 END) - 
+        COUNT(CASE WHEN "type" like '退款' THEN 1 END)
+      ) AS "limit"
+      FROM "account_histories" AS "ah1"
+      GROUP BY "ah1"."items"->>0
+    SQL
+    from_sql = <<-SQL
+      (
+        SELECT 
+          "ah2".*,
+          ROW_NUMBER() OVER (PARTITION BY "ah2"."items"->>0 ORDER BY "date" DESC) AS "row_number"
+        FROM "account_histories" AS "ah2"
+        WHERE "ah2"."type" like '购买%'
+      ) "account_histories"
+    SQL
+    join_sql = <<-SQL
+      INNER JOIN (#{limit_sql}) "limit"
+      ON "account_histories"."items"->>0 = "limit"."item"
+    SQL
+    where_sql = '"account_histories"."row_number" <= "limit"."limit"'
+    select('*').from(from_sql).joins(join_sql).where(where_sql).order(date: :desc)
+  end
 
   class << self
     def total
@@ -35,11 +62,7 @@ class AccountHistory < ApplicationRecord
     end
 
     def purchase_without_refund
-      purchase.expense.payment('钱包').to_a.tap do |purchases|
-        refund.income.find_each do |refund_history|
-          purchases.delete_if { |purchase_history| purchase_history.items.first == refund_history.items.first }
-        end
-      end
+      not_refunded_purchase.expense.payment('钱包')
     end
 
     def purchase_report
