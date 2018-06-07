@@ -227,7 +227,8 @@ class BoosterCreator < ApplicationRecord
   end
 
   def inventory_cards_count
-    all_assets_count.nil? ? 0 : all_assets_count - inventory_assets_count
+    count = respond_to?(:all_assets_count) ? all_assets_count : all_assets.count
+    count.nil? ? 0 : count - inventory_assets_count
   end
 
   def sell_proportion
