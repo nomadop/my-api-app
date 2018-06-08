@@ -8,10 +8,12 @@ class BuyOrder < ApplicationRecord
   belongs_to :account
   belongs_to :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_one :order_histogram, through: :market_asset
+  has_many :my_buy_histories, through: :market_asset
   has_many :other_orders, class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_one :active_order, -> { where(active: 1) },
     class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
 
+  scope :belongs, ->(account) { where(account: account) }
   scope :success, -> { where(success: 1) }
   scope :active, -> { where(active: 1) }
   scope :purchased, -> { where(purchased: 1) }
@@ -26,13 +28,13 @@ class BuyOrder < ApplicationRecord
   scope :part_purchased, -> { where('quantity_remaining < quantity AND active = 1') }
   scope :cancelable, -> do
     where_sql = <<-SQL
-        order_histograms.highest_buy_order < #{MarketAsset::DEFAULT_PPG_VALUE} AND
+        (1.0 * order_histograms.highest_buy_order / market_assets.goo_value) < #{MarketAsset::DEFAULT_PPG_VALUE} AND
         (price < order_histograms.highest_buy_order OR (
           price = order_histograms.highest_buy_order AND 
           CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
         )) AND buy_orders.active = 1
     SQL
-    joins(:order_histogram).where(where_sql)
+    joins(:market_asset, :order_histogram).where(where_sql)
   end
 
   delegate :load_order_histogram, :goo_value, :item_nameid, to: :market_asset
@@ -94,7 +96,7 @@ class BuyOrder < ApplicationRecord
         }
       end
       transaction do
-        truncate
+        belongs(account).delete_all
         import(orders)
       end
     end
