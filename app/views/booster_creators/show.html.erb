@@ -1,4 +1,7 @@
 <% content_for :title do %>Booster Creators<% end %>
 <% content_for :navigation do %>navigation-booster-creators<% end %>
+<% content_for :modal do %>
+    <booster-pack :appid="modal.appid"></booster-pack>
+<% end %>
 
-<booster-creators @confirm="on_confirm" @message="on_message"></booster-creators>
+<booster-creators @confirm="on_confirm" @message="on_message" @detail="on_modal"></booster-creators>

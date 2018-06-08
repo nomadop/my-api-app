@@ -64,6 +64,9 @@ function get_class(item) {
 
 function on_select(item) {
   this.selected = item;
+  if (item) {
+    this.$emit('detail', { appid: item.appid });
+  }
 }
 
 function on_filter(filter = {}) {

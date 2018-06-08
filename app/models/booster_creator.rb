@@ -3,6 +3,7 @@ class BoosterCreator < ApplicationRecord
   after_create :create_or_scan_app
 
   has_one :steam_app, primary_key: :appid, foreign_key: :steam_appid
+  has_many :market_assets, primary_key: :appid, foreign_key: :market_fee_app
   has_one :booster_pack, -> { where(type: 'Booster Pack') },
     class_name: 'MarketAsset', primary_key: :appid, foreign_key: :market_fee_app
   has_many :trading_cards, -> { where('type like ?', '%Trading Card').where.not('type like ?', '%Foil Trading Card') },

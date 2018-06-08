@@ -22,6 +22,15 @@ Vue.component('account-histories', function (resolve) {
   require(['../pages/account_histories/account_histories.vue'], resolve)
 });
 
+Vue.component('booster-pack', function (resolve) {
+  require(['../components/booster_pack.vue'], resolve)
+});
+
+Vue.filter('replace', function (value, regexp, replaced = '') {
+  if (!value) return '';
+  return value.replace(regexp, replaced);
+});
+
 function fetch_accounts() {
   return fetch('/accounts')
     .then(response => response.json())
@@ -61,6 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
       drawer: {
         active: false,
         accounts_enabled: true,
+      },
+      modal: {
+        active: false,
       }
     }),
     computed: {
@@ -70,16 +82,21 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     methods: {
       fetch_accounts: wrap_fetch(fetch_accounts),
-      on_confirm: function (confirm) {
-        this.confirm = {
-          active: true,
-          ...confirm,
-        };
+      on_confirm: function ({ title, callback }) {
+        if (confirm(title)) {
+          callback();
+        }
       },
-      on_message: function (message) {
+      on_message: function ({ message }) {
         this.snackbar = {
+          message,
           active: true,
-          ...message,
+        }
+      },
+      on_modal: function (data) {
+        this.modal = {
+          ...data,
+          active: true,
         }
       },
       asf_command,

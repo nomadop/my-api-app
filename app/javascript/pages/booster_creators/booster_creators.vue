@@ -1,7 +1,7 @@
 <template>
     <div id="booster-creators">
         <md-table v-model="items" md-card md-fixed-header
-                  md-sort="open_price_per_goo" md-sort-order="desc">
+                  md-sort="open_price_per_goo" md-sort-order="desc" @md-selected="on_select">
             <md-table-toolbar class="md-elevation-2">
                 <md-badge class="md-primary" :md-content="items.length" />
                 <div class="md-toolbar-section-start">
@@ -38,7 +38,7 @@
                     </md-field>
                 </div>
             </md-table-toolbar>
-            <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)">
+            <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)" md-selectable="single">
                 <md-table-cell md-label="Name" class="name-cell">
                     <div class="md-list-item-text">
                         <span>{{item.name}}</span>

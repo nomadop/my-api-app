@@ -139,6 +139,14 @@ class MarketAsset < ApplicationRecord
     1.0 * lowest_sell_order_exclude_vat / goo_value
   end
 
+  def listing_count
+    my_listings.count
+  end
+
+  def inventory_count
+    inventory_assets.count
+  end
+
   def create_buy_order(price, quantity)
     result = Market.create_buy_order(market_hash_name, price, quantity)
     case result['success']

@@ -67,12 +67,9 @@
               <md-icon>close</md-icon>
             </md-button>
           </md-snackbar>
-          <md-dialog-confirm :md-active.sync="confirm.active"
-                             :md-title="confirm.title"
-                             @md-confirm="confirm.callback"
-                             md-confirm-text="Yes"
-                             md-cancel-text="No"
-          />
+          <md-dialog :md-active.sync="modal.active">
+            <%= yield :modal %>
+          </md-dialog>
         </md-app-content>
       </md-app>
     </div>
