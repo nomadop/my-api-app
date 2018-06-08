@@ -74,7 +74,10 @@ function on_filter(filter = {}) {
   } else if (filters.account !== '') {
     this.items = this.items.filter(item => _.some(item.account_booster_creators, { bot_name: filters.account }));
   }
-  this.set_available_time(filters.account)
+  this.set_available_time(filters.account);
+  if (filters.available !== '') {
+    this.items = this.items.filter(item => _.isNil(item.available_time) === filters.available);
+  }
 }
 
 function get_available_time(booster_creator, account) {
@@ -107,6 +110,7 @@ export default {
     selected: null,
     filter: {
       account: '',
+      available: '',
     },
     base_ppg: 0.55,
   }),
@@ -116,6 +120,9 @@ export default {
   watch: {
     'filter.account': function (account) {
       this.on_filter({ account });
+    },
+    'filter.available': function (available) {
+      this.on_filter({ available });
     },
   },
   methods: {

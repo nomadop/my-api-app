@@ -28,6 +28,14 @@
                             <md-option v-for="name in account_names" :value="name">{{name}}</md-option>
                         </md-select>
                     </md-field>
+
+                    <md-field md-clearable>
+                        <label>Available</label>
+                        <md-select v-model="filter.available">
+                            <md-option :value="true">True</md-option>
+                            <md-option :value="false">False</md-option>
+                        </md-select>
+                    </md-field>
                 </div>
             </md-table-toolbar>
             <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)">
@@ -35,6 +43,13 @@
                     <div class="md-list-item-text">
                         <span>{{item.name}}</span>
                         <span>Appid: {{item.appid}} | Cost: {{item.price}} | Foil: {{item.open_price.foil_average}}</span>
+                        <span v-if="item.available_time">
+                            Available At:
+                            <color-text color_class="text-primary"
+                                        :content="item.available_time ? new Date(item.available_time) : null"
+                                        :condition="content => content < new Date()"
+                                        :filter="content => content ? content.toLocaleString() : null"/>
+                        </span>
                     </div>
                 </md-table-cell>
                 <md-table-cell md-label="PPG"  class="ppg-cell" md-sort-by="price_per_goo" md-numeric>
@@ -106,13 +121,6 @@
                         <md-icon>shop_two</md-icon>
                     </md-button>
                 </md-table-cell>
-                <md-tooltip v-if="item.available_time" md-direction="bottom">
-                    <span class="tooltip-label">Available Time:</span>
-                    <color-text color_class="text-primary"
-                                :content="item.available_time ? new Date(item.available_time) : null"
-                                :condition="content => content < new Date()"
-                                :filter="content => content ? content.toLocaleTimeString() : null"/>
-                </md-tooltip>
             </md-table-row>
         </md-table>
     </div>
