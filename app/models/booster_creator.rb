@@ -104,7 +104,7 @@ class BoosterCreator < ApplicationRecord
     end
 
     def refresh_all
-      includes(:trading_cards, :foil_trading_cards, :booster_pack)
+      ppg_order.includes(:trading_cards, :foil_trading_cards, :booster_pack)
         .each(&:refresh_price_later)
     end
 
