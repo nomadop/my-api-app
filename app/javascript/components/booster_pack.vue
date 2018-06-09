@@ -10,17 +10,13 @@
                                    :disabled="fetching">
                             Refresh
                         </md-button>
-                        <span class="md-title">{{appid}} {{name}}</span>
+                        <span class="md-title">{{appid}} - {{name}}</span>
                     </div>
 
                     <div class="md-toolbar-section-end">
-                        <md-tabs md-active-tab="trading-card" @md-changed="on_filter">
-                            <md-tab id="all" value="All" md-icon="all_inclusive"></md-tab>
-                            <md-tab id="booster-pack" value="Booster Pack" md-icon="photo_album"></md-tab>
-                            <md-tab id="trading-card" value="[^Foil] Trading Card" md-icon="photo"></md-tab>
-                            <md-tab id="foil-trading-card" value="Foil Trading Card" md-icon="photo_filter"></md-tab>
-                            <md-tab id="emoticon" value="Emoticon" md-icon="tag_faces"></md-tab>
-                            <md-tab id="background" value="Background" md-icon="wallpaper"></md-tab>
+                        <md-tabs md-active-tab="trading-card" @md-changed="on_tab_change">
+                            <md-tab v-for="tab in tabs" :id="tab.id"
+                                    :md-icon="tab.icon" :md-label="tab.items.length"></md-tab>
                         </md-tabs>
                     </div>
                 </div>
@@ -35,8 +31,8 @@
                         <span class="md-body-1">{{base_price}}</span>
                     </md-content>
                     <md-content>
-                        <span class="md-subheading">Count</span>
-                        <span class="md-body-1">{{items.length}}</span>
+                        <span class="md-subheading">All Base</span>
+                        <span class="md-body-1">{{all_base_price}}</span>
                     </md-content>
                     <md-content v-if="items.length > 0">
                         <span class="md-subheading">Total</span>
@@ -90,40 +86,46 @@
     return fetch(`/booster_creators/detail?appid=${this.appid}`)
       .then(response => response.json())
       .then(detail => {
-        this.market_assets = detail.market_assets;
-        this.types = _.uniq(_.map(this.market_assets, 'type'));
-        this.on_filter();
+        this.tabs = this.tabs.map(tab => {
+          const items = detail.market_assets.filter(item => tab.regexp.test(item.type));
+          return { ...tab, items };
+        });
       });
   }
 
-  const filter_regexp_map = {
-    'all': /./,
-    'booster-pack': /Booster Pack/,
-    'trading-card': /[^Foil] Trading Card/,
-    'foil-trading-card': /Foil Trading Card/,
-    'emoticon': /Emoticon/,
-    'background': /Background/,
-  };
-
-  function on_filter(type = 'trading-card') {
-    const regexp = filter_regexp_map[type];
-    this.items = this.market_assets.filter(item => regexp.test(item.type));
+  function on_tab_change(id) {
+    this.current_tab = id;
   }
 
   export default {
     props: ['appid', 'name', 'price'],
     data: () => ({
-      types: [],
-      items: [],
-      market_assets: [],
       fetching: false,
+      tabs: [
+        { id: 'all', icon: 'all_inclusive', items: [], regexp: /./ },
+        { id: 'booster-pack', icon: 'photo_album', items: [], regexp: /Booster Pack/ },
+        { id: 'trading-card', icon: 'photo', items: [], regexp: /^((?!Foil).)* Trading Card/ },
+        { id: 'foil-trading-card', icon: 'photo_filter', items: [], regexp: /Foil Trading Card/ },
+        { id: 'emoticon', icon: 'tag_faces', items: [], regexp: /Emoticon/ },
+        { id: 'background', icon: 'wallpaper', items: [], regexp: /Background/ },
+      ],
+      current_tab: 'trading-card',
     }),
     components: {
       ColorText,
     },
     computed: {
+      items: function() {
+        return _.find(this.tabs, { id: this.current_tab }).items;
+      },
+      trading_cards: function() {
+        return _.find(this.tabs, { id: 'trading-card' }).items;
+      },
       base_price: function() {
         return _.round(this.price / 3 * 0.6, 2);
+      },
+      all_base_price: function () {
+        return _.round(this.base_price * this.trading_cards.length, 2);
       },
       total_price: function() {
         return _.sumBy(this.items, 'lowest_sell_order');
@@ -140,7 +142,7 @@
     },
     methods: {
       fetch_booster_pack: wrap_fetch(fetch_booster_pack),
-      on_filter,
+      on_tab_change,
     },
   }
 </script>
@@ -168,11 +170,17 @@
         width: 150px;
     }
 
-    .type-selector {
-        max-width: 150px;
-    }
-
     .md-subheading {
         display: block;
+    }
+
+    .md-tabs >>> .md-icon-label {
+        height: 48px;
+    }
+
+    .md-tabs >>> .md-tab-label {
+        top: 0;
+        right: 0;
+        position: absolute;
     }
 </style>

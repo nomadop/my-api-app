@@ -90,8 +90,12 @@
   .md-tabs.md-theme-default .md-tabs-navigation {
     background-color: inherit;
 
-    .md-button.md-active .md-icon {
+    .md-button.md-active {
       color: #fff;
+
+      .md-icon {
+        color: #fff;
+      }
     }
 
     .md-tabs-indicator {
