@@ -1,5 +1,5 @@
 class LoadMyHistoriesJob < ApplicationJob
-  queue_as :market_search
+  queue_as :load_my_history
 
   def perform(start, count)
     result = Market.request_my_history(start, count)

@@ -71,6 +71,7 @@ class MarketAsset < ApplicationRecord
 
     def quick_order_later
       find_each { |asset| asset.quick_order_later }
+      nil
     end
 
     def load_order_histogram

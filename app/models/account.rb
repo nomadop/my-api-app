@@ -16,13 +16,14 @@ class Account < ApplicationRecord
   enum status: [:enabled, :disabled, :expired]
 
   class << self
-    def delegate_all(class_methods)
+    def delegate_all(class_methods, wait = true)
       class_methods = [class_methods] unless class_methods.is_a?(Array)
-      JobConcurrence.start_and_wait_for do
+      proc = Proc.new do
         class_methods.flat_map do |class_method|
           enabled.map { |account| DelegateJob.perform_later(class_method[:class_name].to_s, class_method[:method].to_s, account.id) }
         end
       end
+      wait ? JobConcurrence.start_and_wait_for(&proc) : JobConcurrence.start(&proc)
     end
 
     def load_booster_creators(account_id)
@@ -41,8 +42,8 @@ class Account < ApplicationRecord
       find(account_id).refresh
     end
 
-    def refresh_all
-      delegate_all({class_name: :Account, method: :refresh})
+    def refresh_all(wait = true)
+      delegate_all({class_name: :Account, method: :refresh}, wait)
     end
   end
 

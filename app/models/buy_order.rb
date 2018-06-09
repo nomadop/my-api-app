@@ -123,6 +123,14 @@ class BuyOrder < ApplicationRecord
       MarketAsset.with_my_buy_histories(10.minute).quick_order_later
     end
 
+    def rebuy_purchased_by_step(step)
+      case step
+        when 1 then JobConcurrence.start { Market.scan_my_histories }
+        when 2 then MarketAsset.with_my_buy_histories(10.minute).quick_order_later
+        else return
+      end
+    end
+
     def rebuy_all
       Authentication.refresh
       3.times do
