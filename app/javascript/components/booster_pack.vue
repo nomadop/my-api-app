@@ -5,16 +5,16 @@
             <md-table-toolbar class="md-large md-elevation-2">
                 <div class="md-toolbar-row">
                     <div class="md-toolbar-section-start">
-                        <md-button class="md-raised md-primary"
+                        <md-button class="md-icon-button"
                                    @click="fetch_booster_pack"
                                    :disabled="fetching">
-                            Refresh
+                            <md-icon>refresh</md-icon>
                         </md-button>
-                        <span class="md-title">{{appid}} - {{name}}</span>
+                        <span class="md-title">{{appid}}<span class="md-subheading"> - {{name}}</span></span>
                     </div>
 
                     <div class="md-toolbar-section-end">
-                        <md-tabs md-active-tab="trading-card" @md-changed="on_tab_change">
+                        <md-tabs :md-active-tab="current_tab" @md-changed="on_tab_change">
                             <md-tab v-for="tab in tabs" :id="tab.id"
                                     :md-icon="tab.icon" :md-label="tab.items.length"></md-tab>
                         </md-tabs>
@@ -48,14 +48,17 @@
             <md-table-row slot="md-table-row" slot-scope="{ item }">
                 <md-table-cell md-label="Name / Type" class="type-cell" md-sort-by="type">
                     <div class="md-list-item-text">
-                     <span>{{item.market_name}}</span>
-                     <span>{{item.type}}</span>
+                        <span>{{item.market_name}}</span>
+                        <span>{{item.type}}</span>
                     </div>
                 </md-table-cell>
                 <md-table-cell md-label="Price" class="numeric-cell" md-sort-by="lowest_sell_order_exclude_vat" numeric>
-                    <color-text color_class="text-primary"
-                                :content="item.lowest_sell_order_exclude_vat"
-                                :condition="content => content > avg_price"/>
+                    <div class="md-list-item-text">
+                        <color-text color_class="text-primary"
+                                    :content="item.lowest_sell_order_exclude_vat"
+                                    :condition="content => content > avg_price_exclude_vat"/>
+                        <span>{{item.lowest_sell_order}}</span>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="L/I" class="numeric-cell">
                     <color-text color_class="text-primary"
@@ -170,8 +173,12 @@
         width: 150px;
     }
 
-    .md-subheading {
+    .md-content .md-subheading {
         display: block;
+    }
+
+    .md-toolbar .md-button ~ .md-title {
+        margin-left: 8px;
     }
 
     .md-tabs >>> .md-icon-label {
