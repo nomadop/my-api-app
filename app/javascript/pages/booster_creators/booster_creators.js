@@ -64,9 +64,6 @@ function get_class(item) {
 
 function on_select(item) {
   this.selected = item;
-  if (item) {
-    this.$emit('detail', { appid: item.appid });
-  }
 }
 
 function on_filter(filter = {}) {
@@ -104,6 +101,10 @@ function set_available_time(account) {
   }));
 }
 
+function open_detail(item) {
+  this.$emit('detail', _.pick(item, ['appid', 'name', 'price']));
+}
+
 export default {
   data: () => ({
     items: [],
@@ -137,5 +138,6 @@ export default {
     on_select,
     on_filter,
     set_available_time,
+    open_detail,
   },
 };

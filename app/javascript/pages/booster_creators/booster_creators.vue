@@ -1,7 +1,7 @@
 <template>
     <div id="booster-creators">
         <md-table v-model="items" md-card md-fixed-header
-                  md-sort="open_price_per_goo" md-sort-order="desc" @md-selected="on_select">
+                  md-sort="open_price_per_goo" md-sort-order="desc">
             <md-table-toolbar class="md-elevation-2">
                 <md-badge class="md-primary" :md-content="items.length" />
                 <div class="md-toolbar-section-start">
@@ -38,7 +38,7 @@
                     </md-field>
                 </div>
             </md-table-toolbar>
-            <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)" md-selectable="single">
+            <md-table-row slot="md-table-row" slot-scope="{ item }" :class="get_class(item)">
                 <md-table-cell md-label="Name" class="name-cell">
                     <div class="md-list-item-text">
                         <span>{{item.name}}</span>
@@ -101,7 +101,7 @@
                         <span>
                             <color-text color_class="text-primary"
                                         :content="item.listing_trading_card_count"
-                                        :condition="content => content < 5"/>
+                                        :condition="content => content < 5 && item.open_price_per_goo > 0.6"/>
                             /
                             <color-text color_class="text-danger"
                                         :content="item.inventory_cards_count"
@@ -119,6 +119,9 @@
                     </md-button>
                     <md-button class="md-dense md-icon-button" @click="sell_all_assets(item)" :disabled="item.account_booster_creators.length === 0">
                         <md-icon>shop_two</md-icon>
+                    </md-button>
+                    <md-button class="md-dense md-icon-button" @click="open_detail(item)">
+                        <md-icon>view_list</md-icon>
                     </md-button>
                 </md-table-cell>
             </md-table-row>
@@ -156,10 +159,10 @@
     }
 
     .action-cell {
-        width: 176px;
+        width: 195px;
     }
     .action-cell >>> .md-table-cell-container {
-        width: 176px;
+        width: 195px;
         font-size: 0;
     }
 </style>
