@@ -86,12 +86,16 @@
   }
 }
 
-.md-app-toolbar {
+.md-toolbar {
   .md-tabs.md-theme-default .md-tabs-navigation {
     background-color: inherit;
 
     .md-button.md-active .md-icon {
       color: #fff;
+    }
+
+    .md-tabs-indicator {
+      background-color: #fff;
     }
   }
 }

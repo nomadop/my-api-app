@@ -14,16 +14,14 @@
                     </div>
 
                     <div class="md-toolbar-section-end">
-                        <md-field class="type-selector" md-clearable>
-                            <label>Type</label>
-                            <md-select v-model="filter.type">
-                                <md-option value="Booster Pack">Booster Pack</md-option>
-                                <md-option value="[^Foil] Trading Card">Trading Card</md-option>
-                                <md-option value="Foil Trading Card">Foil Trading Card</md-option>
-                                <md-option value="Emoticon">Emoticon</md-option>
-                                <md-option value="Background">Background</md-option>
-                            </md-select>
-                        </md-field>
+                        <md-tabs md-active-tab="trading-card" @md-changed="on_filter">
+                            <md-tab id="all" value="All" md-icon="all_inclusive"></md-tab>
+                            <md-tab id="booster-pack" value="Booster Pack" md-icon="photo_album"></md-tab>
+                            <md-tab id="trading-card" value="[^Foil] Trading Card" md-icon="photo"></md-tab>
+                            <md-tab id="foil-trading-card" value="Foil Trading Card" md-icon="photo_filter"></md-tab>
+                            <md-tab id="emoticon" value="Emoticon" md-icon="tag_faces"></md-tab>
+                            <md-tab id="background" value="Background" md-icon="wallpaper"></md-tab>
+                        </md-tabs>
                     </div>
                 </div>
 
@@ -40,13 +38,13 @@
                         <span class="md-subheading">Count</span>
                         <span class="md-body-1">{{items.length}}</span>
                     </md-content>
-                    <md-content v-if="filter.type !== ''">
+                    <md-content v-if="items.length > 0">
                         <span class="md-subheading">Total</span>
-                        <span class="md-body-1">{{total_price}}({{total_price_exclude_vat}})</span>
+                        <span class="md-body-1">{{total_price}} ({{total_price_exclude_vat}})</span>
                     </md-content>
-                    <md-content v-if="filter.type !== ''">
+                    <md-content v-if="items.length > 0">
                         <span class="md-subheading">Avarage</span>
-                        <span class="md-body-1">{{avg_price}}({{avg_price_exclude_vat}})</span>
+                        <span class="md-body-1">{{avg_price}} ({{avg_price_exclude_vat}})</span>
                     </md-content>
                 </div>
             </md-table-toolbar>
@@ -93,13 +91,18 @@
       });
   }
 
-  function on_filter(filter = {}) {
-    const filters = { ...this.filter, ...filter };
-    this.items = this.market_assets;
-    if (filters.type !== '') {
-      const regexp = new RegExp(filters.type);
-      this.items = this.items.filter(item => regexp.test(item.type));
-    }
+  const filter_regexp_map = {
+    'all': /./,
+    'booster-pack': /Booster Pack/,
+    'trading-card': /[^Foil] Trading Card/,
+    'foil-trading-card': /Foil Trading Card/,
+    'emoticon': /Emoticon/,
+    'background': /Background/,
+  };
+
+  function on_filter(type = 'trading-card') {
+    const regexp = filter_regexp_map[type];
+    this.items = this.market_assets.filter(item => regexp.test(item.type));
   }
 
   export default {
@@ -109,9 +112,6 @@
       items: [],
       market_assets: [],
       fetching: false,
-      filter: {
-        type: '',
-      },
     }),
     components: {
       ColorText,
@@ -131,11 +131,6 @@
       },
       avg_price_exclude_vat: function() {
         return _.round(this.total_price_exclude_vat / this.items.length, 2);
-      },
-    },
-    watch: {
-      'filter.type': function (type) {
-        this.on_filter({ type });
       },
     },
     methods: {
