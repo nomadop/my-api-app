@@ -10,7 +10,7 @@ class ASF
         },
       }
       response = RestClient::Request.execute(option)
-      JSON.parse(response.body)
+      JSON.parse(response.body).tap(&method(:puts))
     end
   end
 end

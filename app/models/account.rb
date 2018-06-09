@@ -34,7 +34,7 @@ class Account < ApplicationRecord
     end
 
     def asf(command)
-      enabled.find_each { |account| puts account.asf(command) }
+      enabled.find_each { |account| account.asf(command) }
     end
 
     def refresh(account_id)
