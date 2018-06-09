@@ -37,7 +37,7 @@ class Market
       response = RestClient::Request.execute(option)
       response.body
     rescue RestClient::TooManyRequests, RestClient::Forbidden
-      TorNewnymJob.perform_later unless JobConcurrence.tor.exists?
+      JobConcurrence.tor_newnym
       JobConcurrence.wait_for('TorNewnymJob')
       request_asset(url, with_authentication)
     end
@@ -114,7 +114,7 @@ class Market
       )
       OrderHistogramHistory.create(result.slice('item_nameid', 'highest_buy_order', 'lowest_sell_order'))
     rescue RestClient::TooManyRequests, RestClient::Forbidden
-      TorNewnymJob.perform_later unless JobConcurrence.tor.exists?
+      JobConcurrence.tor_newnym
       JobConcurrence.wait_for('TorNewnymJob')
       load_order_histogram(item_nameid)
     end
@@ -141,7 +141,7 @@ class Market
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
     rescue RestClient::TooManyRequests
-      TorNewnymJob.perform_later unless JobConcurrence.tor.exists?
+      JobConcurrence.tor_newnym
       JobConcurrence.wait_for('TorNewnymJob')
       search(appid, start, count)
     end
@@ -622,11 +622,12 @@ class Market
       end
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
+      puts "#{market_hash_name}: #{result}"
       if result['success']
         MarketAsset.find_by(market_hash_name: market_hash_name).update(sell_volume: result['volume'] || 0)
       end
     rescue RestClient::TooManyRequests, RestClient::Forbidden
-      TorNewnymJob.perform_later unless JobConcurrence.tor.exists?
+      JobConcurrence.tor_newnym
       JobConcurrence.wait_for('TorNewnymJob')
       load_price_overview(market_hash_name)
     end

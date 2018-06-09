@@ -1,12 +1,13 @@
 class TorNewnymJob < ApplicationJob
-  queue_as :default
+  queue_as :tor_newnym
 
-  def perform()
-    JobConcurrence.create(uuid: 'TorNewnymJob', limit: 1, job_id: @job_id)
-    Utility.tor_newnym
-  end
-
-  rescue_from(ActiveRecord::RecordNotUnique) do
-    clean_job_concurrence
+  def perform
+    JobConcurrence.transaction do
+      if JobConcurrence.tor.exists?
+        Utility.tor_newnym
+        JobConcurrence.tor.destroy_all
+      end
+    end
+    TorNewnymJob.set(wait: 3.seconds).perform_later
   end
 end
