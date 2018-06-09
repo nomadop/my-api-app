@@ -281,6 +281,12 @@ class BoosterCreator < ApplicationRecord
     booster_pack&.load_order_histogram
   end
 
+  def refresh_price_overview_later
+    trading_cards.each(&:load_price_overview)
+    foil_trading_cards.each(&:load_price_overview)
+    booster_pack&.load_price_overview
+  end
+
   def set_trading_card_type
     self.trading_card_type = "#{name} Trading Card"
   end
