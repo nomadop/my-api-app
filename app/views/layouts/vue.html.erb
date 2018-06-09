@@ -18,10 +18,7 @@
             <md-button class="md-icon-button" @click="drawer.active = !drawer.active">
               <md-icon>menu</md-icon>
             </md-button>
-            <span class="md-title"><%= yield :title %></span>
-          </div>
 
-          <div class="md-toolbar-section-end">
             <md-tabs md-type="fixed" md-active-tab="<%= yield :navigation %>">
               <md-tab id="navigation-inventory" href="/inventory" md-icon="collections"></md-tab>
               <md-tab id="navigation-booster-creators" href="/booster_creators" md-icon="add_to_photos"></md-tab>

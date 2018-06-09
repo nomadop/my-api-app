@@ -61,7 +61,7 @@
                                 :content="item.lowest_sell_order_exclude_vat"
                                 :condition="content => content > avg_price"/>
                 </md-table-cell>
-                <md-table-cell md-label="L/I" class="count-cell">
+                <md-table-cell md-label="L/I" class="numeric-cell">
                     <color-text color_class="text-primary"
                                 :content="item.listing_count"
                                 :condition="content => content === 0"/>
@@ -69,6 +69,11 @@
                     <color-text color_class="text-danger"
                                 :content="item.inventory_count"
                                 :condition="content => content >= 1"/>
+                </md-table-cell>
+                <md-table-cell md-label="Actions" class="action-cell">
+                    <md-button class="md-dense md-icon-button" :href="item.listing_url" target="_blank">
+                        <md-icon>link</md-icon>
+                    </md-button>
                 </md-table-cell>
             </md-table-row>
         </md-table>
@@ -141,11 +146,11 @@
 </script>
 
 <style scoped>
-    .name-cell {
-        width: 240px;
+    .action-cell {
+        width: 100px;
     }
-    .name-cell >>> .md-table-cell-container {
-        width: 240px;
+    .action-cell >>> .md-table-cell-container {
+        width: 100px;
     }
 
     .numeric-cell {
