@@ -251,4 +251,8 @@ class MarketAsset < ApplicationRecord
   def refersh
     ApplicationJob.perform_unique(LoadMarketAssetJob, listing_url)
   end
+
+  def load_price_overview
+    Market.load_price_overview(market_hash_name)
+  end
 end

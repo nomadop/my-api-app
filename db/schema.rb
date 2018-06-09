@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180607084623) do
+ActiveRecord::Schema.define(version: 20180609115855) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -203,8 +203,8 @@ ActiveRecord::Schema.define(version: 20180607084623) do
     t.integer  "tradable"
     t.string   "type"
     t.string   "item_nameid"
-    t.datetime "created_at",                    null: false
-    t.datetime "updated_at",                    null: false
+    t.datetime "created_at",                                null: false
+    t.datetime "updated_at",                                null: false
     t.jsonb    "actions"
     t.integer  "goo_value"
     t.integer  "market_fee_app"
@@ -219,6 +219,7 @@ ActiveRecord::Schema.define(version: 20180607084623) do
     t.string   "rollback_new_id"
     t.string   "rollback_new_contextid"
     t.integer  "order_owner_id"
+    t.integer  "sell_volume",                   default: 0
     t.index ["classid"], name: "index_market_assets_on_classid", unique: true, using: :btree
     t.index ["item_nameid"], name: "index_market_assets_on_item_nameid", using: :btree
     t.index ["market_hash_name"], name: "index_market_assets_on_market_hash_name", using: :btree

@@ -1,8 +1,8 @@
 class Market
   ALLOWED_ASSET_TYPE = [
-      'Booster Pack', 'Trading Card', 'Foil Trading Card',
-      'Emoticon', 'Rare Emoticon', 'Uncommon Emoticon',
-      'Profile Background', 'Rare Profile Background', 'Uncommon Profile Background',
+    'Booster Pack', 'Trading Card', 'Foil Trading Card',
+    'Emoticon', 'Rare Emoticon', 'Uncommon Emoticon',
+    'Profile Background', 'Rare Profile Background', 'Uncommon Profile Background',
   ]
 
   class << self
@@ -12,24 +12,24 @@ class Market
 
     def request_asset(url, with_authentication = false)
       option = {
-          method: :get,
-          url: url,
-          proxy: 'socks5://localhost:9150/',
+        method: :get,
+        url: url,
+        proxy: 'socks5://localhost:9150/',
       }
       if with_authentication
         cookie = Authentication.cookie
         option[:headers] = {
-            :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            :'Accept-Encoding' => 'gzip, deflate, sdch',
-            :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-            :'Cache-Control' => 'no-cache',
-            :'Connection' => 'keep-alive',
-            :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-            :'Cookie' => cookie,
-            :'Host' => 'steamcommunity.com',
-            :'Pragma' => 'no-cache',
-            :'Upgrade-Insecure-Requests' => 1,
-            :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, sdch',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Upgrade-Insecure-Requests' => 1,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         }
         option[:proxy] = 'http://localhost:8888'
         option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
@@ -79,17 +79,17 @@ class Market
 
     def load_order_histogram(item_nameid, proxy = true)
       order_histogram = OrderHistogram.find_by(item_nameid: item_nameid)
-      return order_histogram if order_histogram && order_histogram.created_at > 5.minutes.ago
+      return order_histogram if order_histogram && order_histogram.updated_at > 5.minutes.ago
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/market/itemordershistogram',
-          headers: {
-              params: {
-                  language: :english,
-                  currency: 23,
-                  item_nameid: item_nameid,
-              }
-          },
+        method: :get,
+        url: 'https://steamcommunity.com/market/itemordershistogram',
+        headers: {
+          params: {
+            language: :english,
+            currency: 23,
+            item_nameid: item_nameid,
+          }
+        },
       }
       if proxy
         option[:proxy] = 'socks5://localhost:9150/'
@@ -121,22 +121,22 @@ class Market
 
     def search(appid, start = 0, count = 10)
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/market/search/render/',
-          headers: {
-              :params => {
-                  query: '',
-                  start: start,
-                  count: count,
-                  search_descriptions: 0,
-                  sort_column: 'default',
-                  sort_dir: 'desc',
-                  appid: 753,
-                  :'category_753_Game[]' => "tag_app_#{appid}",
-              },
+        method: :get,
+        url: 'https://steamcommunity.com/market/search/render/',
+        headers: {
+          :params => {
+            query: '',
+            start: start,
+            count: count,
+            search_descriptions: 0,
+            sort_column: 'default',
+            sort_dir: 'desc',
+            appid: 753,
+            :'category_753_Game[]' => "tag_app_#{appid}",
           },
-          proxy: 'http://localhost:8888/',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        },
+        proxy: 'http://localhost:8888/',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -148,14 +148,14 @@ class Market
 
     def search_by_query(query, start = 0, count = 10)
       response = RestClient.get('http://steamcommunity.com/market/search/render/', {
-          params: {
-              query: query,
-              start: start,
-              count: count,
-              search_descriptions: 0,
-              sort_column: 'default',
-              sort_dir: 'desc',
-          },
+        params: {
+          query: query,
+          start: start,
+          count: count,
+          search_descriptions: 0,
+          sort_column: 'default',
+          sort_dir: 'desc',
+        },
       })
       JSON.parse(response.body)
     end
@@ -190,27 +190,27 @@ class Market
     def request_my_listings(start, count, account = Account::DEFAULT)
       cookie = account.cookie
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/market/mylistings/render/',
-          headers: {
-              :params => {
-                  start: start,
-                  count: count,
-              },
-              :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-              :'Accept-Encoding' => 'gzip, deflate, sdch',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => 'http://steamcommunity.com/market/',
-              :'Upgrade-Insecure-Requests' => 1,
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        method: :get,
+        url: 'https://steamcommunity.com/market/mylistings/render/',
+        headers: {
+          :params => {
+            start: start,
+            count: count,
           },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, sdch',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'http://steamcommunity.com/market/',
+          :'Upgrade-Insecure-Requests' => 1,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
@@ -228,7 +228,7 @@ class Market
       price_text_match = price_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
       price = price_text_match && price_text_match[:price].to_f * 100
       listed_date = row.search('.market_listing_listed_date').text.strip
-      {listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date, confirming: confirming, account_id: account.id}
+      { listingid: listingid, market_hash_name: market_hash_name, price: price, listed_date: listed_date, confirming: confirming, account_id: account.id }
     end
 
     def handle_my_listing_result(result, account = Account::DEFAULT)
@@ -258,32 +258,32 @@ class Market
       session_id = Authentication.session_id
 
       option = {
-          method: :post,
-          url: 'https://steamcommunity.com/market/createbuyorder/',
-          headers: {
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Origin' => 'https://steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => "https://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}",
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-          },
-          payload: {
-              sessionid: session_id,
-              currency: 23,
-              appid: 753,
-              market_hash_name: market_hash_name,
-              price_total: price * quantity,
-              quantity: quantity
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :post,
+        url: 'https://steamcommunity.com/market/createbuyorder/',
+        headers: {
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Origin' => 'https://steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => "https://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}",
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        },
+        payload: {
+          sessionid: session_id,
+          currency: 23,
+          appid: 753,
+          market_hash_name: market_hash_name,
+          price_total: price * quantity,
+          quantity: quantity
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -294,26 +294,26 @@ class Market
       session_id = Authentication.session_id
 
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/market/getbuyorderstatus/',
-          headers: {
-              :params => {
-                  sessionid: session_id,
-                  buy_orderid: buy_order_id,
-              },
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => 'https://steamcommunity.com/market/',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        method: :get,
+        url: 'https://steamcommunity.com/market/getbuyorderstatus/',
+        headers: {
+          :params => {
+            sessionid: session_id,
+            buy_orderid: buy_order_id,
           },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'https://steamcommunity.com/market/',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -324,27 +324,27 @@ class Market
       session_id = Authentication.session_id
 
       option = {
-          method: :post,
-          url: 'http://steamcommunity.com/market/cancelbuyorder/',
-          headers: {
-              :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
-              :'Accept-Encoding' => 'gzip, deflate',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Content-type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Origin' => 'http://steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => 'http://steamcommunity.com/market/',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-          },
-          payload: {
-              sessionid: session_id,
-              buy_orderid: buy_order_id,
-          },
-          proxy: 'http://127.0.0.1:8888',
+        method: :post,
+        url: 'http://steamcommunity.com/market/cancelbuyorder/',
+        headers: {
+          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+          :'Accept-Encoding' => 'gzip, deflate',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Origin' => 'http://steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'http://steamcommunity.com/market/',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        },
+        payload: {
+          sessionid: session_id,
+          buy_orderid: buy_order_id,
+        },
+        proxy: 'http://127.0.0.1:8888',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -355,27 +355,27 @@ class Market
       session_id = account.session_id
 
       option = {
-          method: :post,
-          url: "https://steamcommunity.com/market/removelisting/#{listingid}",
-          headers: {
-              :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
-              :'Accept-Encoding' => 'gzip, deflate',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Content-type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Origin' => 'https://steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => 'https://steamcommunity.com/market/',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-          },
-          payload: {
-              sessionid: session_id,
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :post,
+        url: "https://steamcommunity.com/market/removelisting/#{listingid}",
+        headers: {
+          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+          :'Accept-Encoding' => 'gzip, deflate',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Origin' => 'https://steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'https://steamcommunity.com/market/',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        },
+        payload: {
+          sessionid: session_id,
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option)
     end
@@ -397,21 +397,21 @@ class Market
       cookie = account.cookie
 
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/market/',
-          headers: {
-              :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-              :'Accept-Encoding' => 'gzip, deflate, sdch',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :get,
+        url: 'https://steamcommunity.com/market/',
+        headers: {
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, sdch',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       account.update_cookie(response)
@@ -423,51 +423,51 @@ class Market
       session_id = account.session_id
 
       option = {
-          method: :post,
-          url: 'https://steamcommunity.com/tradeoffer/new/send',
-          headers: {
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate, br',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Origin' => 'https://steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => "https://steamcommunity.com/tradeoffer/new/?partner=#{profile}",
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
-          },
-          payload: {
-              sessionid: session_id,
-              serverid: 1,
-              partner: steamid,
-              tradeoffermessage: message,
-              json_tradeoffer: offer,
-              captcha: '',
-              trade_offer_create_params: {},
-          },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+        method: :post,
+        url: 'https://steamcommunity.com/tradeoffer/new/send',
+        headers: {
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Origin' => 'https://steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => "https://steamcommunity.com/tradeoffer/new/?partner=#{profile}",
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
+        },
+        payload: {
+          sessionid: session_id,
+          serverid: 1,
+          partner: steamid,
+          tradeoffermessage: message,
+          json_tradeoffer: offer,
+          captcha: '',
+          trade_offer_create_params: {},
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       RestClient::Request.execute(option)
     end
 
     def request_order_activity(item_nameid)
       option = {
-          method: :get,
-          url: 'http://steamcommunity.com/market/itemordersactivity',
-          headers: {
-              params: {
-                  country: :CN,
-                  language: :schinese,
-                  currency: 23,
-                  item_nameid: item_nameid,
-                  two_factor: 0,
-              }
-          },
-          proxy: 'http://localhost:8888/'
+        method: :get,
+        url: 'http://steamcommunity.com/market/itemordersactivity',
+        headers: {
+          params: {
+            country: :CN,
+            language: :schinese,
+            currency: 23,
+            item_nameid: item_nameid,
+            two_factor: 0,
+          }
+        },
+        proxy: 'http://localhost:8888/'
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -485,17 +485,17 @@ class Market
         price_text_match = content.match(/¥\s+(?<price>\d+(\.\d+)?)/)
         price = price_text_match && price_text_match[:price].to_f * 100
         {
-            item_nameid: item_nameid,
-            content: content,
-            user1_name: user_names[0],
-            user1_avatar: user_avatars[0].match(/\/([^\/.]+)\.jpg/)[1],
-            user2_name: user_names[1],
-            user2_avatar: user_avatars[1] && user_avatars[1].match(/\/([^\/.]+)\.jpg/)[1],
-            price: price
+          item_nameid: item_nameid,
+          content: content,
+          user1_name: user_names[0],
+          user1_avatar: user_avatars[0].match(/\/([^\/.]+)\.jpg/)[1],
+          user2_name: user_names[1],
+          user2_avatar: user_avatars[1] && user_avatars[1].match(/\/([^\/.]+)\.jpg/)[1],
+          price: price
         }
       end
       OrderActivity.import(activities, on_duplicate_key_ignore: {
-          conflict_target: :content,
+        conflict_target: :content,
       })
     end
 
@@ -507,27 +507,27 @@ class Market
     def request_my_history(start, count)
       cookie = Authentication.cookie
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/market/myhistory/render/',
-          headers: {
-              :params => {
-                  start: start,
-                  count: count,
-              },
-              :Accept => '*/*',
-              :'Accept-Encoding' => 'gzip, deflate, sdch',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Cookie' => cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Referer' => 'http://steamcommunity.com/market/',
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-              :'X-Requested-With' => 'XMLHttpRequest',
+        method: :get,
+        url: 'https://steamcommunity.com/market/myhistory/render/',
+        headers: {
+          :params => {
+            start: start,
+            count: count,
           },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, sdch',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'http://steamcommunity.com/market/',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
@@ -557,17 +557,17 @@ class Market
         asset = assets.find { |asset| asset['market_name'] == market_listing_name }
 
         {
-            history_id: history_id,
-            who_acted_with: who_acted_with,
-            listed_date: listed_date,
-            price: price,
-            market_listing_name: market_listing_name,
-            classid: asset['classid'],
-            market_hash_name: asset['market_hash_name'],
+          history_id: history_id,
+          who_acted_with: who_acted_with,
+          listed_date: listed_date,
+          price: price,
+          market_listing_name: market_listing_name,
+          classid: asset['classid'],
+          market_hash_name: asset['market_hash_name'],
         }
       end
       MyHistory.import(my_history, on_duplicate_key_ignore: {
-          conflict_target: :history_id,
+        conflict_target: :history_id,
       })
     end
 
@@ -577,28 +577,58 @@ class Market
 
     def eligibility_check(account)
       option = {
-          method: :get,
-          url: 'https://steamcommunity.com/market/eligibilitycheck/',
-          headers: {
-              :params => {
-                  goto: 0,
-              },
-              :Accept => 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, image/apng, */*;q=0.8',
-              :'Accept-Encoding' => 'gzip, deflate',
-              :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-              :'Cache-Control' => 'no-cache',
-              :'Connection' => 'keep-alive',
-              :'Cookie' => account.cookie,
-              :'Host' => 'steamcommunity.com',
-              :'Pragma' => 'no-cache',
-              :'Upgrade-Insecure-Requests' => 1,
-              :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        method: :get,
+        url: 'https://steamcommunity.com/market/eligibilitycheck/',
+        headers: {
+          :params => {
+            goto: 0,
           },
-          proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          :Accept => 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, image/apng, */*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => account.cookie,
+          :'Host' => 'steamcommunity.com',
+          :'Pragma' => 'no-cache',
+          :'Upgrade-Insecure-Requests' => 1,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       account.update_cookie(response)
+    end
+
+    def load_price_overview(market_hash_name, proxy = true)
+      option = {
+        method: :get,
+        url: 'https://steamcommunity.com/market/priceoverview/',
+        headers: {
+          params: {
+            appid: 753,
+            country: 'CN',
+            currency: 23,
+            market_hash_name: market_hash_name,
+          }
+        },
+      }
+      if proxy
+        option[:proxy] = 'socks5://localhost:9150/'
+      else
+        option[:proxy] = 'http://localhost:8888'
+        option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
+      end
+      response = RestClient::Request.execute(option)
+      result = JSON.parse(response.body)
+      if result['success']
+        MarketAsset.find_by(market_hash_name: market_hash_name).update(sell_volume: result['volume'] || 0)
+      end
+    rescue RestClient::TooManyRequests, RestClient::Forbidden
+      TorNewnymJob.perform_later unless JobConcurrence.tor.exists?
+      JobConcurrence.wait_for('TorNewnymJob')
+      load_price_overview(market_hash_name)
     end
   end
 end
