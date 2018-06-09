@@ -42,7 +42,7 @@ class BoosterCreatorsController < ActionController::Base
         market_assets: {
           only: [:market_name, :type],
           methods: [
-            :lowest_sell_order_exclude_vat, :listing_count, :inventory_count,
+            :lowest_sell_order, :lowest_sell_order_exclude_vat, :listing_count, :inventory_count,
           ]
         }
       }

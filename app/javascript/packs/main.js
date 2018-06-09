@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       modal: {
         active: false,
-      }
+      },
     }),
     computed: {
       enabled_accounts: function () {
@@ -91,13 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
         this.snackbar = {
           message,
           active: true,
-        }
+        };
       },
       on_modal: function (data) {
         this.modal = {
           ...data,
           active: true,
-        }
+        };
       },
       asf_command,
     },
