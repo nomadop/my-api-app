@@ -8,6 +8,7 @@ class TorNewnymJob < ApplicationJob
         JobConcurrence.tor.destroy_all
       end
     end
-    TorNewnymJob.set(wait: 3.seconds).perform_later
+    sleep 3.seconds
+    TorNewnymJob.perform_later
   end
 end

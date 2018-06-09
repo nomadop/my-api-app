@@ -1,8 +1,15 @@
 class AutoResellJob < ApplicationJob
   queue_as :default
 
-  def perform(account_id = nil)
-    account_id.nil? ? MyListing.auto_resell_all : MyListing.auto_resell(Account.enabled.find(account_id))
-    AutoResellJob.set(wait: 30.minutes).perform_later(account_id)
+  def perform(step = 1, prev_uuid = nil)
+    if JobConcurrence.where(uuid: prev_uuid).exists?
+      puts "AutoResellJob: Step #{step - 1}(#{prev_uuid}) is not finished yet..."
+      return AutoResellJob.set(wait: 1.seconds).perform_later(step, prev_uuid)
+    end
+
+    uuid = MyListing.auto_resell_all_by_step(step)
+    uuid.nil? ?
+      AutoResellJob.set(wait: 30.minutes).perform_later(1, uuid) :
+      AutoResellJob.perform_later(step + 1, uuid)
   end
 end

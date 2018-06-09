@@ -58,11 +58,11 @@ class MyListing < ApplicationRecord
       end
     end
 
-    def reload_all!
+    def reload_all!(wait = true)
       Account.delegate_all([
         { class_name: :MyListing, method: :reload! },
         { class_name: :MyListing, method: :reload_confirming! },
-      ])
+      ], wait)
     end
 
     def reload_confirming(account = Account::DEFAULT)
@@ -132,6 +132,19 @@ class MyListing < ApplicationRecord
       JobConcurrence.wait_for(cancel_cancelable(nil))
       JobConcurrence.wait_for(Inventory.auto_sell_and_grind(nil))
       Account.asf('2faok')
+    end
+
+    def auto_resell_all_by_step(step)
+      case step
+        when 1 then cancel_dirty
+        when 2 then Account.refresh_all(false)
+        when 3 then reload_all!(false)
+        when 4 then refresh_order_histogram(nil)
+        when 5 then cancel_cancelable(nil)
+        when 6 then Inventory.auto_sell_and_grind(nil)
+        when 7 then Account.asf('2faok')
+        else return
+      end
     end
 
     def cancel_pending_listings(account = Account::DEFAULT)
