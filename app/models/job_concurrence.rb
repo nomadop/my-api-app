@@ -1,4 +1,6 @@
 class JobConcurrence < ApplicationRecord
+  scope :tor, -> { where(uuid: 'TorNewnymJob') }
+
   enum limit_type: [:block, :throw]
 
   class << self
