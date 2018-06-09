@@ -30,31 +30,35 @@ class BoosterCreator < ApplicationRecord
   scope :with_inventory_assets, -> { joins(:inventory_assets).distinct }
 
   scope :ppg_group, -> do
-    select_trading_cards_sql = <<-SQL
+    trading_cards_select_sql = <<-SQL
       SELECT 
         "ma1"."market_fee_app",
         COUNT("ma1"."classid") AS "trading_cards_count",
         SUM("oh1"."lowest_sell_order") AS "trading_cards_price_sum"
       FROM "market_assets" AS "ma1"
+      INNER JOIN "booster_creators" "bc1"
+        ON "bc1"."appid" = "ma1"."market_fee_app"
       INNER JOIN "order_histograms" "oh1"
         ON "oh1"."item_nameid" = "ma1"."item_nameid"
       WHERE ("ma1"."type" like '%Trading Card')
         AND (NOT("ma1"."type" like '%Foil Trading Card'))
       GROUP BY "ma1"."market_fee_app"
     SQL
-    select_booster_pack_sql = <<-SQL
+    booster_pack_select_sql = <<-SQL
       SELECT 
         "ma2"."market_fee_app",
         "oh2"."lowest_sell_order" AS "booster_pack_price"
       FROM "market_assets" AS "ma2"
+      INNER JOIN "booster_creators" "bc2"
+        ON "bc2"."appid" = "ma2"."market_fee_app"
       INNER JOIN "order_histograms" "oh2"
         ON "oh2"."item_nameid" = "ma2"."item_nameid"
       WHERE "ma2"."type" = 'Booster Pack'
     SQL
     join_sql = <<-SQL
-      LEFT OUTER JOIN (#{select_trading_cards_sql}) "tcs"
+      LEFT OUTER JOIN (#{trading_cards_select_sql}) "tcs"
         ON "tcs"."market_fee_app" = "booster_creators"."appid"
-      LEFT OUTER JOIN (#{select_booster_pack_sql}) "bp"
+      LEFT OUTER JOIN (#{booster_pack_select_sql}) "bp"
         ON "bp"."market_fee_app" = "booster_creators"."appid"
     SQL
     joins(join_sql)
