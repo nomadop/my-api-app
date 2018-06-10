@@ -42,10 +42,15 @@ class Market
       request_asset(url, with_authentication)
     end
 
-    def request_sell_history(url)
-      html = request_asset(url, true)
-      histories = Utility.match_json_var('line1', html)
-      histories.map { |history| SellHistory.new(datetime: history[0], price: (history[1] * 100).round(1), amount: history[2]) }
+    def handle_sell_history(classid, asset_body)
+      sell_histories = Utility.match_json_var('line1', asset_body).map do |history|
+        { classid: classid, datetime: history[0], price: (history[1] * 100).round(1), amount: history[2] }
+      end
+
+      SellHistory.transaction do
+        SellHistory.where(classid: classid).delete_all
+        SellHistory.import(sell_histories)
+      end
     end
 
     def load_asset(html)
@@ -61,6 +66,7 @@ class Market
       asset_model = MarketAsset.find_or_initialize_by(classid: asset['classid'])
       item_nameid = /Market_LoadOrderSpread\( (\d+) \);/.match(html)&.[] 1
       asset_model.update(asset.except('id').merge(item_nameid: item_nameid))
+      handle_sell_history(asset_model.classid, html)
       asset_model
     rescue Exception => e
       puts assets
@@ -504,8 +510,9 @@ class Market
       handle_order_activity(item_nameid, result)
     end
 
-    def request_my_history(start, count)
-      cookie = Authentication.cookie
+    def request_my_history(start, count, account_id = 1)
+      account = Account.find(account_id)
+      cookie = account.cookie
       option = {
         method: :get,
         url: 'https://steamcommunity.com/market/myhistory/render/',
@@ -622,7 +629,6 @@ class Market
       end
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
-      puts "#{market_hash_name}: #{result}"
       if result['success']
         MarketAsset.find_by(market_hash_name: market_hash_name).update(sell_volume: result['volume'] || 0)
       end

@@ -3,6 +3,7 @@ class SellHistory < ApplicationRecord
 
   scope :with_in, ->(duration) { where('datetime > ?', duration.ago.to_date) }
   scope :higher_than, ->(price) { where('price >= ?', price) }
+  scope :group_by_day, -> { group('CAST(datetime AS DATE)') }
 
   class << self
     def total_amount
@@ -27,8 +28,16 @@ class SellHistory < ApplicationRecord
     end
   end
 
+  def as_json
+    super(only: [:price, :amount], methods: [:formatted_time])
+  end
+
   def datetime=(datetime)
     datetime = DateTime.strptime(datetime, '%b %d %Y %H: %z').to_time if datetime.is_a?(String)
     super(datetime)
+  end
+
+  def formatted_time
+    datetime.getlocal('+08:00')
   end
 end

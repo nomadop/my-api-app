@@ -213,10 +213,8 @@ class MarketAsset < ApplicationRecord
   end
 
   def load_sell_histories
-    SellHistory.transaction do
-      SellHistory.where(classid: classid).delete_all
-      self.sell_histories = Market.request_sell_history(listing_url)
-    end
+    asset_body = Market.request_asset(listing_url)
+    Market.handle_sell_history(classid, asset_body)
   end
 
   def load_sell_histories_later
@@ -254,6 +252,7 @@ class MarketAsset < ApplicationRecord
   end
 
   def refersh
+    return if updated_at > 1.day.ago
     ApplicationJob.perform_unique(LoadMarketAssetJob, listing_url)
   end
 end
