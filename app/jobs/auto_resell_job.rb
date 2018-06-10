@@ -4,7 +4,7 @@ class AutoResellJob < ApplicationJob
   def perform(step = 1, prev_uuid = nil)
     if JobConcurrence.where(uuid: prev_uuid).exists?
       puts "AutoResellJob: Step #{step - 1}(#{prev_uuid}) is not finished yet..."
-      return AutoResellJob.set(wait: 1.seconds).perform_later(step, prev_uuid)
+      return retry_job(wait: 1.second)
     end
 
     uuid = MyListing.auto_resell_all_by_step(step)

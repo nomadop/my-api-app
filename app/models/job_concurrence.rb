@@ -1,5 +1,6 @@
 class JobConcurrence < ApplicationRecord
   scope :tor, -> { where(uuid: 'TorNewnymJob') }
+  scope :with_in, ->(duration) { where('created_at > ?', duration.ago) }
 
   enum limit_type: [:block, :throw]
 
@@ -17,10 +18,9 @@ class JobConcurrence < ApplicationRecord
       return if uuid.nil?
 
       wait_time = 0.second
-      puts "start wait for #{uuid}"
       loop do
         sleep sleep_time
-        return puts("jobs completed for #{uuid}") unless where(uuid: uuid).exists?
+        return unless where(uuid: uuid).exists?
         wait_time += sleep_time
         raise 'timeout' if timeout && wait_time > timeout
       end

@@ -125,8 +125,9 @@ class BuyOrder < ApplicationRecord
 
     def rebuy_purchased_by_step(step)
       case step
-        when 1 then JobConcurrence.start { Market.scan_my_histories }
-        when 2 then MarketAsset.with_my_buy_histories(10.minute).quick_order_later
+        when 1 then Account.refresh_all(false)
+        when 2 then Account.delegate_all([{ class_name: :Market, method: :scan_my_histories }], false)
+        when 3 then MarketAsset.with_my_buy_histories(10.minute).quick_order_later
         else return
       end
     end
