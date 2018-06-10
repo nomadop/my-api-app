@@ -45,6 +45,10 @@ class Account < ApplicationRecord
     def refresh_all(wait = true)
       delegate_all({class_name: :Account, method: :refresh}, wait)
     end
+
+    def method_missing(method, *args, &block)
+      find_by(bot_name: method) || super(method, *args, &block)
+    end
   end
 
   def cookie
