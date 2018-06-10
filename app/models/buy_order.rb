@@ -7,6 +7,7 @@ class BuyOrder < ApplicationRecord
 
   belongs_to :account
   belongs_to :market_asset, primary_key: :market_hash_name, foreign_key: :market_hash_name
+  has_one :order_owner, through: :market_asset
   has_one :order_histogram, through: :market_asset
   has_many :my_buy_histories, through: :market_asset
   has_many :other_orders, class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
@@ -70,6 +71,7 @@ class BuyOrder < ApplicationRecord
     end
 
     def reload!(account = Account::DEFAULT)
+      account = Account.enabled.find(account) unless account.is_a?(Account)
       doc = Nokogiri::HTML(Market.request_market(account))
       listing_rows = doc.search('.market_listing_row.market_recent_listing_row')
       order_rows = listing_rows.select { |row| /mybuyorder_\d+/ =~ row.attr(:id) }
@@ -95,10 +97,13 @@ class BuyOrder < ApplicationRecord
           quantity_remaining: quantity,
         }
       end
-      transaction do
-        belongs(account).delete_all
-        import(orders)
-      end
+      import(orders, on_duplicate_key_ignore: {
+        conflict_target: :buy_orderid,
+      })
+    end
+
+    def reload_all!
+      Account.delegate_all({ class_name: :BuyOrder, method: :reload! })
     end
 
     def refresh_active
@@ -171,7 +176,7 @@ class BuyOrder < ApplicationRecord
   end
 
   def refresh_status
-    status = Market.get_buy_order_status(buy_orderid)
+    return status = Market.get_buy_order_status(account, buy_orderid)
     update(status)
     rebuy_later if (quantity || 1) > (quantity_remaining || 0)
   end
@@ -193,7 +198,7 @@ class BuyOrder < ApplicationRecord
   def cancel
     return true if active == 0
 
-    result = Market.cancel_buy_order(buy_orderid)
+    result = Market.cancel_buy_order(account, buy_orderid)
     case result['success']
       when 1
         update(active: 0, purchased: 1)

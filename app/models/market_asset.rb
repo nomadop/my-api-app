@@ -153,12 +153,18 @@ class MarketAsset < ApplicationRecord
   end
 
   def create_buy_order(price, quantity)
-    result = Market.create_buy_order(market_hash_name, price, quantity)
+    account_id = order_owner_id || 1
+    result = Market.create_buy_order(market_hash_name, price, quantity, account_id)
     case result['success']
       when 1
-        BuyOrder.create(result.merge(market_hash_name: market_hash_name, price: price, quantity: quantity))
+        BuyOrder.create(result.merge(
+          market_hash_name: market_hash_name,
+          price: price,
+          quantity: quantity,
+          account_id: order_owner_id
+        ))
       when 8
-        Authentication.refresh
+        Account.find(account_id).refresh
         create_buy_order(price, quantity)
       when 29
         return

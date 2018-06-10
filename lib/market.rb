@@ -259,9 +259,10 @@ class Market
       LoadMyListingsJob.perform_later(0, 100)
     end
 
-    def create_buy_order(market_hash_name, price, quantity)
-      cookie = Authentication.cookie
-      session_id = Authentication.session_id
+    def create_buy_order(market_hash_name, price, quantity, account_id)
+      account = Account.find(account_id)
+      cookie = account.cookie
+      session_id = account.session_id
 
       option = {
         method: :post,
@@ -295,9 +296,9 @@ class Market
       JSON.parse(response.body)
     end
 
-    def get_buy_order_status(buy_order_id)
-      cookie = Authentication.cookie
-      session_id = Authentication.session_id
+    def get_buy_order_status(account, buy_order_id)
+      cookie = account.cookie
+      session_id = account.session_id
 
       option = {
         method: :get,
@@ -325,13 +326,13 @@ class Market
       JSON.parse(response.body)
     end
 
-    def cancel_buy_order(buy_order_id)
-      cookie = Authentication.cookie
-      session_id = Authentication.session_id
+    def cancel_buy_order(account, buy_order_id)
+      cookie = account.cookie
+      session_id = account.session_id
 
       option = {
         method: :post,
-        url: 'http://steamcommunity.com/market/cancelbuyorder/',
+        url: 'https://steamcommunity.com/market/cancelbuyorder/',
         headers: {
           :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
           :'Accept-Encoding' => 'gzip, deflate',
@@ -341,9 +342,9 @@ class Market
           :'Content-type' => 'application/x-www-form-urlencoded; charset=UTF-8',
           :'Cookie' => cookie,
           :'Host' => 'steamcommunity.com',
-          :'Origin' => 'http://steamcommunity.com',
+          :'Origin' => 'https://steamcommunity.com',
           :'Pragma' => 'no-cache',
-          :'Referer' => 'http://steamcommunity.com/market/',
+          :'Referer' => 'https://steamcommunity.com/market/',
           :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         },
         payload: {
@@ -351,6 +352,7 @@ class Market
           buy_orderid: buy_order_id,
         },
         proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -539,14 +541,14 @@ class Market
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)
       if result['total_count'].nil?
-        Authentication.refresh
+        account.refresh
         request_my_history(start, count)
       else
         result
       end
     end
 
-    def handle_my_history_result(result)
+    def handle_my_history_result(result, account_id = 1)
       assets = result['assets']['753']['6'].values
       doc = Nokogiri::HTML(result['results_html'])
       rows = doc.search('.market_listing_row.market_recent_listing_row')
@@ -564,6 +566,7 @@ class Market
         asset = assets.find { |asset| asset['market_name'] == market_listing_name }
 
         {
+          account_id: account_id,
           history_id: history_id,
           who_acted_with: who_acted_with,
           listed_date: listed_date,
@@ -578,8 +581,8 @@ class Market
       })
     end
 
-    def scan_my_histories
-      LoadMyHistoriesJob.perform_later(0, 100)
+    def scan_my_histories(account_id = 1)
+      LoadMyHistoriesJob.perform_later(0, 100, account_id)
     end
 
     def eligibility_check(account)
