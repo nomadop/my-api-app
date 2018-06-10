@@ -61,6 +61,14 @@
   }
 }
 
+.account-cell {
+  width: 180px;
+
+  .md-table-cell-container {
+    width: 180px;
+  }
+}
+
 .md-table-cell-container {
   padding: 6px 18px 6px 12px;
 }

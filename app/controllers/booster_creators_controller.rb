@@ -43,7 +43,7 @@ class BoosterCreatorsController < ActionController::Base
           only: [:market_name, :type],
           methods: [
             :lowest_sell_order, :lowest_sell_order_exclude_vat,
-            :listing_count, :inventory_count, :listing_url,
+            :listing_count, :inventory_count, :listing_url, :sell_volume,
           ]
         }
       }

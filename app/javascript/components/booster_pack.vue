@@ -21,27 +21,31 @@
                     </div>
                 </div>
 
-                <div class="md-toolbar-row md-toolbar-offset">
-                    <md-content>
-                        <span class="md-subheading">Cost</span>
-                        <span class="md-body-1">{{price}}</span>
-                    </md-content>
-                    <md-content>
-                        <span class="md-subheading">Base</span>
-                        <span class="md-body-1">{{base_price}}</span>
-                    </md-content>
-                    <md-content>
-                        <span class="md-subheading">All Base</span>
-                        <span class="md-body-1">{{all_base_price}}</span>
-                    </md-content>
-                    <md-content v-if="items.length > 0">
-                        <span class="md-subheading">Total</span>
-                        <span class="md-body-1">{{total_price}} ({{total_price_exclude_vat}})</span>
-                    </md-content>
-                    <md-content v-if="items.length > 0">
-                        <span class="md-subheading">Avarage</span>
-                        <span class="md-body-1">{{avg_price}} ({{avg_price_exclude_vat}})</span>
-                    </md-content>
+                <div class="md-toolbar-row md-toolbar-offset md-layout md-gutter">
+                    <div class="md-layout-item">
+                        <div class="md-subheading">Cost</div>
+                        <div class="md-body-1">{{price}}</div>
+                    </div>
+                    <div class="md-layout-item">
+                        <div class="md-subheading">Base</div>
+                        <div class="md-body-1">{{base_price}}</div>
+                    </div>
+                    <div class="md-layout-item">
+                        <div class="md-subheading">All Base</div>
+                        <div class="md-body-1">{{all_base_price}}</div>
+                    </div>
+                    <div class="md-layout-item" v-if="items.length > 0">
+                        <div class="md-subheading">Total</div>
+                        <div class="md-body-1">{{total_price}} ({{total_price_exclude_vat}})</div>
+                    </div>
+                    <div class="md-layout-item" v-if="items.length > 0">
+                        <div class="md-subheading">Avarage</div>
+                        <div class="md-body-1">{{avg_price}} ({{avg_price_exclude_vat}})</div>
+                    </div>
+                    <div class="md-layout-item" v-if="items.length > 0">
+                        <div class="md-subheading">COV</div>
+                        <div class="md-body-1">{{coefficient_of_variation}}</div>
+                    </div>
                 </div>
             </md-table-toolbar>
 
@@ -68,6 +72,9 @@
                     <color-text color_class="text-danger"
                                 :content="item.inventory_count"
                                 :condition="content => content >= 1"/>
+                </md-table-cell>
+                <md-table-cell md-label="Volume" class="numeric-cell" md-sort-by="sell_volume">
+                    {{item.sell_volume}}
                 </md-table-cell>
                 <md-table-cell md-label="Actions" class="action-cell">
                     <md-button class="md-dense md-icon-button" :href="item.listing_url" target="_blank">
@@ -118,29 +125,34 @@
       ColorText,
     },
     computed: {
-      items: function() {
+      items() {
         return _.find(this.tabs, { id: this.current_tab }).items;
       },
-      trading_cards: function() {
+      trading_cards() {
         return _.find(this.tabs, { id: 'trading-card' }).items;
       },
-      base_price: function() {
+      base_price() {
         return _.round(this.price / 3 * 0.6, 2);
       },
-      all_base_price: function () {
+      all_base_price () {
         return _.round(this.base_price * this.trading_cards.length, 2);
       },
-      total_price: function() {
+      total_price() {
         return _.sumBy(this.items, 'lowest_sell_order');
       },
-      total_price_exclude_vat: function() {
+      total_price_exclude_vat() {
         return _.sumBy(this.items, 'lowest_sell_order_exclude_vat');
       },
-      avg_price: function() {
+      avg_price() {
         return _.round(this.total_price / this.items.length, 2);
       },
-      avg_price_exclude_vat: function() {
+      avg_price_exclude_vat() {
         return _.round(this.total_price_exclude_vat / this.items.length, 2);
+      },
+      coefficient_of_variation() {
+        const reduce_function = (sum, { lowest_sell_order }) => sum + Math.pow(lowest_sell_order - this.avg_price, 2);
+        const variance = this.items.reduce(reduce_function, 0) / this.items.length;
+        return _.round(Math.sqrt(variance) / this.avg_price, 3);
       },
     },
     methods: {
@@ -169,12 +181,9 @@
         width: 960px;
     }
 
-    .md-content {
-        width: 150px;
-    }
-
-    .md-content .md-subheading {
-        display: block;
+    .md-toolbar .md-toolbar-offset {
+        margin-left: 36px;
+        margin-right: 36px;
     }
 
     .md-toolbar .md-button ~ .md-title {
@@ -189,5 +198,9 @@
         top: 0;
         right: 0;
         position: absolute;
+    }
+
+    .md-body-1 {
+        font-size: 12px;
     }
 </style>

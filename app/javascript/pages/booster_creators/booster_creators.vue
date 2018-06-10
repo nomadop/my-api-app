@@ -110,6 +110,9 @@
                         <span>{{item.open_sell_order_count}} / {{item.open_buy_order_count}}</span>
                     </div>
                 </md-table-cell>
+                <md-table-cell md-label="Volume" class="li-count-cell">
+                    {{item.sell_volume}} / {{item.open_price.sell_volume}}
+                </md-table-cell>
                 <md-table-cell md-label="Actions" class="action-cell">
                     <md-button class="md-dense md-icon-button" @click="create_and_unpack(item)" :disabled="item.account_booster_creators.length === 0">
                         <md-icon>unarchive</md-icon>

@@ -47,7 +47,11 @@
                     {{item.market_fee_app}}
                 </md-table-cell>
                 <md-table-cell md-label="Name" class="name-cell">
-                    {{item.market_name}}
+                    <div class="md-list-item-text">
+                        <span>{{item.market_name}}</span>
+                        <span>{{item.listingid}}</span>
+                        <p>{{item.type}}</p>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="Account" class="name-cell" md-sort-by="bot_name">
                     {{item.bot_name}}
@@ -70,10 +74,6 @@
                 <md-table-cell md-label="Date" class="numeric-cell" md-sort-by="listed_date">
                     {{item.listed_date}}
                 </md-table-cell>
-
-                <md-tooltip md-direction="right">
-                    {{item.listingid}} | {{item.type}}
-                </md-tooltip>
             </md-table-row>
         </md-table>
     </div>

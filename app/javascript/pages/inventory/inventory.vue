@@ -70,7 +70,7 @@
                         <p>{{item.type}}</p>
                     </div>
                 </md-table-cell>
-                <md-table-cell md-label="Account" class="name-cell" md-sort-by="bot_name">
+                <md-table-cell md-label="Account" class="account-cell" md-sort-by="bot_name">
                     {{item.bot_name}}
                 </md-table-cell>
                 <md-table-cell md-label="Sell Price" class="numeric-cell" md-sort-by="lowest_sell_order" md-numeric>

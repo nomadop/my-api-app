@@ -38,18 +38,20 @@ function fetch_accounts() {
 }
 
 function asf_command(account, command) {
+  const fetch_options = {
+    method: 'post',
+    body: JSON.stringify({
+      id: account.id,
+      command: command,
+    }),
+    headers: {
+      'content-type': 'application/json'
+    }
+  };
+  const fetch_function = () => fetch('/accounts/asf', fetch_options).then(() => this.drawer.active = false);
   this.on_confirm({
     title: `confirm to send command "${command}" of ${account.bot_name} to ASF?`,
-    callback: wrap_fetch(() => fetch('/accounts/asf', {
-      method: 'post',
-      body: JSON.stringify({
-        id: account.id,
-        command: command,
-      }),
-      headers: {
-        'content-type': 'application/json'
-      }
-    }), false).bind(this),
+    callback: wrap_fetch(fetch_function, false).bind(this),
   });
 }
 
