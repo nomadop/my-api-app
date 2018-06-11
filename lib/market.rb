@@ -43,7 +43,10 @@ class Market
     end
 
     def handle_sell_history(classid, asset_body)
-      sell_histories = Utility.match_json_var('line1', asset_body).map do |history|
+      sell_histories_json = Utility.match_json_var('line1', asset_body)
+      return if sell_histories_json.blank?
+
+      sell_histories = sell_history_json.map do |history|
         { classid: classid, datetime: history[0], price: (history[1] * 100).round(1), amount: history[2] }
       end
 
