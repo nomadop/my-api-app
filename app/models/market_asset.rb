@@ -161,7 +161,7 @@ class MarketAsset < ApplicationRecord
           market_hash_name: market_hash_name,
           price: price,
           quantity: quantity,
-          account_id: order_owner_id
+          account_id: order_owner_id || 1,
         ))
       when 8
         Account.find(account_id).refresh
