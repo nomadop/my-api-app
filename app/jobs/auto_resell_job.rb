@@ -1,9 +1,12 @@
 class AutoResellJob < ApplicationJob
   queue_as :default
 
+  STEP_NAMES = %w(_ CancelDirty Refresh Reload RefreshPrice CancelCancelable AutoSell 2FAok)
+
   def perform(step = 1, prev_uuid = nil)
-    if JobConcurrence.where(uuid: prev_uuid).exists?
-      puts "AutoResellJob: Step #{step - 1}(#{prev_uuid}) is not finished yet..."
+    job_remains = JobConcurrence.where(uuid: prev_uuid).count
+    if job_remains > 0
+      puts "AutoResellJob: Step #{step - 1}(#{STEP_NAMES[step - 1]}) is not finished yet, #{job_remains} jobs left...(#{prev_uuid})"
       return retry_job(wait: 1.second)
     end
 
