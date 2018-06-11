@@ -38,8 +38,9 @@ class Account < ApplicationRecord
       enabled.find_each { |account| account.asf(command) }
     end
 
-    def refresh(account_id)
-      find(account_id).refresh
+    def refresh(id_or_name)
+      account = id_or_name.is_a?(Integer) ? find(id_or_name) : find_by(bot_name: id_or_name)
+      account.refresh
     end
 
     def refresh_all(wait = true)
