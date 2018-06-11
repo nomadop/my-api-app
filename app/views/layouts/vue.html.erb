@@ -26,6 +26,10 @@
               <md-tab id="navigation-account-histories" href="/account_histories" md-icon="account_balance_wallet"></md-tab>
             </md-tabs>
           </div>
+
+          <div class="md-toolbar-section-end">
+            <%= yield :header %>
+          </div>
         </md-app-toolbar>
         <md-app-drawer :md-active.sync="drawer.active">
           <md-list>

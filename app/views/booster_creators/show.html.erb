@@ -1,5 +1,12 @@
 <% content_for :title do %>Booster Creators<% end %>
 <% content_for :navigation do %>navigation-booster-creators<% end %>
+<% content_for :header do %>
+    <md-field>
+      <label>App ID</label>
+      <md-input v-model="appid"></md-input>
+    </md-field>
+    <md-button @click="on_modal({ appid })">Detail</md-button>
+<% end %>
 <% content_for :modal do %>
     <booster-pack :appid="modal.appid" :name="modal.name" :price="modal.price"></booster-pack>
 <% end %>

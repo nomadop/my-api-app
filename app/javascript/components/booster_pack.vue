@@ -10,7 +10,7 @@
                                    :disabled="fetching">
                             <md-icon>refresh</md-icon>
                         </md-button>
-                        <span class="md-title">{{appid}}<span class="md-subheading"> - {{name}}</span></span>
+                        <span class="md-title">{{appid}}<span class="md-subheading"> - {{computed_name}}</span></span>
                     </div>
 
                     <div class="md-toolbar-section-end">
@@ -24,7 +24,7 @@
                 <div class="md-toolbar-row md-toolbar-offset md-layout md-gutter">
                     <div class="md-layout-item">
                         <div class="md-subheading">Cost</div>
-                        <div class="md-body-1">{{price}}</div>
+                        <div class="md-body-1">{{computed_price}}</div>
                     </div>
                     <div class="md-layout-item">
                         <div class="md-subheading">Base</div>
@@ -96,6 +96,7 @@
     return fetch(`/booster_creators/detail?appid=${this.appid}`)
       .then(response => response.json())
       .then(detail => {
+        this.detail = _.omit(detail, 'market_assets');
         this.tabs = this.tabs.map(tab => {
           const items = detail.market_assets.filter(item => tab.regexp.test(item.type));
           return { ...tab, items };
@@ -111,6 +112,7 @@
     props: ['appid', 'name', 'price'],
     data: () => ({
       fetching: false,
+      detail: {},
       tabs: [
         { id: 'all', icon: 'all_inclusive', items: [], regexp: /./ },
         { id: 'booster-pack', icon: 'photo_album', items: [], regexp: /Booster Pack/ },
@@ -125,6 +127,12 @@
       ColorText,
     },
     computed: {
+      computed_name() {
+        return this.detail.name || this.name;
+      },
+      computed_price() {
+        return this.detail.price || this.price;
+      },
       items() {
         return _.find(this.tabs, { id: this.current_tab }).items;
       },
