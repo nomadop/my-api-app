@@ -1,4 +1,6 @@
 class JobConcurrence < ApplicationRecord
+  class JobNotComplete < Exception; end
+
   scope :tor, -> { where(uuid: 'TorNewnymJob') }
   scope :with_in, ->(duration) { where('created_at > ?', duration.ago) }
 

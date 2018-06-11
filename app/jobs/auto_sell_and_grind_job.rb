@@ -3,6 +3,7 @@ class AutoSellAndGrindJob < ApplicationJob
 
   EXIST_MESSAGE = '您已上架该物品并正等待确认。请确认或撤下现有的上架物品。'
   NOT_EXIST_MESSAGE = '指定的物品不再存在于您的库存，或者不允许在社区市场交易该物品。'
+  NETWORK_ERROR_MESSAGE = '与网络连接时出现错误。请稍后再试。'
 
   def perform(id)
     @asset = InventoryAsset.find(id)
@@ -22,5 +23,14 @@ class AutoSellAndGrindJob < ApplicationJob
 
   rescue_from(ActiveRecord::RecordNotFound) do
     clean_job_concurrence
+  end
+
+  rescue_from(RestClient::InternalServerError) do
+    clean_job_concurrence
+  end
+
+  rescue_from(RuntimeError) do |e|
+    clean_job_concurrence
+    raise e
   end
 end

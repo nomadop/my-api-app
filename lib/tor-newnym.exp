@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set cookie [lindex $argv 0]
+spawn telnet 127.0.0.1 9151
+expect -exact "Trying 127.0.0.1...\r
+Connected to 127.0.0.1.\r
+Escape character is '^]'.\r"
+send -- "AUTHENTICATE $cookie\r"
+expect -exact "250 OK\r"
+send -- "signal NEWNYM\r"
+expect -exact "250 OK\r"
+send -- "quit\r"
+expect eof
