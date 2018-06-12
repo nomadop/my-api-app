@@ -220,6 +220,7 @@ class BuyOrder < ApplicationRecord
   end
 
   def rebuy
+    puts "Rebuy #{account.bot_name}'s #{market_hash_name}..."
     cancel && market_asset.quick_order_later(true)
   end
 
