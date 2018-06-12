@@ -407,5 +407,188 @@ class Steam
     def help_url(appid)
       "https://help.steampowered.com/zh-cn/wizard/HelpWithGame/?appid=#{appid}"
     end
+
+    def request_game_page(account, appid)
+      option = {
+        method: :get,
+        url: "https://store.steampowered.com/app/#{appid}",
+        headers: {
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => account.cookie,
+          :'Host' => 'store.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'upgrade-insecure-requests' => 1,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      account.update_cookie(response)
+      response.body
+    end
+
+    def handle_game_page(body)
+      doc = Nokogiri::HTML(body)
+      purchase_area = doc.search('.game_area_purchase_game').first
+      price_text = purchase_area.search('.game_purchase_price').inner_text.strip
+      subid_match = purchase_area.search('.btn_addtocart a').first&.attr('href')&.match(/^javascript:addToCart\((?<subid>\d+)\);$/)
+      subid = subid_match&.[](:subid)
+      snr = purchase_area.search('form input[name=snr]').first&.attr('value')
+      { price_text: price_text, subid: subid, snr: snr }
+    end
+
+    def add_to_cart(account, appid, subid, snr)
+      option = {
+        method: :post,
+        url: 'https://store.steampowered.com/cart/',
+        headers: {
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => account.cookie,
+          :'Host' => 'store.steampowered.com',
+          :'Origin' => 'https://store.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => "https://store.steampowered.com/app/#{appid}/",
+          :'Upgrade-Insecure-Requests' => 1,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        },
+        payload: {
+          snr: snr,
+          action: :add_to_cart,
+          sessionid: account.session_id,
+          subid: subid,
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      account.update_cookie(response)
+    end
+
+    def init_transaction(account)
+      option = {
+        method: :post,
+        url: 'https://store.steampowered.com/checkout/inittransaction/',
+        headers: {
+          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => account.cookie,
+          :'Host' => 'store.steampowered.com',
+          :'Origin' => 'https://store.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'https://store.steampowered.com/checkout/?purchasetype=self',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Prototype-Version' => 1.7,
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: {
+          gidShoppingCart: account.get_cookie('shoppingCartGID'),
+          gidReplayOfTransID: -1,
+          PaymentMethod: :steamaccount,
+          abortPendingTransactions: 0,
+          bHasCardInfo: 0,
+          Country: :CN,
+          ShippingCountry: :CN,
+          bIsGift: 0,
+          GifteeAccountID: 0,
+          ScheduledSendOnDate: 0,
+          bSaveBillingAddress: 1,
+          bUseRemainingSteamAccount: 1,
+          bPreAuthOnly: 0,
+          sessionid: account.session_id,
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def get_final_price(account, transaction)
+      option = {
+        method: :get,
+        url: 'https://store.steampowered.com/checkout/getfinalprice/',
+        headers: {
+          :params => {
+            count: 1,
+            transid: transaction['transid'],
+            purchasetype: :self,
+            microtxnid: -1,
+            cart: account.get_cookie('shoppingCartGID'),
+            gidReplayOfTransID: -1,
+          },
+          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => account.cookie,
+          :'Host' => 'store.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'https://store.steampowered.com/checkout/?purchasetype=self',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Prototype-Version' => 1.7,
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def finalize_transaction(account, transaction)
+      option = {
+        method: :post,
+        url: 'https://store.steampowered.com/checkout/finalizetransaction/',
+        headers: {
+          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => account.cookie,
+          :'Host' => 'store.steampowered.com',
+          :'Origin' => 'https://store.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => 'https://store.steampowered.com/checkout/?purchasetype=self',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Prototype-Version' => 1.7,
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: { transid: transaction['transid'] },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def buy_game(account, appid)
+      game_page = request_game_page(account, appid)
+      game_info = handle_game_page(game_page)
+      add_to_cart(account, appid, game_info[:subid], game_info[:snr])
+      transaction = init_transaction(account)
+      raise 'Failed to init transaction' unless transaction['success'] == 1
+      final_price = get_final_price(account, transaction)
+      raise 'Failed to get final price' unless final_price['success'] == 1
+      result = finalize_transaction(account, transaction)
+      raise 'Failed to finalize transaction' unless result['success'] == 22
+      result
+    end
   end
 end
