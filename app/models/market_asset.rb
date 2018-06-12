@@ -270,7 +270,7 @@ class MarketAsset < ApplicationRecord
     ApplicationJob.perform_unique(PullOrderActivityJob, item_nameid)
   end
 
-  def refersh
+  def refresh
     return if updated_at > 1.day.ago
     ApplicationJob.perform_unique(LoadMarketAssetJob, listing_url)
   end
