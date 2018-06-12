@@ -37,5 +37,10 @@ module ActAsGooItem
 
     result = JSON.parse(response.body)
     result['goo_value']
+  rescue RestClient::TooManyRequests, RestClient::Forbidden => e
+    raise e unless proxy
+    JobConcurrence.tor_newnym
+    JobConcurrence.wait_for('TorNewnymJob')
+    get_goo_value
   end
 end
