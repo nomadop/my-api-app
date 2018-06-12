@@ -45,8 +45,17 @@ class MarketAsset < ApplicationRecord
   scope :with_my_buy_histories, ->(duration) { joins(:my_buy_histories).where('my_histories.created_at > ?', duration.ago).distinct }
   scope :with_my_sell_histories, ->(duration) { joins(:my_sell_histories).where('my_histories.created_at > ?', duration.ago).distinct }
 
-  scope :buy_ppg_order, -> { joins(:order_histogram).where.not(goo_value: nil).order('1.0 * order_histograms.cached_lowest_buy / goo_value') }
-  scope :sell_ppg_order, -> { joins(:order_histogram).where.not(goo_value: nil).order('1.0 * order_histograms.lowest_sell_order / goo_value') }
+  scope :ppg_join, -> { joins(:order_histogram).where('goo_value > 0') }
+  scope :buy_ppg_order, -> { ppg_join.order('1.0 * order_histograms.cached_lowest_buy / goo_value') }
+  scope :sell_ppg_order, -> { ppg_join.order('1.0 * order_histograms.lowest_sell_order / goo_value') }
+  scope :with_in_buy_ppg, ->(ppg, use_cache = false) do
+    column = use_cache ? 'cached_lowest_buy' : 'highest_buy_order'
+    ppg_join.where("1.0 * order_histograms.#{column} / goo_value < ?", ppg)
+  end
+  scope :with_in_sell_ppg, ->(ppg, use_cache = false) do
+    column = use_cache ? 'cached_lowest_sell' : 'lowest_sell_order'
+    ppg_join.where("1.0 * order_histograms.#{column} / goo_value < ?", ppg)
+  end
   scope :with_booster_creator, -> { joins(:booster_creator).distinct }
 
   after_create :load_order_histogram, :load_goo_value
@@ -102,7 +111,7 @@ class MarketAsset < ApplicationRecord
   def load_goo_value
     return false if owner_actions.nil?
 
-    ApplicationJob.perform_unique(GetGooValueJob, classid, wait: 3.seconds)
+    GetGooValueJob.perform_later(classid)
   end
 
   def refresh_goo_value(proxy = true)
@@ -188,19 +197,23 @@ class MarketAsset < ApplicationRecord
     QuickBuyJob.set(options).perform_later(classid, ppg)
   end
 
-  def quick_order
-    return if booster_pack?
+  def quick_order(buy_booster_pack = false)
+    return if !buy_booster_pack && booster_pack?
     # return if active_buy_orders.reload.exists?
     Market.load_order_histogram(item_nameid)
-    refresh_goo_value
+    refresh_goo_value unless booster_pack?
+    goo_value = booster_pack? ? trading_cards.take.goo_value * 3 : self.goo_value
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
+    lowest_sell_order_graph = order_histogram.lowest_sell_order_graph
     lowest_price = [(goo_value * 0.1).ceil, 3].max
     highest_price = (goo_value * DEFAULT_PPG_VALUE).floor
     highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
     highest_buy_order_graph_price = highest_price if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
+    lowest_sell_order_graph_price = lowest_sell_order_graph.nil? ? lowest_price : lowest_sell_order_graph.price
+    lowest_sell_order_graph_price = highest_price if 1.0 * lowest_sell_order_graph_price / goo_value > DEFAULT_PPG_VALUE
     return if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
 
-    order_price = [lowest_price, highest_buy_order_graph_price].max
+    order_price = [lowest_price, highest_buy_order_graph_price, lowest_sell_order_graph_price].max
     # quantity = BuyOrder.purchased.with_in(3.days).where(market_hash_name: market_hash_name).count
     # quantity = 1 if quantity < 1
     # quantity = 3 if quantity > 3
