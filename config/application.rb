@@ -29,5 +29,6 @@ module MyApiApp
 
     config.active_job.queue_adapter = :sidekiq
     config.autoload_paths << Rails.root.join('lib')
+    config.redis = config_for(:redis)
   end
 end

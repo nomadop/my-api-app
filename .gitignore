@@ -18,6 +18,7 @@
 
 /config/database.yml
 /config/secrets.yml
+/config/redis.yml
 /config/certs/ca_certificate.pem
 GemSources
 /public/packs
