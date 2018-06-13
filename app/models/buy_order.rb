@@ -29,11 +29,15 @@ class BuyOrder < ApplicationRecord
   scope :part_purchased, -> { where('quantity_remaining < quantity AND active = 1') }
   scope :cancelable, -> do
     where_sql = <<-SQL
-        (1.0 * order_histograms.highest_buy_order / market_assets.goo_value) < #{MarketAsset::DEFAULT_PPG_VALUE} AND
-        (price < order_histograms.highest_buy_order OR (
-          price = order_histograms.highest_buy_order AND 
-          CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
-        )) AND buy_orders.active = 1
+        (((1.0 * order_histograms.highest_buy_order / market_assets.goo_value) < #{MarketAsset::DEFAULT_PPG_VALUE}
+          AND (price < order_histograms.highest_buy_order 
+            OR (
+            price = order_histograms.highest_buy_order AND 
+            CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
+            )
+          ))
+          OR (1.0 * price / market_assets.goo_value) > #{MarketAsset::DEFAULT_PPG_VALUE})
+        AND buy_orders.active = 1
     SQL
     joins(:market_asset, :order_histogram).where(where_sql)
   end
@@ -43,7 +47,7 @@ class BuyOrder < ApplicationRecord
 
   class << self
     def refresh_order_histogram_later
-      find_each(&:refresh_order_histogram_later)
+      find_each.map(&:refresh_order_histogram_later)
     end
 
     def refresh_status
@@ -147,11 +151,20 @@ class BuyOrder < ApplicationRecord
     end
 
     def rebuy_cancelable
-      cancelable = BuyOrder
-        .cancelable
-        .includes(:market_asset, :order_histogram)
-        .reject { |buy_order| buy_order.highest_buy_order >= buy_order.goo_value * MarketAsset::DEFAULT_PPG_VALUE }
-      cancelable.each(&:rebuy_later)
+      cancelable = BuyOrder.cancelable.includes(:market_asset, :order_histogram).reject do |buy_order|
+        buy_order.price <= buy_order.goo_value * MarketAsset::DEFAULT_PPG_VALUE &&
+          buy_order.highest_buy_order >= buy_order.goo_value * MarketAsset::DEFAULT_PPG_VALUE
+      end
+      cancelable.map(&:rebuy_later)
+    end
+
+    def rebuy_cancelable_by_step(step)
+      case step
+        when 1 then Account.refresh_all(false)
+        when 2 then JobConcurrence.start { refresh_active }
+        when 3 then JobConcurrence.start { rebuy_cancelable }
+        else return
+      end
     end
 
     def remaining_price
