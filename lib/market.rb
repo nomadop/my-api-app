@@ -34,12 +34,8 @@ class Market
         option[:proxy] = 'http://localhost:8888'
         option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
       end
-      response = RestClient::Request.execute(option)
+      response = with_authentication ? RestClient::Request.execute(option) : TOR.request(option)
       response.body
-    rescue RestClient::TooManyRequests, RestClient::Forbidden
-      JobConcurrence.tor_newnym
-      JobConcurrence.wait_for('TorNewnymJob')
-      request_asset(url, with_authentication)
     end
 
     def handle_sell_history(classid, asset_body)
