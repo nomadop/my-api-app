@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180609115855) do
+ActiveRecord::Schema.define(version: 20180613023736) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -168,12 +168,13 @@ ActiveRecord::Schema.define(version: 20180609115855) do
   end
 
   create_table "job_concurrences", force: :cascade do |t|
-    t.string   "uuid",                   null: false
+    t.string   "uuid",                       null: false
     t.integer  "limit_type", default: 0
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
     t.integer  "limit"
     t.string   "job_id"
+    t.boolean  "delegated",  default: false
     t.index ["uuid", "limit"], name: "index_job_concurrences_on_uuid_and_limit", unique: true, using: :btree
   end
 

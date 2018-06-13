@@ -1,6 +1,9 @@
 class JobConcurrence < ApplicationRecord
-  scope :tor, -> { where(uuid: 'TorNewnymJob') }
+  class JobNotComplete < Exception; end
+
+  scope :tor, ->(instance = nil) { where('uuid like ?', "#{TOR.concurrence_uuid(instance)}%") }
   scope :with_in, ->(duration) { where('created_at > ?', duration.ago) }
+  scope :not_delegated, -> { where(delegated: false) }
 
   enum limit_type: [:block, :throw]
 
@@ -33,8 +36,8 @@ class JobConcurrence < ApplicationRecord
       wait_for(uuid, sleep_time: sleep_time, timeout: timeout)
     end
 
-    def tor_newnym
-      JobConcurrence.create(uuid: 'TorNewnymJob', limit: 1)
+    def tor_newnym(instance = nil)
+      JobConcurrence.create(uuid: TOR.concurrence_uuid(instance), limit: 1)
     rescue ActiveRecord::RecordNotUnique
       return
     end
