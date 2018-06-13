@@ -6,15 +6,38 @@ class TOR
     db: Rails.configuration.redis['database']['tor'],
   )
 
+  class NoAvailableInstance < Exception; end
+
   class << self
     def redis
       @redis
     end
 
+    def concurrence_uuid(instance)
+      instance.nil? ? 'TorNewnymJob' : "TorNewnymJob_#{instance}"
+    end
+
+    def password_key(instance)
+      "#{instance}_pass"
+    end
+
+    def extract_instance(uuid)
+      match = uuid.match(/^TorNewnymJob_(\d+)$/)
+      match && match[1].to_i
+    end
+
+    def log(instance, message)
+      File.open("tmp/tor/#{instance}/access.log", 'a') do |file|
+        file.write("(#{instance})[#{Time.now.strftime('%H:%M:%S')}] #{message}\n")
+      end
+    end
+
     def new_nym(instance)
       raise "Instance #{instance} is not running" unless instances.include?(instance)
-      password = redis.get "#{instance}_pass"
+      password = redis.get password_key(instance)
       system("expect -f ./lib/tor-newnym.exp #{instance + 1} #{password}")
+      JobConcurrence.where(uuid: concurrence_uuid(instance)).destroy_all
+      release_instance(instance)
     end
 
     def hash_password(password)
@@ -28,10 +51,27 @@ class TOR
       pids.map(&:to_i)
     end
 
-    def connections
-      keys = instances.map { |ins| "#{ins}_conn" }
-      conns = redis.mget(*keys).map(&:to_i)
-      Hash[instances.zip(conns)]
+    def require_instance
+      redis.rpop(:instance_pool).tap do |instance|
+        if instance.nil?
+          sleep 10.seconds
+          raise NoAvailableInstance
+        end
+        log(instance, 'instance required')
+      end
+    end
+
+    def release_instance(instance)
+      redis.lpush(:instance_pool, instance)
+      log(instance, 'instance released')
+    end
+
+    def reset_instance_pool
+      redis.del(:instance_pool)
+      instances.each do |instance|
+        redis.lpush(:instance_pool, instance)
+        File.write("tmp/tor/#{instance}/access.log", nil)
+      end
     end
 
     def new_instance
@@ -44,7 +84,8 @@ class TOR
       result = `tor --defaults-torrc @CONFDIR@/torrc-defaults --RunAsDaemon 1 --DataDirectory #{data_dir} --PidFile #{Dir.pwd}/tmp/pids/tor.#{ports[:socks]}.pid --SocksPort #{ports[:socks]} --ControlPort #{ports[:control]} --DnsPort #{ports[:dns]} --HashedControlPassword #{hash_password(password)}`
       error = result.match(/\[err\](.*)/)
       raise error[0] unless error.nil?
-      redis.set "#{ports[:socks]}_pass", password
+      redis.set(password_key(ports[:socks]), password)
+      redis.lpush(:instance_pool, ports[:socks])
     end
 
     def kill_instance(port)
@@ -53,6 +94,23 @@ class TOR
 
     def kill_all
       instances.each(&TOR.method(:kill_instance))
+    end
+
+    def request(option, instance = nil)
+      instance ||= require_instance
+      log(instance, 'request started')
+      option[:proxy] = "socks5://localhost:#{instance}/"
+      RestClient::Request.execute(option).tap do
+        log(instance, '!!!request finished')
+        release_instance(instance)
+      end
+    rescue RestClient::TooManyRequests, RestClient::Forbidden => e
+      JobConcurrence.tor_newnym(instance)
+      log(instance, 'wait for new nym')
+      raise e
+    rescue Exception => e
+      release_instance(instance) unless instance.nil?
+      raise e
     end
   end
 end
