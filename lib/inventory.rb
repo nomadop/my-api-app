@@ -56,13 +56,12 @@ class Inventory
       end
     end
 
-    def reload_all!
+    def reload_all!(wait = true)
       InventoryAsset.truncate
-      Account.delegate_all({class_name: :Inventory, method: :reload!})
+      Account.delegate_all({class_name: :Inventory, method: :reload!}, wait)
     end
 
     def auto_sell_and_grind(account = Account::DEFAULT)
-      account.nil? ? Inventory.reload_all! : account.reload_inventory
       JobConcurrence.start do
         accounts = account.nil? ? Account.enabled : [account]
         accounts.flat_map do |acc|

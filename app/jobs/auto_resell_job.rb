@@ -1,7 +1,7 @@
 class AutoResellJob < ApplicationJob
   queue_as :default
 
-  STEP_NAMES = %w(_ CancelDirty Refresh Reload RefreshPrice CancelCancelable AutoSell 2FAok)
+  STEP_NAMES = %w(_ CancelDirty Refresh Reload RefreshPrice CancelCancelable ReloadInventory AutoSell 2FAok)
 
   def perform(step = 1, prev_uuid = nil)
     job_remains = JobConcurrence.where(uuid: prev_uuid).count

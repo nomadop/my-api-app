@@ -141,8 +141,9 @@ class MyListing < ApplicationRecord
         when 3 then reload_all!(false)
         when 4 then refresh_order_histogram(nil)
         when 5 then cancel_cancelable(nil)
-        when 6 then Inventory.auto_sell_and_grind(nil)
-        when 7 then Account.asf('2faok')
+        when 6 then Inventory.reload_all!(false)
+        when 7 then Inventory.auto_sell_and_grind(nil)
+        when 8 then Account.asf('2faok')
         else return
       end
     end
