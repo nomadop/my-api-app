@@ -495,7 +495,7 @@ class Steam
           :'X-Requested-With' => 'XMLHttpRequest',
         },
         payload: {
-          gidShoppingCart: account.get_cookie('shoppingCartGID'),
+          gidShoppingCart: account.get_cookie(:shoppingCartGID),
           gidReplayOfTransID: -1,
           PaymentMethod: :steamaccount,
           abortPendingTransactions: 0,
@@ -527,7 +527,7 @@ class Steam
             transid: transaction['transid'],
             purchasetype: :self,
             microtxnid: -1,
-            cart: account.get_cookie('shoppingCartGID'),
+            cart: account.get_cookie(:shoppingCartGID),
             gidReplayOfTransID: -1,
           },
           :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
@@ -579,6 +579,7 @@ class Steam
     end
 
     def buy_game(account, appid)
+      account.remove_cookie(:shoppingCartGID)
       game_page = request_game_page(account, appid)
       game_info = handle_game_page(game_page)
       add_to_cart(account, appid, game_info[:subid], game_info[:snr])

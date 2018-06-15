@@ -78,7 +78,7 @@ class Account < ApplicationRecord
 
   def remove_cookie(name)
     jar = Utility.parse_cookies(cookie.split(';')).reduce(HTTP::CookieJar.new) do |jar, cookie|
-      jar.add(cookie) unless cookie.name == name
+      jar.add(cookie) unless cookie.name == name.to_s
       jar
     end
     update(cookie: jar.cookies.join(';'))
