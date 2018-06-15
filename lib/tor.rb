@@ -40,7 +40,7 @@ class TOR
       password = redis.get password_key(port)
       system("expect -f ./lib/tor-newnym.exp #{port + 1} #{password}")
       JobConcurrence.where(uuid: concurrence_uuid(port)).destroy_all
-      redis.sadd(:instance_pool,INSTANCE_CONCURRENCE.times.map { |n| "#{port}##{n + 1}" })
+      pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{port}##{n + 1}" })
       log(port, 'new nym finished', :warning)
     end
 
@@ -55,12 +55,22 @@ class TOR
       pids.map(&:to_i)
     end
 
-    def require_instance
+    def pool_pop
       redis.spop(:instance_pool).tap do |instance|
         if instance.nil?
           sleep 3
           raise NoAvailableInstance
         end
+      end
+    end
+
+    def pool_push(instances)
+      instances = Array(instances)
+      redis.sadd(:instance_pool, instances)
+    end
+
+    def require_instance
+      pool_pop.tap do |instance|
         port, _ = instance.split('#')
         raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port.to_i)
         if JobConcurrence.where(uuid: concurrence_uuid(port)).exists?
@@ -74,7 +84,7 @@ class TOR
     def release_instance(instance)
       port, _ = instance.split('#')
       return unless instances.include?(port.to_i)
-      redis.sadd(:instance_pool, instance)
+      pool_push(instance)
       log(instance, 'instance released')
     end
 
@@ -82,7 +92,7 @@ class TOR
       redis.del(:instance_pool)
       JobConcurrence.tor.destroy_all
       instances.each do |instance|
-        redis.sadd(:instance_pool, INSTANCE_CONCURRENCE.times.map { |n| "#{instance}##{n + 1}" })
+        pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{instance}##{n + 1}" })
         File.write("tmp/tor/#{instance}/access.log", nil)
       end
     end
@@ -98,7 +108,7 @@ class TOR
       error = result.match(/\[err\](.*)/)
       raise error[0] unless error.nil?
       redis.set(password_key(ports[:socks]), password)
-      redis.sadd(:instance_pool, INSTANCE_CONCURRENCE.times.map { |n| "#{ports[:socks]}##{n + 1}" })
+      pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{ports[:socks]}##{n + 1}" })
     end
 
     def kill_instance(port)
