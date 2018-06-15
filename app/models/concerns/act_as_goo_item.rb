@@ -27,20 +27,13 @@ module ActAsGooItem
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
         },
     }
-    if proxy
-      option[:proxy] = 'socks5://localhost:9150/'
-    else
+    unless proxy
       option[:proxy] = 'http://localhost:8888'
       option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
     end
-    response = RestClient::Request.execute(option)
+    response = proxy ? TOR.request(option) : RestClient::Request.execute(option)
 
     result = JSON.parse(response.body)
     result['goo_value']
-  rescue RestClient::TooManyRequests, RestClient::Forbidden => e
-    raise e unless proxy
-    JobConcurrence.tor_newnym
-    JobConcurrence.wait_for('TorNewnymJob')
-    get_goo_value
   end
 end

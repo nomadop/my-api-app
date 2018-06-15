@@ -97,13 +97,11 @@ class Market
           }
         },
       }
-      if proxy
-        option[:proxy] = 'socks5://localhost:9150/'
-      else
+      unless proxy
         option[:proxy] = 'http://localhost:8888'
         option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
       end
-      response = RestClient::Request.execute(option)
+      response = proxy ? TOR.request(option) : RestClient::Request.execute(option)
       result = JSON.parse(response.body)
       raise "load order histogram failed with code #{result['success']}" unless result['success'] == 1
 
@@ -119,10 +117,6 @@ class Market
         cached_highest_sell: [order_histogram.cached_highest_sell, result['lowest_sell_order']].map(&Utility.method(:int_or_zero)).max,
       )
       OrderHistogramHistory.create(result.slice('item_nameid', 'highest_buy_order', 'lowest_sell_order'))
-    rescue RestClient::TooManyRequests, RestClient::Forbidden
-      JobConcurrence.tor_newnym
-      JobConcurrence.wait_for('TorNewnymJob')
-      load_order_histogram(item_nameid)
     end
 
     def search(appid, start = 0, count = 10)
@@ -624,21 +618,15 @@ class Market
           }
         },
       }
-      if proxy
-        option[:proxy] = 'socks5://localhost:9150/'
-      else
+      unless proxy
         option[:proxy] = 'http://localhost:8888'
         option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
       end
-      response = RestClient::Request.execute(option)
+      response = proxy ? TOR.request(option) : RestClient::Request.execute(option)
       result = JSON.parse(response.body)
       if result['success']
         MarketAsset.find_by(market_hash_name: market_hash_name).update(sell_volume: result['volume'] || 0)
       end
-    rescue RestClient::TooManyRequests, RestClient::Forbidden
-      JobConcurrence.tor_newnym
-      JobConcurrence.wait_for('TorNewnymJob')
-      load_price_overview(market_hash_name)
     end
   end
 end
