@@ -272,6 +272,6 @@ class MarketAsset < ApplicationRecord
 
   def refresh
     return if updated_at > 1.day.ago
-    ApplicationJob.perform_unique(LoadMarketAssetJob, listing_url)
+    LoadMarketAssetJob.perform_later(listing_url)
   end
 end

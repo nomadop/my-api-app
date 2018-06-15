@@ -54,6 +54,7 @@ class Market
 
     def load_asset(html)
       assets = Utility.match_json_var('g_rgAssets', html)
+      return nil if assets.blank?
       app_asset = assets&.values&.[](0)
       asset = if app_asset.is_a?(Array)
         app_asset[0][0]

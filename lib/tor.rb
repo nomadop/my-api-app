@@ -29,7 +29,7 @@ class TOR
     end
 
     def log(instance, message, level = :info)
-      name, _ = instance.split('#')
+      name, _ = instance.to_s.split('#')
       File.open("tmp/tor/#{name}/access.log", 'a') do |file|
         file.write("(#{instance})[#{Time.now.strftime('%H:%M:%S')} #{level}] #{message}\n")
       end
@@ -87,9 +87,9 @@ class TOR
       end
     end
 
-    def new_instance
-      latest_instance = instances.max || 9000
-      ports = { socks: latest_instance + 10, control: latest_instance + 11, dns: latest_instance + 12 }
+    def new_instance(latest_port = nil)
+      latest_port ||= instances.max || 9000
+      ports = { socks: latest_port + 10, control: latest_port + 11, dns: latest_port + 12 }
       data_dir = "tmp/tor/#{ports[:socks]}"
       Dir.mkdir('tmp/tor') unless Dir.exists?('tmp/tor')
       Dir.mkdir(data_dir) unless Dir.exists?(data_dir)
