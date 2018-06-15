@@ -1,5 +1,6 @@
 class TOR
   COOKIE_PATH = '/Users/twer/Library/Application Support/TorBrowser-Data/Tor/control_auth_cookie'
+  INSTANCE_CONCURRENCE = 3
   @redis = Redis.new(
     host: Rails.configuration.redis['host'],
     port: Rails.configuration.redis['port'],
@@ -22,10 +23,6 @@ class TOR
       "#{port}_pass"
     end
 
-    def new_nym_key(port)
-      "#{port}_newnym"
-    end
-
     def extract_instance(uuid)
       match = uuid.match(/^TorNewnymJob_(\d+)$/)
       match && match[1].to_i
@@ -42,12 +39,9 @@ class TOR
       raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port)
       password = redis.get password_key(port)
       system("expect -f ./lib/tor-newnym.exp #{port + 1} #{password}")
-      loop do
-        instance = redis.rpoplpush(new_nym_key(port), :instance_pool)
-        break if instance.nil?
-        log(instance, 'instance released')
-      end
       JobConcurrence.where(uuid: concurrence_uuid(port)).destroy_all
+      redis.sadd(:instance_pool,INSTANCE_CONCURRENCE.times.map { |n| "#{port}##{n + 1}" })
+      log(port, 'new nym finished', :warning)
     end
 
     def hash_password(password)
@@ -62,32 +56,33 @@ class TOR
     end
 
     def require_instance
-      instance = redis.brpop(:instance_pool, 10)
-      raise NoAvailableInstance if instance.nil?
-      instance[1].tap do |ins|
-        port, _ = ins.split('#')
+      redis.spop(:instance_pool).tap do |instance|
+        if instance.nil?
+          sleep 3
+          raise NoAvailableInstance
+        end
+        port, _ = instance.split('#')
         raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port.to_i)
         if JobConcurrence.where(uuid: concurrence_uuid(port)).exists?
-          redis.lpush("#{port}_newnym", ins)
-          log(ins, 'wait for new nym', :warning)
+          log(instance, 'wait for new nym', :warning)
           raise InstanceNotAvailable.new("Tor server on port #{port} is newing nym")
         end
-        log(ins, 'instance required')
+        log(instance, 'instance required')
       end
     end
 
     def release_instance(instance)
       port, _ = instance.split('#')
       return unless instances.include?(port.to_i)
-      redis.lpush(:instance_pool, instance)
+      redis.sadd(:instance_pool, instance)
       log(instance, 'instance released')
     end
 
     def reset_instance_pool
       redis.del(:instance_pool)
+      JobConcurrence.tor.destroy_all
       instances.each do |instance|
-        redis.del("#{instance}_newnym")
-        redis.lpush(:instance_pool, 3.times.map { |n| "#{instance}##{n + 1}" })
+        redis.sadd(:instance_pool, INSTANCE_CONCURRENCE.times.map { |n| "#{instance}##{n + 1}" })
         File.write("tmp/tor/#{instance}/access.log", nil)
       end
     end
@@ -103,7 +98,7 @@ class TOR
       error = result.match(/\[err\](.*)/)
       raise error[0] unless error.nil?
       redis.set(password_key(ports[:socks]), password)
-      redis.lpush(:instance_pool, 3.times.map { |n| "#{ports[:socks]}##{n + 1}" })
+      redis.sadd(:instance_pool, INSTANCE_CONCURRENCE.times.map { |n| "#{ports[:socks]}##{n + 1}" })
     end
 
     def kill_instance(port)
@@ -116,17 +111,19 @@ class TOR
 
     def request(option, instance = nil)
       instance ||= require_instance
-      log(instance, 'request started')
+      start_time = Time.now
+      log(instance, 'started')
       port, _ = instance.split('#')
       option[:proxy] = "socks5://localhost:#{port}/"
       RestClient::Request.execute(option).tap do
-        log(instance, '!!!request finished')
+        cost_time = (Time.now - start_time).round(1)
+        log(instance, "finished in #{cost_time}s", :success)
         release_instance(instance)
       end
     rescue RestClient::TooManyRequests, RestClient::Forbidden => e
-      redis.lpush("#{port}_newnym", instance)
       JobConcurrence.tor_newnym(port)
-      log(instance, 'wait for new nym', :warning)
+      cost_time = (Time.now - start_time).round(1)
+      log(instance, "failed in #{cost_time}s, new nym", :error)
       raise e
     rescue Exception => e
       release_instance(instance) unless instance.nil?
