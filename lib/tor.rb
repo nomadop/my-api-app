@@ -7,18 +7,23 @@ class TOR
   )
 
   class NoAvailableInstance < Exception; end
+  class InstanceNotAvailable < Exception; end
 
   class << self
     def redis
       @redis
     end
 
-    def concurrence_uuid(instance)
-      instance.nil? ? 'TorNewnymJob' : "TorNewnymJob_#{instance}"
+    def concurrence_uuid(port)
+      port.nil? ? 'TorNewnymJob' : "TorNewnymJob_#{port}"
     end
 
-    def password_key(instance)
-      "#{instance}_pass"
+    def password_key(port)
+      "#{port}_pass"
+    end
+
+    def new_nym_key(port)
+      "#{port}_newnym"
     end
 
     def extract_instance(uuid)
@@ -26,18 +31,23 @@ class TOR
       match && match[1].to_i
     end
 
-    def log(instance, message)
-      File.open("tmp/tor/#{instance}/access.log", 'a') do |file|
-        file.write("(#{instance})[#{Time.now.strftime('%H:%M:%S')}] #{message}\n")
+    def log(instance, message, level = :info)
+      name, _ = instance.split('#')
+      File.open("tmp/tor/#{name}/access.log", 'a') do |file|
+        file.write("(#{instance})[#{Time.now.strftime('%H:%M:%S')} #{level}] #{message}\n")
       end
     end
 
-    def new_nym(instance)
-      raise "Instance #{instance} is not running" unless instances.include?(instance)
-      password = redis.get password_key(instance)
-      system("expect -f ./lib/tor-newnym.exp #{instance + 1} #{password}")
-      JobConcurrence.where(uuid: concurrence_uuid(instance)).destroy_all
-      release_instance(instance)
+    def new_nym(port)
+      raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port)
+      password = redis.get password_key(port)
+      system("expect -f ./lib/tor-newnym.exp #{port + 1} #{password}")
+      loop do
+        instance = redis.rpoplpush(new_nym_key(port), :instance_pool)
+        break if instance.nil?
+        log(instance, 'instance released')
+      end
+      JobConcurrence.where(uuid: concurrence_uuid(port)).destroy_all
     end
 
     def hash_password(password)
@@ -52,16 +62,23 @@ class TOR
     end
 
     def require_instance
-      redis.rpop(:instance_pool).tap do |instance|
-        if instance.nil?
-          sleep 10.seconds
-          raise NoAvailableInstance
+      instance = redis.brpop(:instance_pool, 10)
+      raise NoAvailableInstance if instance.nil?
+      instance[1].tap do |ins|
+        port, _ = ins.split('#')
+        raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port.to_i)
+        if JobConcurrence.where(uuid: concurrence_uuid(port)).exists?
+          redis.lpush("#{port}_newnym", ins)
+          log(ins, 'wait for new nym', :warning)
+          raise InstanceNotAvailable.new("Tor server on port #{port} is newing nym")
         end
-        log(instance, 'instance required')
+        log(ins, 'instance required')
       end
     end
 
     def release_instance(instance)
+      port, _ = instance.split('#')
+      return unless instances.include?(port.to_i)
       redis.lpush(:instance_pool, instance)
       log(instance, 'instance released')
     end
@@ -69,7 +86,8 @@ class TOR
     def reset_instance_pool
       redis.del(:instance_pool)
       instances.each do |instance|
-        redis.lpush(:instance_pool, instance)
+        redis.del("#{instance}_newnym")
+        redis.lpush(:instance_pool, 3.times.map { |n| "#{instance}##{n + 1}" })
         File.write("tmp/tor/#{instance}/access.log", nil)
       end
     end
@@ -85,7 +103,7 @@ class TOR
       error = result.match(/\[err\](.*)/)
       raise error[0] unless error.nil?
       redis.set(password_key(ports[:socks]), password)
-      redis.lpush(:instance_pool, ports[:socks])
+      redis.lpush(:instance_pool, 3.times.map { |n| "#{ports[:socks]}##{n + 1}" })
     end
 
     def kill_instance(port)
@@ -99,14 +117,16 @@ class TOR
     def request(option, instance = nil)
       instance ||= require_instance
       log(instance, 'request started')
-      option[:proxy] = "socks5://localhost:#{instance}/"
+      port, _ = instance.split('#')
+      option[:proxy] = "socks5://localhost:#{port}/"
       RestClient::Request.execute(option).tap do
         log(instance, '!!!request finished')
         release_instance(instance)
       end
     rescue RestClient::TooManyRequests, RestClient::Forbidden => e
-      JobConcurrence.tor_newnym(instance)
-      log(instance, 'wait for new nym')
+      redis.lpush("#{port}_newnym", instance)
+      JobConcurrence.tor_newnym(port)
+      log(instance, 'wait for new nym', :warning)
       raise e
     rescue Exception => e
       release_instance(instance) unless instance.nil?

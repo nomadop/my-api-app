@@ -3,12 +3,13 @@ class TorNewnymJob < ApplicationJob
 
   def perform
     JobConcurrence.tor.not_delegated.find_each do |job_concurrence|
-      instance = TOR.extract_instance(job_concurrence.uuid)
-      if instance.nil?
+      port = TOR.extract_instance(job_concurrence.uuid)
+      if port.nil?
         Utility.tor_newnym
         job_concurrence.destroy
       else
-        DelegateJob.perform_later('TOR', 'new_nym', instance)
+        DelegateJob.perform_later('TOR', 'new_nym', port)
+        TOR.log(port.to_s, 'new nym job delegated', :warning)
         job_concurrence.update(delegated: true)
       end
     end
