@@ -29,6 +29,7 @@ class TOR
     end
 
     def log(instance, message, level = :info)
+      return if level == :info
       name, _ = instance.to_s.split('#')
       File.open("tmp/tor/#{name}/access.log", 'a') do |file|
         file.write("(#{instance})[#{Time.now.strftime('%H:%M:%S')} #{level}] #{message}\n")
@@ -67,6 +68,14 @@ class TOR
     def pool_push(instances)
       instances = Array(instances)
       redis.sadd(:instance_pool, instances)
+    end
+
+    def pool_size
+      redis.scard(:instance_pool)
+    end
+
+    def pool_instances
+      redis.smembers(:instance_pool)
     end
 
     def require_instance
@@ -125,6 +134,7 @@ class TOR
       log(instance, 'started')
       port, _ = instance.split('#')
       option[:proxy] = "socks5://localhost:#{port}/"
+      option[:timeout] = 10
       RestClient::Request.execute(option).tap do
         cost_time = (Time.now - start_time).round(1)
         log(instance, "finished in #{cost_time}s", :success)
