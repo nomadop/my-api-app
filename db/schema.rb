@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180613023736) do
+ActiveRecord::Schema.define(version: 20180619061154) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -298,7 +298,7 @@ ActiveRecord::Schema.define(version: 20180613023736) do
     t.integer  "amount"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["classid", "datetime"], name: "index_sell_histories_on_classid_and_datetime", unique: true, using: :btree
+    t.index ["classid"], name: "index_sell_histories_on_classid", using: :btree
   end
 
   create_table "steam_apps", force: :cascade do |t|
