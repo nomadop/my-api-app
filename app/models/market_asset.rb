@@ -109,13 +109,11 @@ class MarketAsset < ApplicationRecord
   end
 
   def load_goo_value
-    return false if owner_actions.nil?
-
     GetGooValueJob.perform_later(classid)
   end
 
   def refresh_goo_value(proxy = true)
-    update(goo_value: get_goo_value(proxy)) if Time.now - updated_at > 1.day
+    update(goo_value: get_goo_value(proxy))
   end
 
   def booster_pack?

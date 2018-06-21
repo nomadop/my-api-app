@@ -34,7 +34,7 @@ class InventoryAsset < ApplicationRecord
            :load_market_asset, :owner_descriptions, to: :description
   delegate :price_per_goo, :price_per_goo_exclude_vat, :load_sell_histories_later, :find_sell_balance,
            :open_price_per_goo, :load_order_histogram, :listing_url, :type, :market_hash_name,
-           :goo_value, :booster_pack?, :refresh_goo_value, :booster_pack_info,
+           :goo_value, :booster_pack?, :refresh_goo_value, :booster_pack_info, :market_fee_app,
            to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, :sell_order_count, :highest_buy_order, :buy_order_count,
            :lowest_sell_order_exclude_vat, :highest_buy_order_exclude_vat,
@@ -154,7 +154,7 @@ class InventoryAsset < ApplicationRecord
             :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
             :'Cookie' => cookie,
             :'Host' => 'steamcommunity.com',
-            :'Origin' => 'http://steamcommunity.com',
+            :'Origin' => 'https://steamcommunity.com',
             :'Pragma' => 'no-cache',
             :'Referer' => "#{profile_url}/inventory/",
             :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
@@ -162,7 +162,7 @@ class InventoryAsset < ApplicationRecord
         },
         payload: {
             sessionid: sessionid,
-            appid: appid,
+            appid: market_fee_app,
             contextid: contextid,
             assetid: assetid,
             goo_value_expected: market_asset.goo_value

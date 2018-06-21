@@ -11,4 +11,12 @@ class LoadOrderHistogramJob < ApplicationJob
   ) do
     retry_job
   end
+
+  rescue_from(RuntimeError) do |e|
+    if e.message == 'load order histogram failed with code 104'
+      clean_job_concurrence
+    else
+      raise e
+    end
+  end
 end
