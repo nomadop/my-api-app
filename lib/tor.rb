@@ -120,7 +120,9 @@ class TOR
       pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{ports[:socks]}##{n + 1}" })
     end
 
-    def kill_instance(port)
+    def kill_instance(port = nil)
+      port ||= instances.max
+      File.write("tmp/tor/#{port}/access.log", nil)
       system("pkill -F ./tmp/pids/tor.#{port}.pid")
     end
 
