@@ -404,10 +404,6 @@ class Steam
       RestClient::Request.execute(option)
     end
 
-    def help_url(appid)
-      "https://help.steampowered.com/zh-cn/wizard/HelpWithGame/?appid=#{appid}"
-    end
-
     def request_game_page(account, appid)
       option = {
         method: :get,
@@ -590,6 +586,117 @@ class Steam
       result = finalize_transaction(account, transaction)
       raise 'Failed to finalize transaction' unless result['success'] == 22
       result
+    end
+
+    def help_url(appid)
+      "https://help.steampowered.com/zh-cn/wizard/HelpWithGame/?appid=#{appid}"
+    end
+
+    def request_help(account, appid)
+      option = {
+        method: :get,
+        url: help_url(appid),
+        headers: {
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => account.cookie,
+          :'Host' => 'help.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'upgrade-insecure-requests' => 1,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      account.update_cookie(response)
+      response.body
+    end
+
+    def handle_help_page(body)
+      doc = Nokogiri::HTML(body)
+      help_wizards = doc.search('.help_wizard_button.help_wizard_arrow_right')
+      help_wizards.map do |wizard|
+        link = wizard.attr('href')
+        name = wizard.inner_text.strip
+        { link: link, name: name }
+      end
+    end
+
+    def request_help_wizard(account, url)
+      option = {
+        method: :get,
+        url: "#{url}&sessionid=#{account.session_id}&wizard_ajax=1",
+        headers: {
+          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Cookie' => account.cookie,
+          :'Host' => 'help.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      account.update_cookie(response)
+      JSON.parse(response.body)
+    end
+
+    def submit_refund_request(account, url)
+      uri = URI.parse(url)
+      query_set = uri.query.split('&').map{ |param| param.split('=') }
+      query = Hash[query_set]
+      option = {
+        method: :post,
+        url: 'https://help.steampowered.com/zh-cn/wizard/AjaxSubmitRefundRequest/',
+        headers: {
+          :Accept => '*/*',
+          :'Accept-Encoding' => 'gzip, deflate, br',
+          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
+          :'Cache-Control' => 'no-cache',
+          :'Connection' => 'keep-alive',
+          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
+          :'Cookie' => account.cookie,
+          :'Host' => 'help.steampowered.com',
+          :'Origin' => 'https://help.steampowered.com',
+          :'Pragma' => 'no-cache',
+          :'Referer' => url,
+          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+          :'X-Requested-With' => 'XMLHttpRequest',
+        },
+        payload: {
+          sessionid: account.session_id,
+          wizard_ajax: 1,
+          help_issue_origin: query['issueid'],
+          help_issue: query['issueid'],
+          contact_email: account.email_address,
+          issue_appid: query['appid'],
+          issue_transid: query['transid'],
+          issue_line_item: query['line_item'],
+          refund_to_wallet: 1,
+        },
+        proxy: 'http://127.0.0.1:8888',
+        ssl_ca_file: 'config/certs/ca_certificate.pem',
+      }
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def refund_game(account, appid)
+      raise 'no email address' if account.email_address.blank?
+      account.remove_cookie(:steamHelpHistory)
+      help_page = request_help(account, appid)
+      help_wizards = handle_help_page(help_page)
+      wizard = help_wizards.find { |wizard| wizard[:name] == '我不小心购买了此产品' }
+      submit_refund_request(account, wizard[:link])
     end
   end
 end
