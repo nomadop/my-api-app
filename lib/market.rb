@@ -7,7 +7,7 @@ class Market
 
   class << self
     def get_url(market_hash_name)
-      "http://steamcommunity.com/market/listings/753/#{URI.encode(market_hash_name)}"
+      "http://steamcommunity.com/market/listings/753/#{URI.encode_www_form_component(market_hash_name)}"
     end
 
     def request_asset(url, with_authentication = false)
