@@ -42,7 +42,7 @@ class BuyOrder < ApplicationRecord
     joins(:market_asset, :order_histogram).where(where_sql)
   end
 
-  delegate :load_order_histogram, :goo_value, :item_nameid, to: :market_asset
+  delegate :load_order_histogram, :goo_value, :load_goo_value, :item_nameid, to: :market_asset
   delegate :lowest_sell_order, :highest_buy_order, to: :order_histogram
 
   class << self
@@ -56,6 +56,10 @@ class BuyOrder < ApplicationRecord
 
     def refresh_status_later
       find_each(&:refresh_status_later)
+    end
+
+    def load_goo_value_later
+      find_each(&:load_goo_value)
     end
 
     def cancel
@@ -111,7 +115,9 @@ class BuyOrder < ApplicationRecord
     end
 
     def refresh_active
-      active.includes(:market_asset).refresh_order_histogram_later
+      actives = active.includes(:market_asset)
+      actives.refresh_order_histogram_later
+      actives.load_goo_value_later
     end
 
     # def rebuy_purchased
