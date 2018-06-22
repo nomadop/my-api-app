@@ -71,8 +71,12 @@ class Inventory
     end
 
     def auto_sell_and_grind_marketable(account = Account::DEFAULT)
-      account.reload_inventory
-      account.inventory_assets.reload.non_gems.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
+      JobConcurrence.start do
+        accounts = account.nil? ? Account.enabled : [account]
+        accounts.flat_map do |acc|
+          acc.inventory_assets.reload.non_gems.non_sacks_of_gem.marketable.includes(:market_asset).auto_sell_and_grind_later
+        end
+      end
     end
 
     def request_booster_creators(account)
@@ -150,6 +154,11 @@ class Inventory
           tradable: tradable,
           untradable: total,
       }
+    end
+
+    def gem_amount_all
+      results = Account.enabled.map { |account| [account.bot_name, gem_amount_info(account)] }
+      Hash[results]
     end
 
     def gem_amount_by_marketable_date(account = Account::DEFAULT)
