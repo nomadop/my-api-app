@@ -8,6 +8,7 @@ class CreateBuyOrderJob < ApplicationJob
   end
 
   rescue_from(RestClient::Forbidden) do |exception|
+    clean_job_concurrence
     ps = Sidekiq::ProcessSet.new
     ps.each do |process|
       next if process['queues'].exclude? 'create_buy_order'
