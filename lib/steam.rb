@@ -405,6 +405,7 @@ class Steam
     end
 
     def request_game_page(account, appid)
+      account.set_cookie(:mature_content, 1)
       option = {
         method: :get,
         url: "https://store.steampowered.com/app/#{appid}",
