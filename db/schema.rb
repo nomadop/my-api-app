@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180619061154) do
+ActiveRecord::Schema.define(version: 20180625034433) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(version: 20180619061154) do
     t.string   "total_text"
     t.string   "change_text"
     t.string   "balance_text"
+    t.boolean  "refunded"
   end
 
   create_table "accounts", force: :cascade do |t|

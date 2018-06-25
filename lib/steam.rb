@@ -343,6 +343,7 @@ class Steam
         items = row.search('.wht_items').children.map(&:inner_text).map(&:strip).reject(&:blank?)
         type = row.search('.wht_type div:first-child').inner_text.gsub(/[\t\r\n]/, '')
         payment = row.search('.wht_type .wth_payment').inner_text.gsub(/[\t\r\n]/, '')
+        refunded = row.search('.wht_refunded').size > 0
         total_text = row.search('.wht_total').inner_text.gsub('资金', '').strip
         total_text_match = total_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
         total = total_text_match && total_text_match[:price].to_f * 100
@@ -359,6 +360,7 @@ class Steam
           items: items,
           type: type,
           payment: payment,
+          refunded: refunded,
           total: total,
           change: change,
           balance: balance,

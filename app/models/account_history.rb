@@ -22,31 +22,8 @@ class AccountHistory < ApplicationRecord
   scope :refund, -> { where(type: '退款') }
   scope :payment, ->(payment) { where(payment: payment) }
   scope :refundable, -> { purchase.with_in(2.weeks) }
-  scope :not_refunded_purchase, -> do
-    limit_sql = <<-SQL
-      SELECT "ah1"."items"->>0 AS "item", (
-        COUNT(CASE WHEN "type" like '购买%' THEN 1 END) - 
-        COUNT(CASE WHEN "type" like '退款' THEN 1 END)
-      ) AS "limit"
-      FROM "account_histories" AS "ah1"
-      GROUP BY "ah1"."items"->>0
-    SQL
-    from_sql = <<-SQL
-      (
-        SELECT 
-          "ah2".*,
-          ROW_NUMBER() OVER (PARTITION BY "ah2"."items"->>0 ORDER BY "date" DESC) AS "row_number"
-        FROM "account_histories" AS "ah2"
-        WHERE "ah2"."type" like '购买%'
-      ) "account_histories"
-    SQL
-    join_sql = <<-SQL
-      INNER JOIN (#{limit_sql}) "limit"
-      ON "account_histories"."items"->>0 = "limit"."item"
-    SQL
-    where_sql = '"account_histories"."row_number" <= "limit"."limit"'
-    select('*').from(from_sql).joins(join_sql).where(where_sql).order(date: :desc)
-  end
+  scope :refunded, -> { where(refunded: true) }
+  scope :not_refunded, -> { where(refunded: false) }
 
   class << self
     def total

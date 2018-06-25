@@ -59,8 +59,8 @@
                 <md-table-cell md-label="Date" class="date-cell" md-sort-by="date">
                     {{item.formatted_date}}
                 </md-table-cell>
-                <md-table-cell md-label="Items" class="name-cell">
-                    <md-chip v-for="chip in item.items">{{chip}}</md-chip>
+                <md-table-cell md-label="Items" class="item-cell">
+                    <md-chip v-for="chip in item.items" :class="{refunded: item.refunded}">{{chip}}</md-chip>
                 </md-table-cell>
                 <md-table-cell md-label="Type" class="type-cell" md-sort-by="type">
                     <div class="md-list-item-text">
@@ -69,7 +69,10 @@
                     </div>
                 </md-table-cell>
                 <md-table-cell md-label="Total" class="numeric-cell" md-sort-by="total" md-numeric>
-                    <span>{{item.total_text}}</span>
+                    <div class="md-list-item-text">
+                        <span>{{item.total_text}}</span>
+                        <span v-if="item.refunded">Refunded</span>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="Change" class="numeric-cell" md-sort-by="change" md-numeric>
                     <div class="md-list-item-text">
@@ -103,6 +106,17 @@
     .md-list-item-text :nth-child(2) {
         font-size: 12px;
         color: #9E9E9E;
+    }
+
+    .item-cell >>> .md-table-cell-container {
+        padding-bottom: 2px;
+    }
+    .md-chip {
+        margin-bottom: 4px;
+    }
+    .refunded {
+        color: #A9A9A9;
+        text-decoration: line-through;
     }
 </style>
 
