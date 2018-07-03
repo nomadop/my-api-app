@@ -86,12 +86,13 @@ class Authentication
       if result['success'] && result['login_complete']
         account = Account.find_or_create_by(account_id: result['transfer_parameters']['steamid'])
         account.update_cookie(response)
-        account.enabled!
+        account
+      else
+        result
       end
-      result
     end
 
-    def login(username, password)
+    def login(username, password, enabled = true)
       rsa_key = get_rsa_key(username)
       password.gsub!(/[^\x00-\x7F]/, '')
 
@@ -106,15 +107,18 @@ class Authentication
 
       rsa_timestamp = rsa_key['timestamp']
       result = do_login(username, encrypted_password, rsa_timestamp)
-      if result['requires_twofactor']
+      account = if result['requires_twofactor']
+        acc = Account.find_by(bot_name: username)
         puts 'input two factory code:'
-        two_factory_code = gets.chomp
+        two_factory_code = acc.nil? ? gets.chomp : acc.fa_code
         do_login(username, encrypted_password, rsa_timestamp, twofactorcode: two_factory_code)
       elsif result['emailauth_needed']
         puts 'input email auth code:'
         email_auth = gets.chomp
         do_login(username, encrypted_password, rsa_timestamp, emailsteamid: result['emailsteamid'], emailauth: email_auth)
       end
+      return unless account.is_a?(Account)
+      enabled ? account.enabled! : account.disabled!
     end
   end
 end
