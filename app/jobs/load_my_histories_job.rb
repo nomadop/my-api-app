@@ -11,6 +11,7 @@ class LoadMyHistoriesJob < ApplicationJob
 
     tail = start + count
     LoadMyHistoriesJob.perform_later(tail, count, account_id) if tail < result['total_count']
+    clean_job_concurrence
   end
 
   rescue_from(Authentication::AccountExpired) do

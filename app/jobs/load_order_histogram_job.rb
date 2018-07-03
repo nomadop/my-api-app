@@ -6,7 +6,7 @@ class LoadOrderHistogramJob < ApplicationJob
   end
 
   rescue_from(
-    RestClient::TooManyRequests, RestClient::Forbidden,
+    RestClient::TooManyRequests, RestClient::Forbidden, RestClient::Exceptions::OpenTimeout,
     TOR::NoAvailableInstance, TOR::InstanceNotAvailable,
   ) do
     retry_job
