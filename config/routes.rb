@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   post '/accounts/asf', to: 'accounts#asf_command'
   post '/inventory/reload', to: 'inventory#reload'
   post '/inventory/sell_by_ppg', to: 'inventory#sell_by_ppg'
+  post '/inventory/grind_into_goo', to: 'inventory#grind_into_goo'
   post '/inventory/send_trade_offer', to: 'inventory#send_trade_offer'
   post '/my_listings/cancel', to: 'my_listings#cancel'
   post '/my_listings/reload', to: 'my_listings#reload'

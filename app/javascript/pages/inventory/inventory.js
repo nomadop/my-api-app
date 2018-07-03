@@ -32,6 +32,21 @@ function sell_by_ppg() {
   });
 }
 
+function grind_into_goo() {
+  this.$emit('confirm', {
+    title: `confirm to grind ${this.selected.length} items into goo?`,
+    callback: wrap_fetch(() => fetch('/inventory/grind_into_goo', {
+      method: 'post',
+      body: JSON.stringify({
+        asset_ids: this.selected.map(item => item.id),
+      }),
+      headers: {
+        'content-type': 'application/json'
+      }
+    }).then(() => window.location.reload(true))).bind(this),
+  });
+}
+
 function send_trade_offer() {
   const target_name = _.find(this.accounts, { id: this.selected_account }).bot_name;
   this.$emit('confirm', {
@@ -106,6 +121,7 @@ export default {
     get_class,
     on_select,
     on_filter,
+    grind_into_goo,
   },
   filters: {
     round: number => number && +number.toFixed(2),

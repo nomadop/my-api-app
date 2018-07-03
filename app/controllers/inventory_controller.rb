@@ -26,6 +26,12 @@ class InventoryController < ActionController::Base
     render json: { success: true }
   end
 
+  def grind_into_goo
+    assets = InventoryAsset.where(id: params[:asset_ids])
+    assets.find_each(&:grind_into_goo)
+    render json: { success: true }
+  end
+
   def send_trade_offer
     target = Account.enabled.find(params[:target])
     InventoryAsset.where(id: params[:ids]).send_offer_to(target)

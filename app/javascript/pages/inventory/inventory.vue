@@ -40,13 +40,17 @@
                 <div class="md-toolbar-section-start">Selected: {{ count }}</div>
 
                 <div class="md-toolbar-section-end">
+                    <md-button class="md-raised md-primary" @click="grind_into_goo"
+                               :disabled="fetching || selected.length === 0">
+                        Grind
+                    </md-button>
                     <md-field>
                         <label>Sell PPG</label>
                         <md-input v-model="sell_ppg"></md-input>
                     </md-field>
                     <md-button class="md-raised md-primary" @click="sell_by_ppg"
                                :disabled="fetching || selected.length === 0">
-                        Sell By PPG
+                        Sell
                     </md-button>
                     <md-field class="account-selector">
                         <label>Account</label>
@@ -61,8 +65,7 @@
                 </div>
             </md-table-toolbar>
 
-            <md-table-row slot="md-table-row" slot-scope="{ item }"
-                          :md-disabled="item.marketable === 0" md-selectable="multiple">
+            <md-table-row slot="md-table-row" slot-scope="{ item }" md-selectable="multiple">
                 <md-table-cell md-label="Name" class="name-cell">
                     <div class="md-list-item-text">
                         <span>{{item.market_hash_name}}</span>
