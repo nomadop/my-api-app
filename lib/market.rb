@@ -573,6 +573,8 @@ class Market
       MyHistory.import(my_history, on_duplicate_key_ignore: {
         conflict_target: :history_id,
       })
+    rescue TypeError
+      return nil
     end
 
     def scan_my_histories(account_id = 1)

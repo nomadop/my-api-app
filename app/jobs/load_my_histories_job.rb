@@ -7,7 +7,7 @@ class LoadMyHistoriesJob < ApplicationJob
     return clean_job_concurrence unless result['success']
 
     import_result = Market.handle_my_history_result(result, account_id)
-    return clean_job_concurrence if import_result.ids.blank?
+    return clean_job_concurrence if import_result&.ids.blank?
 
     tail = start + count
     LoadMyHistoriesJob.perform_later(tail, count, account_id) if tail < result['total_count']
