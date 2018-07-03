@@ -12,7 +12,7 @@ function fetch_creatable(refresh = true) {
         (names, booster_creator) => _.union(
           names, _.map(booster_creator.account_booster_creators, 'bot_name')
         ), ['None']
-      );
+      ).sort();
       this.on_filter();
     });
 }
