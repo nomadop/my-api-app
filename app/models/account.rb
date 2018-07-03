@@ -12,6 +12,7 @@ class Account < ApplicationRecord
   has_many :buy_orders
   has_many :owned_market_assets, class_name: 'MarketAsset', foreign_key: :order_owner_id
   has_one :steam_user, primary_key: :account_id, foreign_key: :steamid
+  scope :has_bot, -> { where.not(bot_name: nil) }
 
   enum status: [:enabled, :disabled, :expired]
 
@@ -35,7 +36,11 @@ class Account < ApplicationRecord
     end
 
     def asf(command)
-      enabled.find_each { |account| account.asf(command) }
+      JobConcurrence.start do
+        enabled.has_bot.find_each.map do |account|
+          DelegateJob.perform_later('ASF', 'send_command', "#{command} #{account.bot_name}")
+        end
+      end
     end
 
     def refresh(id_or_name)
@@ -146,8 +151,9 @@ class Account < ApplicationRecord
     GetNotificationCountsJob.perform_later(id)
   end
 
-  def send_items_to_default
-    inventory_assets.non_gems.send_offer_to(Account::DEFAULT)
+  def send_items(target = Account::DEFAULT)
+    return if id == target.id
+    inventory_assets.non_gems.tradable.send_offer_to(target)
   end
 
   def accept_gift_offers
@@ -157,5 +163,12 @@ class Account < ApplicationRecord
   def asf(command)
     raise 'no bot name' if bot_name.nil?
     ASF.send_command("#{command} #{bot_name}")
+  end
+
+  def fa_code
+    raise 'no bot name' if bot_name.nil?
+    result = asf('2fa')['Result']
+    match = result.match(/二次验证令牌︰ (.{5})$/)
+    match.nil? ? raise('2fa failed') : match[1]
   end
 end
