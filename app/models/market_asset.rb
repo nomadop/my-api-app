@@ -25,8 +25,7 @@ class MarketAsset < ApplicationRecord
            class_name: 'BuyOrder', primary_key: :market_hash_name, foreign_key: :market_hash_name
   has_many :sell_histories, primary_key: :classid, foreign_key: :classid
   has_one :booster_creator, primary_key: :market_fee_app, foreign_key: :appid
-  has_many :inventory_assets, -> { where(account_id: 1) },
-           primary_key: :classid, foreign_key: :classid
+  has_many :inventory_assets, primary_key: :classid, foreign_key: :classid
 
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
@@ -95,6 +94,10 @@ class MarketAsset < ApplicationRecord
     def quick_order_by_ppg(limit, ppg = DEFAULT_PPG_VALUE)
       Authentication.refresh
       sell_ppg_order.first(limit).each {|ma| ma.quick_order_later(ppg)}
+    end
+
+    def refresh_app(appid)
+      where(market_fee_app: appid).find_each(&:refresh)
     end
   end
 
@@ -271,5 +274,33 @@ class MarketAsset < ApplicationRecord
   def refresh
     return if updated_at > 1.day.ago
     LoadMarketAssetJob.perform_later(listing_url)
+  end
+
+  def sells_by_day(limit = 30)
+    histories = sell_histories
+    latest_date = histories.map(&:date).max
+    return [] if latest_date.nil?
+    sells = histories.reduce(Hash.new) do |result, history|
+      result.tap do
+        result[history.date] ||= 0
+        result[history.date] += history.amount
+      end
+    end
+    start = latest_date - (limit - 1).days
+    start.upto(latest_date).map { |date| sells[date] || 0 }
+  end
+
+  def sells_by_week(limit = 4)
+    sells_by_day(limit * 7).each_slice(7).map(&:sum)
+  end
+
+  def avg_sell_by_day(limit = 30)
+    sells = sells_by_day(limit)
+    (1.0 * sells.sum / limit).round(3)
+  end
+
+  def avg_sell_by_week(limit = 4)
+    sells = sells_by_week(limit)
+    (1.0 * sells.sum / limit).round(3)
   end
 end

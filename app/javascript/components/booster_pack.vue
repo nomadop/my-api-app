@@ -73,8 +73,11 @@
                                 :content="item.inventory_count"
                                 :condition="content => content >= 1"/>
                 </md-table-cell>
-                <md-table-cell md-label="Volume" class="numeric-cell" md-sort-by="sell_volume">
-                    {{item.sell_volume}}
+                <md-table-cell md-label="Volume" class="numeric-cell" md-sort-by="avg_sell_by_day">
+                    <div class="md-list-item-text">
+                        <span>{{item.avg_sell_by_day}}</span>
+                        <span>{{item.avg_sell_by_week}}</span>
+                    </div>
                 </md-table-cell>
                 <md-table-cell md-label="Actions" class="action-cell">
                     <md-button class="md-dense md-icon-button" :href="item.listing_url" target="_blank">

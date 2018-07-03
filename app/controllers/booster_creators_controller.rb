@@ -35,7 +35,7 @@ class BoosterCreatorsController < ActionController::Base
   end
 
   def detail
-    booster_creator = BoosterCreator.includes(market_assets: :order_histogram).find_by(appid: params[:appid])
+    booster_creator = BoosterCreator.includes(market_assets: [:order_histogram, :sell_histories]).find_by(appid: params[:appid])
     render json: booster_creator.as_json(
       only: [:name, :price],
       include: {
@@ -43,7 +43,8 @@ class BoosterCreatorsController < ActionController::Base
           only: [:market_name, :type],
           methods: [
             :lowest_sell_order, :lowest_sell_order_exclude_vat,
-            :listing_count, :inventory_count, :listing_url, :sell_volume,
+            :listing_count, :inventory_count, :listing_url,
+            :avg_sell_by_day, :avg_sell_by_week,
           ]
         }
       }
