@@ -54,6 +54,7 @@ class Inventory
           model.update(description)
         end
       end
+      account.update(tradable_goo_amount: account.inventory_assets.gems.tradable.sum('CAST(amount AS int)'))
     end
 
     def reload_all!(wait = true)
@@ -161,7 +162,7 @@ class Inventory
       Hash[results]
     end
 
-    def gem_amount_by_marketable_date(account = Account::DEFAULT)
+    def gem_amount_by_marketable_date
       group_sql = <<-SQL.strip_heredoc
               to_char(
                 to_timestamp(
@@ -172,7 +173,7 @@ class Inventory
                 'YYYY-MM-DD'
               )
       SQL
-      account.inventory_assets.gems
+      InventoryAsset.gems
           .joins(:description)
           .group(group_sql)
           .order(group_sql)

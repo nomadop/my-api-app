@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180625034433) do
+ActiveRecord::Schema.define(version: 20180627032522) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -46,12 +46,13 @@ ActiveRecord::Schema.define(version: 20180625034433) do
     t.string   "account_name"
     t.string   "account_id"
     t.text     "cookie"
-    t.datetime "created_at",                 null: false
-    t.datetime "updated_at",                 null: false
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
     t.string   "email_address"
     t.string   "email_password"
-    t.integer  "status",         default: 0
+    t.integer  "status",              default: 0
     t.string   "bot_name"
+    t.integer  "tradable_goo_amount"
     t.index ["account_id"], name: "index_accounts_on_account_id", unique: true, using: :btree
   end
 

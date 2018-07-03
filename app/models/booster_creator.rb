@@ -292,10 +292,12 @@ class BoosterCreator < ApplicationRecord
   end
 
   def create(account = Account::DEFAULT)
+    raise 'tradable goo amount is not eaungh' if account.tradable_goo_amount < price
     response = Inventory.create_booster(appid, series, account)
     raise 'failed to create booster' unless response.code == 200
     result = JSON.parse(response.body)
     BoosterCreation.create(result['purchase_result'].merge(account: account, booster_creator: self))
+    account.update(tradable_goo_amount: result['tradable_goo_amount'])
     result['purchase_result']['communityitemid']
   end
 
