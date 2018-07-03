@@ -41,5 +41,9 @@ class JobConcurrence < ApplicationRecord
     rescue ActiveRecord::RecordNotUnique
       return
     end
+
+    def clean(uuid)
+      where(uuid: uuid).delete_all
+    end
   end
 end
