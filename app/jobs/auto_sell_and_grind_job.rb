@@ -1,5 +1,7 @@
 class AutoSellAndGrindJob < ApplicationJob
   queue_as :quick_sell
+  rescue_from RestClient::BadGateway, with: :handle_error
+  rescue_from RestClient::BadRequest, with: :handle_error
 
   EXIST_MESSAGE = '您已上架该物品并正等待确认。请确认或撤下现有的上架物品。'
   NOT_EXIST_MESSAGE = '指定的物品不再存在于您的库存，或者不允许在社区市场交易该物品。'
@@ -11,8 +13,8 @@ class AutoSellAndGrindJob < ApplicationJob
     @asset.auto_sell_and_grind
   end
 
-  rescue_from(RestClient::BadGateway, RestClient::BadRequest) do |e|
-    result = JSON.parse(e.http_body)
+  def handle_error(exception)
+    result = JSON.parse(exception.http_body)
     if [EXIST_MESSAGE, NOT_EXIST_MESSAGE, EXPIRED_MESSAGE].include?(result['message'])
       puts EXIST_MESSAGE
       clean_job_concurrence

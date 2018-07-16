@@ -1,14 +1,16 @@
 class LoadOrderHistogramJob < ApplicationJob
   queue_as :order_histogram
+  rescue_from RestClient::TooManyRequests, with: :retry_now
+  rescue_from RestClient::Forbidden, with: :retry_now
+  rescue_from RestClient::Exceptions::OpenTimeout, with: :retry_now
+  rescue_from TOR::NoAvailableInstance, with: :retry_now
+  rescue_from TOR::InstanceNotAvailable, with: :retry_now
 
   def perform(item_nameid)
     Market.load_order_histogram(item_nameid)
   end
 
-  rescue_from(
-    RestClient::TooManyRequests, RestClient::Forbidden, RestClient::Exceptions::OpenTimeout,
-    TOR::NoAvailableInstance, TOR::InstanceNotAvailable,
-  ) do
+  def retry_now
     retry_job
   end
 
