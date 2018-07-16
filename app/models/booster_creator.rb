@@ -139,6 +139,10 @@ class BoosterCreator < ApplicationRecord
         end
       end
     end
+
+    def refresh_all_market_assets_later
+      MarketAsset.where(market_fee_app: pluck(:appid)).find_each(&:refresh)
+    end
   end
 
   def trading_card_prices
