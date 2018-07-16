@@ -122,8 +122,8 @@ class InventoryAsset < ApplicationRecord
     end
     if booster_creations.exists?
       price = booster_pack? ?
-        [price, (booster_creator.price * 0.55).ceil].max :
-        [price, (booster_creator.price * 0.525 / 3).ceil].max
+        [price, (booster_creator.price * (booster_creator.base_ppg || 0.55)).ceil].max :
+        [price, (booster_creator.price * (booster_creator.base_ppg || 0.525) / 3).ceil].max
     end
     puts "#{Time.now}: quick sell #{account.bot_name}'s `#{market_hash_name}(#{type})' for #{Utility.format_price(price)}."
     sell(price)

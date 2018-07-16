@@ -165,8 +165,8 @@ class MyListing < ApplicationRecord
 
   def cancelable?
     if booster_creations_count&.>(0)
-      return false if booster_pack? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * 0.55).ceil
-      return false if !booster_pack? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * 0.525 / 3).ceil
+      return false if booster_pack? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * (booster_creator.base_ppg || 0.55)).ceil
+      return false if !booster_pack? && order_histogram.lowest_sell_order_exclude_vat < (booster_creator.price * (booster_creator.base_ppg || 0.525) / 3).ceil
     end
 
     price > order_histogram.lowest_sell_order ||

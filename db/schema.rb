@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180627032522) do
+ActiveRecord::Schema.define(version: 20180704090740) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -81,6 +81,7 @@ ActiveRecord::Schema.define(version: 20180627032522) do
     t.boolean  "unavailable",             default: false
     t.string   "available_at_time"
     t.integer  "booster_creations_count"
+    t.float    "base_ppg"
     t.index ["appid"], name: "index_booster_creators_on_appid", unique: true, using: :btree
   end
 
