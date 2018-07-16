@@ -159,7 +159,7 @@ class Inventory
 
     def gem_amount_all
       results = Account.enabled.map { |account| [account.bot_name, gem_amount_info(account)] }
-      Hash[results]
+      Hash[results.sort]
     end
 
     def gem_amount_by_marketable_date
