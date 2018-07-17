@@ -227,6 +227,9 @@ class BuyOrder < ApplicationRecord
           Authentication.refresh
           raise 'Token is required but was not set.'
         end
+        if result['error'] == nil
+          update(active: 0)
+        end
 
         return false
       else
