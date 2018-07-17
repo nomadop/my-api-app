@@ -11,6 +11,8 @@ class ASF
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body).tap(&method(:puts))
+    rescue RestClient::Exceptions::ReadTimeout
+      send_command(command)
     end
   end
 end
