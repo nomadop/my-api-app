@@ -156,6 +156,10 @@ class Account < ApplicationRecord
     inventory_assets.non_gems.tradable.send_offer_to(target)
   end
 
+  def send_items_later(target = Account::DEFAULT)
+    ApplicationJob.perform_unique(SendItemsJob, id, target.id)
+  end
+
   def accept_gift_offers
     trade_offers.gift_offer.pending.accept
   end
