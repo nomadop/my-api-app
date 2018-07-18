@@ -146,8 +146,9 @@ class Inventory
           .sum('market_assets.goo_value')
     end
 
-    def gem_amount_info
-      query_result = InventoryAsset.gems.joins(:description).group('inventory_descriptions.tradable').sum('CAST(amount AS int)')
+    def gem_amount_info(account = nil)
+      inventory_assets = account.nil? ? InventoryAsset : account.inventory_assets
+      query_result = inventory_assets.gems.joins(:description).group('inventory_descriptions.tradable').sum('CAST(amount AS int)')
       total = query_result[0] || 0
       tradable = query_result[1] || 0
       {
