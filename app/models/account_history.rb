@@ -24,6 +24,7 @@ class AccountHistory < ApplicationRecord
   scope :refundable, -> { purchase.with_in(2.weeks) }
   scope :refunded, -> { where(refunded: true) }
   scope :not_refunded, -> { where(refunded: false) }
+  scope :group_by_month, -> { group('CAST(date_trunc(\'month\', date) AS DATE)') }
 
   class << self
     def total
@@ -87,5 +88,9 @@ class AccountHistory < ApplicationRecord
 
   def formatted_date
     date.getlocal('+08:00').strftime('%y-%m-%d')
+  end
+
+  def item_name
+    items[0]
   end
 end
