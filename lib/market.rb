@@ -173,9 +173,8 @@ class Market
         allows = game_name.nil? ? ALLOWED_ASSET_TYPE : ALLOWED_ASSET_TYPE.map { |type| "#{game_name} #{type}" }
         next if allows.none?(&type.method(:end_with?))
 
-        if MarketAsset.where(market_name: name, type: type).empty?
-          ApplicationJob.perform_unique(LoadMarketAssetJob, url)
-        end
+        market_asset = MarketAsset.find_by(market_name: name, type: type)
+        market_asset.nil? ? ApplicationJob.perform_unique(LoadMarketAssetJob, url) : market_asset.refresh
       end
     end
 
