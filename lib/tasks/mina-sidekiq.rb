@@ -108,6 +108,7 @@ namespace :sidekiq do
     comment 'Start sidekiq'
     in_path(fetch(:current_path)) do
       for_each_process do |pid_file, cfg_file, log_file, idx|
+        command %[echo '#{fetch(:sidekiq)} -d -e #{fetch(:rails_env)} -C #{cfg_file} -i #{idx} -P #{pid_file} -L #{log_file}']
         command %[#{fetch(:sidekiq)} -d -e #{fetch(:rails_env)} -C #{cfg_file} -i #{idx} -P #{pid_file} -L #{log_file}]
       end
     end
