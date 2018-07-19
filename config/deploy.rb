@@ -17,7 +17,6 @@ set :domain, ENV.fetch('VPS_ADDRESS')
 set :deploy_to, '/home/deploy/www/nomadop.ml'
 set :repository, 'https://github.com/nomadop/my-api-app.git'
 set :branch, 'master'
-set :rails_env, 'development'
 
 # Optional settings:
 set :user, 'deploy'          # Username in the server to SSH to.
@@ -29,7 +28,7 @@ set :forward_agent, false     # SSH forward_agent.
 # run `mina -d` to see all folders and files already included in `shared_dirs` and `shared_files`
 set :shared_dirs, fetch(:shared_dirs, []).push('tmp/pids', 'tmp/sockets')
 set :shared_files, fetch(:shared_files, []).push(
-  'config/database.yml', 'config/secrets.yml', 'config/redis.yml', # 'config/certs/ca_certificate.pem',
+  'config/database.yml', 'config/secrets.yml', 'config/redis.yml', 'config/certs/ca_certificate.pem',
 )
 
 # This task is the environment that is loaded for all remote run commands, such as
