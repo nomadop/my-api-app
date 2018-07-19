@@ -1,11 +1,7 @@
-redis_config = Rails.configuration.redis
+host = Rails.configuration.redis['host']
+port = Rails.configuration.redis['port']
+database = Rails.configuration.redis['database']['sidekiq']
+url = "redis://#{host}:#{port}/#{database}"
 
-if redis_config
-  host = redis_config['host']
-  port = redis_config['port']
-  database = redis_config['database']['sidekiq']
-  url = "redis://#{host}:#{port}/#{database}"
-
-  Sidekiq.configure_server { |config| config.redis = { url: url } }
-  Sidekiq.configure_client { |config| config.redis = { url: url } }
-end
+Sidekiq.configure_server { |config| config.redis = { url: url } }
+Sidekiq.configure_client { |config| config.redis = { url: url } }
