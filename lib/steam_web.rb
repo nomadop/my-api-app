@@ -30,7 +30,13 @@ class SteamWeb
 
     def search_community(query, page = 1)
       session_id = SecureRandom.hex(12)
-      cookie = "sessionid=#{session_id}; steamCountry=SG%7C93545f6e98fa197ebd322680db9cae25; _ga=GA1.2.694042473.1497528360; _gid=GA1.2.1424724967.1497528360; timezoneOffset=28800,0"
+      cookie = <<~COOKIE
+        sessionid=#{session_id};
+        steamCountry=SG%7C93545f6e98fa197ebd322680db9cae25;
+        _ga=GA1.2.694042473.1497528360;
+        _gid=GA1.2.1424724967.1497528360;
+        timezoneOffset=28800,0
+      COOKIE
       option = get_option(
         :get, COMMUNITY_HOST, cookie,
         '/search/SearchCommunityAjax',
