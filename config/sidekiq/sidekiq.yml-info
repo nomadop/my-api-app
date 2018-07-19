@@ -1,0 +1,6 @@
+---
+:concurrency: 25
+:queues:
+  - [quick_buy, 2]
+  - [goo_value, 1]
+  - [order_histogram, 1]

@@ -1,0 +1,7 @@
+---
+:concurrency: 25
+:queues:
+  - price_overview
+  - load_histories
+  - market_asset
+  - market_search

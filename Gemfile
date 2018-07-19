@@ -52,3 +52,6 @@ gem 'execjs', require: false
 gem 'socksify', require: false
 gem 'webpacker', '~> 3.0'
 gem 'axlsx', require: false
+
+gem 'mina', require: false
+gem 'mina-puma', require: false,  github: 'untitledkingdom/mina-puma'

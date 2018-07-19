@@ -1,0 +1,7 @@
+---
+:concurrency: 25
+:queues:
+  - default
+  - tor_newnym
+  - load_my_history
+  - delegate

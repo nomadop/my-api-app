@@ -1,0 +1,8 @@
+---
+:concurrency: 1
+:queues:
+  - cancel_my_listing
+  - quick_sell
+  - create_buy_order
+  - cancel_buyorder
+  - auto_rebuy
