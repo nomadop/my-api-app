@@ -1,5 +1,5 @@
 class Account < ApplicationRecord
-  DEFAULT = find(1)
+  DEFAULT = Account.first
 
   has_many :inventory_assets
   has_many :account_booster_creators
