@@ -14,7 +14,7 @@ require './lib/tasks/mina-sidekiq.rb'
 
 set :application_name, 'steam_card'
 set :domain, ENV.fetch('VPS_ADDRESS')
-set :deploy_to, '/var/www/nomadop.ml'
+set :deploy_to, '/home/deploy/www/nomadop.ml'
 set :repository, 'git@github.com:nomadop/my-api-app.git'
 set :branch, 'master'
 set :rails_env, 'development'
