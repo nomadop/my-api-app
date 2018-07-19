@@ -60,7 +60,7 @@ set :sidekiq_processes, %w(default info market trade)
 # ## Control Tasks
 namespace :sidekiq do
   def for_each_process(&block)
-    fetch(:sidekiq_processes).each do |name, idx|
+    fetch(:sidekiq_processes).each.with_index do |name, idx|
       cfg_file = "#{fetch(:sidekiq_config)}-#{name}"
       pid_file = "#{fetch(:sidekiq_pid)}-#{name}"
       log_file = "#{fetch(:sidekiq_log)}-#{name}"
