@@ -12,6 +12,9 @@ require './lib/tasks/mina-sidekiq.rb'
 #   repository   - Git repo to clone from. (needed by mina/git)
 #   branch       - Branch name to deploy. (needed by mina/git)
 
+set :rails_env, 'development'
+set :bundle_options, -> { %{--path "#{fetch(:bundle_path)}"} }
+
 set :application_name, 'steam_card'
 set :domain, ENV.fetch('VPS_ADDRESS')
 set :deploy_to, '/home/deploy/www/nomadop.ml'
