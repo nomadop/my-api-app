@@ -51,7 +51,7 @@ set :sidekiq_log, -> { "#{fetch(:current_path)}/log/sidekiq.log" }
 
 # ### sidekiq_pid
 # Sets the path to the pid file of a sidekiq worker
-set :sidekiq_pid, -> { "#{fetch(:shared_path)}/tmp/pids/sidekiq.pid" }
+set :sidekiq_pid, -> { "#{fetch(:current_path)}/tmp/pids/sidekiq.pid" }
 
 # ### sidekiq_processes
 # Sets the number of sidekiq processes launched
