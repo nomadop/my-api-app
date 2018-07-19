@@ -1,4 +1,5 @@
 class SteamWeb
+  HELP_HOST = 'help.steampowered.com'
   STORE_HOST = 'store.steampowered.com'
   STORE_PATH = "https://#{STORE_HOST}"
   COMMUNITY_HOST = 'steamcommunity.com'
@@ -136,7 +137,105 @@ class SteamWeb
       RestClient::Request.execute(option)
     end
 
+    def cart(account, appid, subid, snr)
+      option = get_option(
+        :post, STORE_HOST, account.cookie, '/cart/', "/app/#{appid}/",
+        headers: { :'Upgrade-Insecure-Requests' => 1 },
+        payload: { snr: snr, action: :add_to_cart, sessionid: account.session_id, subid: subid },
+      )
+      RestClient::Request.execute(option)
+    end
+
+    def init_transaction(account)
+      option = get_option(
+        :post, STORE_HOST, account.cookie,
+        '/checkout/inittransaction/', '/checkout/?purchasetype=self',
+        headers: { :'X-Prototype-Version' => 1.7 },
+        payload: {
+          gidShoppingCart: account.get_cookie(:shoppingCartGID),
+          gidReplayOfTransID: -1,
+          PaymentMethod: :steamaccount,
+          abortPendingTransactions: 0,
+          bHasCardInfo: 0,
+          Country: :CN,
+          ShippingCountry: :CN,
+          bIsGift: 0,
+          GifteeAccountID: 0,
+          ScheduledSendOnDate: 0,
+          bSaveBillingAddress: 1,
+          bUseRemainingSteamAccount: 1,
+          bPreAuthOnly: 0,
+          sessionid: account.session_id,
+        },
+      )
+      response = RestClient::Request.execute(option)
+      JSON.parse(response.body)
+    end
+
+    def get_final_price(account, transaction)
+      option = get_option(
+        :get, STORE_HOST, account.cookie,
+        '/checkout/getfinalprice/', '/checkout/?purchasetype=self',
+        headers: {
+          :'X-Prototype-Version' => 1.7,
+          :params => {
+            count: 1,
+            transid: transaction['transid'],
+            purchasetype: :self,
+            microtxnid: -1,
+            cart: account.get_cookie(:shoppingCartGID),
+            gidReplayOfTransID: -1,
+          },
+        },
+      )
+      RestClient::Request.execute(option)
+    end
+
+    def finalize_transaction(account, transaction)
+      option = get_option(
+        :post, STORE_HOST, account.cookie,
+        '/checkout/finalizetransaction/', '/checkout/?purchasetype=self',
+        headers: { :'X-Prototype-Version' => 1.7 },
+        payload: { transid: transaction['transid'] },
+      )
+      RestClient::Request.execute(option)
+    end
+
+    def help_with_game(account, appid)
+      option = get_option(
+        :get, HELP_HOST, account.cookie, get_help_path(appid),
+        headers: { :'upgrade-insecure-requests' => 1 },
+      )
+      RestClient::Request.execute(option)
+    end
+
+    def submit_refund_request(account, url)
+      uri = URI.parse(url)
+      query_set = uri.query.split('&').map{ |param| param.split('=') }
+      query = Hash[query_set]
+      option = get_option(
+        :post, HELP_HOST, account.cookie,
+        '/zh-cn/wizard/AjaxSubmitRefundRequest/', url,
+        payload: {
+          sessionid: account.session_id,
+          wizard_ajax: 1,
+          help_issue_origin: query['issueid'],
+          help_issue: query['issueid'],
+          contact_email: account.email_address,
+          issue_appid: query['appid'],
+          issue_transid: query['transid'],
+          issue_line_item: query['line_item'],
+          refund_to_wallet: 1,
+        },
+      )
+      RestClient::Request.execute(option)
+    end
+
     private
+    def get_help_path(appid)
+      "/zh-cn/wizard/HelpWithGame/?appid=#{appid}"
+    end
+
     def get_user_path(user, path = '')
       user.account_id == user.steamid ? "/profiles/#{user.account_id}#{path}" : "/id/#{user.account_id}#{path}"
     end
@@ -156,7 +255,7 @@ class SteamWeb
         :'X-Requested-With' => 'XMLHttpRequest',
       }
       if method == :post
-        headers[:Origin] = "http://#{host}"
+        headers[:Origin] = "https://#{host}"
         headers[:'Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
       end
       headers[:Referer] = "https://#{host}#{referer_path}" unless referer_path.nil?

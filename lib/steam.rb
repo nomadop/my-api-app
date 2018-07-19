@@ -216,138 +216,22 @@ class Steam
     end
 
     def add_to_cart(account, appid, subid, snr)
-      option = {
-        method: :post,
-        url: 'https://store.steampowered.com/cart/',
-        headers: {
-          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          :'Accept-Encoding' => 'gzip, deflate, br',
-          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-          :'Cache-Control' => 'no-cache',
-          :'Connection' => 'keep-alive',
-          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-          :'Cookie' => account.cookie,
-          :'Host' => 'store.steampowered.com',
-          :'Origin' => 'https://store.steampowered.com',
-          :'Pragma' => 'no-cache',
-          :'Referer' => "https://store.steampowered.com/app/#{appid}/",
-          :'Upgrade-Insecure-Requests' => 1,
-          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-        },
-        payload: {
-          snr: snr,
-          action: :add_to_cart,
-          sessionid: account.session_id,
-          subid: subid,
-        },
-        proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
-      }
-      response = RestClient::Request.execute(option)
+      response = SteamWeb.cart(account, appid, subid, snr)
       account.update_cookie(response)
     end
 
     def init_transaction(account)
-      option = {
-        method: :post,
-        url: 'https://store.steampowered.com/checkout/inittransaction/',
-        headers: {
-          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
-          :'Accept-Encoding' => 'gzip, deflate, br',
-          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-          :'Cache-Control' => 'no-cache',
-          :'Connection' => 'keep-alive',
-          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-          :'Cookie' => account.cookie,
-          :'Host' => 'store.steampowered.com',
-          :'Origin' => 'https://store.steampowered.com',
-          :'Pragma' => 'no-cache',
-          :'Referer' => 'https://store.steampowered.com/checkout/?purchasetype=self',
-          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-          :'X-Prototype-Version' => 1.7,
-          :'X-Requested-With' => 'XMLHttpRequest',
-        },
-        payload: {
-          gidShoppingCart: account.get_cookie(:shoppingCartGID),
-          gidReplayOfTransID: -1,
-          PaymentMethod: :steamaccount,
-          abortPendingTransactions: 0,
-          bHasCardInfo: 0,
-          Country: :CN,
-          ShippingCountry: :CN,
-          bIsGift: 0,
-          GifteeAccountID: 0,
-          ScheduledSendOnDate: 0,
-          bSaveBillingAddress: 1,
-          bUseRemainingSteamAccount: 1,
-          bPreAuthOnly: 0,
-          sessionid: account.session_id,
-        },
-        proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
-      }
-      response = RestClient::Request.execute(option)
+      response = SteamWeb.init_transaction(account)
       JSON.parse(response.body)
     end
 
     def get_final_price(account, transaction)
-      option = {
-        method: :get,
-        url: 'https://store.steampowered.com/checkout/getfinalprice/',
-        headers: {
-          :params => {
-            count: 1,
-            transid: transaction['transid'],
-            purchasetype: :self,
-            microtxnid: -1,
-            cart: account.get_cookie(:shoppingCartGID),
-            gidReplayOfTransID: -1,
-          },
-          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
-          :'Accept-Encoding' => 'gzip, deflate, br',
-          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-          :'Cache-Control' => 'no-cache',
-          :'Connection' => 'keep-alive',
-          :'Cookie' => account.cookie,
-          :'Host' => 'store.steampowered.com',
-          :'Pragma' => 'no-cache',
-          :'Referer' => 'https://store.steampowered.com/checkout/?purchasetype=self',
-          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-          :'X-Prototype-Version' => 1.7,
-          :'X-Requested-With' => 'XMLHttpRequest',
-        },
-        proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
-      }
-      response = RestClient::Request.execute(option)
+      response = SteamWeb.get_final_price(account, transaction)
       JSON.parse(response.body)
     end
 
     def finalize_transaction(account, transaction)
-      option = {
-        method: :post,
-        url: 'https://store.steampowered.com/checkout/finalizetransaction/',
-        headers: {
-          :Accept => 'text/javascript, text/html, application/xml, text/xml, */*',
-          :'Accept-Encoding' => 'gzip, deflate, br',
-          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-          :'Cache-Control' => 'no-cache',
-          :'Connection' => 'keep-alive',
-          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-          :'Cookie' => account.cookie,
-          :'Host' => 'store.steampowered.com',
-          :'Origin' => 'https://store.steampowered.com',
-          :'Pragma' => 'no-cache',
-          :'Referer' => 'https://store.steampowered.com/checkout/?purchasetype=self',
-          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-          :'X-Prototype-Version' => 1.7,
-          :'X-Requested-With' => 'XMLHttpRequest',
-        },
-        payload: { transid: transaction['transid'] },
-        proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
-      }
-      response = RestClient::Request.execute(option)
+      response = SteamWeb.finalize_transaction(account, transaction)
       JSON.parse(response.body)
     end
 
@@ -370,25 +254,7 @@ class Steam
     end
 
     def request_help(account, appid)
-      option = {
-        method: :get,
-        url: help_url(appid),
-        headers: {
-          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          :'Accept-Encoding' => 'gzip, deflate, br',
-          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-          :'Cache-Control' => 'no-cache',
-          :'Connection' => 'keep-alive',
-          :'Cookie' => account.cookie,
-          :'Host' => 'help.steampowered.com',
-          :'Pragma' => 'no-cache',
-          :'upgrade-insecure-requests' => 1,
-          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-        },
-        proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
-      }
-      response = RestClient::Request.execute(option)
+      response = SteamWeb.help_with_game(account, appid)
       account.update_cookie(response)
       response.body
     end
@@ -403,67 +269,8 @@ class Steam
       end
     end
 
-    def request_help_wizard(account, url)
-      option = {
-        method: :get,
-        url: "#{url}&sessionid=#{account.session_id}&wizard_ajax=1",
-        headers: {
-          :Accept => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-          :'Accept-Encoding' => 'gzip, deflate, br',
-          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-          :'Cache-Control' => 'no-cache',
-          :'Connection' => 'keep-alive',
-          :'Cookie' => account.cookie,
-          :'Host' => 'help.steampowered.com',
-          :'Pragma' => 'no-cache',
-          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-          :'X-Requested-With' => 'XMLHttpRequest',
-        },
-        proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
-      }
-      response = RestClient::Request.execute(option)
-      account.update_cookie(response)
-      JSON.parse(response.body)
-    end
-
     def submit_refund_request(account, url)
-      uri = URI.parse(url)
-      query_set = uri.query.split('&').map{ |param| param.split('=') }
-      query = Hash[query_set]
-      option = {
-        method: :post,
-        url: 'https://help.steampowered.com/zh-cn/wizard/AjaxSubmitRefundRequest/',
-        headers: {
-          :Accept => '*/*',
-          :'Accept-Encoding' => 'gzip, deflate, br',
-          :'Accept-Language' => 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2',
-          :'Cache-Control' => 'no-cache',
-          :'Connection' => 'keep-alive',
-          :'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
-          :'Cookie' => account.cookie,
-          :'Host' => 'help.steampowered.com',
-          :'Origin' => 'https://help.steampowered.com',
-          :'Pragma' => 'no-cache',
-          :'Referer' => url,
-          :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
-          :'X-Requested-With' => 'XMLHttpRequest',
-        },
-        payload: {
-          sessionid: account.session_id,
-          wizard_ajax: 1,
-          help_issue_origin: query['issueid'],
-          help_issue: query['issueid'],
-          contact_email: account.email_address,
-          issue_appid: query['appid'],
-          issue_transid: query['transid'],
-          issue_line_item: query['line_item'],
-          refund_to_wallet: 1,
-        },
-        proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
-      }
-      response = RestClient::Request.execute(option)
+      response = SteamWeb.submit_refund_request(account, url)
       JSON.parse(response.body)
     end
 
