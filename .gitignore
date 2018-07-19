@@ -19,7 +19,7 @@
 /config/database.yml
 /config/secrets.yml
 /config/redis.yml
-/config/certs/ca_certificate.pem
+/config/cert.pem
 GemSources
 /public/packs
 /public/packs-test

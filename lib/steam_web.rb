@@ -11,7 +11,7 @@ class SteamWeb
         method: :get,
         url: "#{STORE_PATH}/api/appdetails/?appids=#{appid}",
         proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
+        ssl_ca_file: 'config/cert.pem',
       }
       RestClient::Request.execute(option)
     end
@@ -271,7 +271,7 @@ class SteamWeb
         url: url,
         headers: headers,
         proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
+        ssl_ca_file: 'config/cert.pem',
       }
       options.deep_merge(option)
     end

@@ -168,7 +168,7 @@ class InventoryAsset < ApplicationRecord
             goo_value_expected: market_asset.goo_value
         },
         proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
+        ssl_ca_file: 'config/cert.pem',
     }
     response = RestClient::Request.execute(option)
     puts "#{Time.now}: grind #{account.bot_name}'s `#{market_hash_name}(#{type})' into goo for #{market_asset.goo_value}."
@@ -226,7 +226,7 @@ class InventoryAsset < ApplicationRecord
         },
         payload: payload,
         proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
+        ssl_ca_file: 'config/cert.pem',
     }
     response = RestClient::Request.execute(option)
     if JSON.parse(response.body)['success'] == 1

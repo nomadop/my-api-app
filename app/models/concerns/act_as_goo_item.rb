@@ -29,7 +29,7 @@ module ActAsGooItem
     }
     unless proxy
       option[:proxy] = 'http://localhost:8888'
-      option[:ssl_ca_file] = 'config/certs/ca_certificate.pem'
+      option[:ssl_ca_file] = 'config/cert.pem'
     end
     response = proxy ? TOR.request(option) : RestClient::Request.execute(option)
 

@@ -31,7 +31,7 @@ class Authentication
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       RestClient::Request.execute(option).tap do |response|
         cookies = Utility.parse_cookies(response.headers[:set_cookie])
@@ -51,7 +51,7 @@ class Authentication
               username: username,
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
@@ -79,7 +79,7 @@ class Authentication
           },
           payload: payload,
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       response = RestClient::Request.execute(option)
       result = JSON.parse(response.body)

@@ -52,7 +52,7 @@ class TradeOffer < ApplicationRecord
             captcha: '',
         },
         proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
+        ssl_ca_file: 'config/cert.pem',
     }
     response = RestClient::Request.execute(option)
     result = JSON.parse(response.body)

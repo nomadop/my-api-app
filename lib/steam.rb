@@ -66,7 +66,7 @@ class Steam
           :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
         },
         proxy: 'http://127.0.0.1:8888',
-        ssl_ca_file: 'config/certs/ca_certificate.pem',
+        ssl_ca_file: 'config/cert.pem',
       }
       RestClient::Request.execute(option)
     end

@@ -18,7 +18,7 @@ class Inventory
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       response = RestClient::Request.execute(option)
       account.update_cookie(response)
@@ -97,7 +97,7 @@ class Inventory
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       response = RestClient::Request.execute(option)
       regexp = /CBoosterCreatorPage.Init\(\s+(.*),\s+parseFloat/
@@ -210,7 +210,7 @@ class Inventory
               tradability_preference: 1,
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       RestClient::Request.execute(option)
     rescue RestClient::Forbidden
@@ -249,7 +249,7 @@ class Inventory
               price: price,
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       RestClient::Request.execute(option)
     end
@@ -291,7 +291,7 @@ class Inventory
               communityitemid: assetid,
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       RestClient::Request.execute(option)
     rescue RestClient::Forbidden => e
@@ -327,7 +327,7 @@ class Inventory
               :'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
           },
           proxy: 'http://127.0.0.1:8888',
-          ssl_ca_file: 'config/certs/ca_certificate.pem',
+          ssl_ca_file: 'config/cert.pem',
       }
       RestClient::Request.execute(option)
     end
