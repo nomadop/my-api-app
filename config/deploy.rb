@@ -29,7 +29,7 @@ set :forward_agent, false     # SSH forward_agent.
 # run `mina -d` to see all folders and files already included in `shared_dirs` and `shared_files`
 set :shared_dirs, fetch(:shared_dirs, []).push('tmp/pids', 'tmp/sockets')
 set :shared_files, fetch(:shared_files, []).push(
-  'config/database.yml', 'config/secrets.yml',
+  'config/database.yml', 'config/secrets.yml', 'config/redis.yml', # 'config/certs/ca_certificate.pem',
 )
 
 # This task is the environment that is loaded for all remote run commands, such as
