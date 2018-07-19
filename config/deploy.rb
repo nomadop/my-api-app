@@ -73,7 +73,7 @@ task :deploy do
 
     on :launch do
       in_path(fetch(:current_path)) do
-        command %{touch tmp/restart.txt}
+        command %{touch ./tmp/restart.txt}
       end
       invoke :'sidekiq:restart'
       invoke :'puma:phased_restart'
