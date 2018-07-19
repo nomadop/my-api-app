@@ -1,7 +1,7 @@
-sources = File.readlines('GemSources').map(&:strip)
-sources.each { |src| source(src) }
-
-ruby '2.4.0'
+# sources = File.readlines('GemSources').map(&:strip)
+# sources.each { |src| source(src) }
+#
+# ruby '2.4.0'
 
 git_source(:github) do |repo_name|
   repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?("/")
