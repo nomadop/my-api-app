@@ -13,7 +13,6 @@ require './lib/tasks/mina-sidekiq.rb'
 #   branch       - Branch name to deploy. (needed by mina/git)
 
 # set :rails_env, 'development'
-set :bundle_bin, -> { "#{fetch(:shared_path)}/#{fetch(:bundle_path)}/ruby/2.4.0/bin/#{fetch(:bundle_bin)}" }
 set :bundle_options, -> { %{--path "#{fetch(:bundle_path)}"} }
 
 set :application_name, 'steam_card'
