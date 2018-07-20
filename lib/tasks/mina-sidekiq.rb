@@ -51,7 +51,7 @@ set :sidekiq_log, -> { "#{fetch(:current_path)}/log/sidekiq.log" }
 
 # ### sidekiq_pid
 # Sets the path to the pid file of a sidekiq worker
-set :sidekiq_pid, -> { "#{fetch(:current_path)}/tmp/pids/sidekiq.pid" }
+set :sidekiq_pid, -> { "#{fetch(:shared_path)}/tmp/pids/sidekiq.pid" }
 
 # ### sidekiq_processes
 # Sets the number of sidekiq processes launched
@@ -72,7 +72,7 @@ namespace :sidekiq do
   desc "Quiet sidekiq (stop accepting new work)"
   task :quiet => :remote_environment do
     comment 'Quiet sidekiq (stop accepting new work)'
-    in_path(fetch(:current_path)) do
+    in_path(fetch(:shared_path)) do
       for_each_process do |pid_file|
         command %{
           if [ -f #{pid_file} ] && kill -0 `cat #{pid_file}` > /dev/null 2>&1; then
@@ -89,7 +89,7 @@ namespace :sidekiq do
   desc "Stop sidekiq"
   task :stop => :remote_environment do
     comment 'Stop sidekiq'
-    in_path(fetch(:current_path)) do
+    in_path(fetch(:shared_path)) do
       for_each_process do |pid_file|
         command %{
           if [ -f #{pid_file} ] && kill -0 `cat #{pid_file}`> /dev/null 2>&1; then

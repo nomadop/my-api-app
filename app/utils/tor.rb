@@ -136,7 +136,7 @@ class TOR
       log(instance, 'started')
       port, _ = instance.split('#')
       option[:proxy] = "socks5://localhost:#{port}/"
-      option[:timeout] = 10
+      option[:timeout] = 30
       RestClient::Request.execute(option).tap do
         cost_time = (Time.now - start_time).round(1)
         log(instance, "finished in #{cost_time}s", :success)
