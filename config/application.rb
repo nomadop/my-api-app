@@ -31,7 +31,7 @@ module MyApiApp
     config.middleware.use ActionDispatch::Session::CookieStore
 
     config.active_job.queue_adapter = :sidekiq
-    config.autoload_paths << Rails.root.join('lib')
+    config.eager_load_paths << Rails.root.join('lib')
     config.redis = config_for(:redis)
   end
 end
