@@ -1,4 +1,4 @@
-class BoosterCreatorsController < ActionController::Base
+class BoosterCreatorsController < ApplicationController
   def refresh
     BoosterCreator.refresh_by_ppg_order
   end

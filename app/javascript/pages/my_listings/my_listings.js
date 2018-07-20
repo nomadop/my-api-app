@@ -8,15 +8,15 @@ function on_response(response) {
 }
 
 function fetch_all() {
-  return fetch('/my_listings/list').then(on_response.bind(this));
+  return fetch('/my_listings/list', { credentials: 'same-origin' }).then(on_response.bind(this));
 }
 
 function reload_all() {
-  return fetch('/my_listings/reload', { method: 'post' }).then(on_response.bind(this));
+  return fetch('/my_listings/reload', { method: 'post', credentials: 'same-origin' }).then(on_response.bind(this));
 }
 
 function reload_confirming() {
-  return fetch('/my_listings/reload_confirming', { method: 'post' }).then(on_response.bind(this));
+  return fetch('/my_listings/reload_confirming', { method: 'post', credentials: 'same-origin' }).then(on_response.bind(this));
 }
 
 function cancel_selected() {
@@ -24,6 +24,7 @@ function cancel_selected() {
     title: `confirm to cancel ${this.selected.length} listings?`,
     callback: wrap_fetch(() => fetch('/my_listings/cancel', {
       method: 'post',
+      credentials: 'same-origin',
       body: JSON.stringify({
         ids: this.selected.map(item => item.id),
       }),

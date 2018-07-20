@@ -1,4 +1,4 @@
-class AccountHistoriesController < ActionController::Base
+class AccountHistoriesController < ApplicationController
   def all
     account_histories = AccountHistory
     account_histories = account_histories.since(Time.at(params[:from_date].to_i)) unless params[:from_date].nil?

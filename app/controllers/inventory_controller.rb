@@ -1,4 +1,4 @@
-class InventoryController < ActionController::Base
+class InventoryController < ApplicationController
   def assets
     render json: InventoryAsset.non_gems.non_sacks_of_gem.includes(:description, :market_asset, :order_histogram).as_json(
       only: [:id, :assetid, :amount],

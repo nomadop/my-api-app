@@ -6,6 +6,9 @@ Rails.application.routes.draw do
   mount Sidekiq::Web => '/sidekiq'
 
   resource :authentication
+  resources :admin_sessions
+  get 'login' => 'admin_sessions#new', :as => :login
+  post 'logout' => 'admin_sessions#destroy', :as => :logout
   get '/accounts', to: 'accounts#list'
   get '/inventory', to: 'inventory#show'
   get '/inventory/assets', to: 'inventory#assets'

@@ -9,11 +9,11 @@ function on_response(response) {
 }
 
 function fetch_assets() {
-  return fetch('/inventory/assets').then(on_response.bind(this));
+  return fetch('/inventory/assets', { credentials: 'same-origin' }).then(on_response.bind(this));
 }
 
 function reload_assets() {
-  return fetch('/inventory/reload', { method: 'post' }).then(on_response.bind(this));
+  return fetch('/inventory/reload', { method: 'post', credentials: 'same-origin' }).then(on_response.bind(this));
 }
 
 function sell_by_ppg() {
@@ -21,6 +21,7 @@ function sell_by_ppg() {
     title: `confirm to sell ${this.selected.length} items by ppg ${this.sell_ppg}?`,
     callback: wrap_fetch(() => fetch('/inventory/sell_by_ppg', {
       method: 'post',
+      credentials: 'same-origin',
       body: JSON.stringify({
         sell_ppg: this.sell_ppg,
         asset_ids: this.selected.map(item => item.id),
@@ -37,6 +38,7 @@ function grind_into_goo() {
     title: `confirm to grind ${this.selected.length} items into goo?`,
     callback: wrap_fetch(() => fetch('/inventory/grind_into_goo', {
       method: 'post',
+      credentials: 'same-origin',
       body: JSON.stringify({
         asset_ids: this.selected.map(item => item.id),
       }),
@@ -53,6 +55,7 @@ function send_trade_offer() {
     title: `confirm to trade ${this.selected.length} items to ${target_name}?`,
     callback: wrap_fetch(() => fetch('/inventory/send_trade_offer', {
       method: 'post',
+      credentials: 'same-origin',
       body: JSON.stringify({
         target: this.selected_account,
         ids: this.selected.map(item => item.id),

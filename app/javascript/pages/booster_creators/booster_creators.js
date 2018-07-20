@@ -4,7 +4,7 @@ import ColorText from '../../components/color_text.vue';
 import { wrap_fetch } from '../../utilities/wrapper';
 
 function fetch_creatable(refresh = true) {
-  return fetch(`/booster_creators/creatable?base_ppg=${+this.base_ppg}${refresh ? '&refresh=1' : ''}`)
+  return fetch(`/booster_creators/creatable?base_ppg=${+this.base_ppg}${refresh ? '&refresh=1' : ''}`, { credentials: 'same-origin' })
     .then(response => response.json())
     .then(booster_creators => {
       this.booster_creators = booster_creators;
@@ -22,6 +22,7 @@ function create_and_sell(booster_creator) {
     title: `confirm to create and sell ${booster_creator.name}?`,
     callback: wrap_fetch(() => fetch('/booster_creators/create_and_sell', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
     })).bind(this),
@@ -33,6 +34,7 @@ function create_and_unpack(booster_creator) {
     title: `confirm to create and unpack ${booster_creator.name}?`,
     callback: wrap_fetch(() => fetch('/booster_creators/create_and_unpack', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
     })).bind(this),
@@ -44,6 +46,7 @@ function sell_all_assets(booster_creator) {
     title: `confirm to sell all assets of ${booster_creator.name}?`,
     callback: wrap_fetch(() => fetch('/booster_creators/sell_all_assets', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appid: booster_creator.appid, bot_name: this.filter.account }),
     })).bind(this),

@@ -12,11 +12,11 @@ function fetch_all() {
   const params = new URLSearchParams();
   params.append('from_date', this.from_date.getTime() / 1000);
   params.append('include_market', this.include_market);
-  return fetch(`/account_histories/all?${params}`).then(on_response.bind(this));
+  return fetch(`/account_histories/all?${params}`, { credentials: 'same-origin' }).then(on_response.bind(this));
 }
 
 function reload_all() {
-  return fetch('/account_histories/reload', { method: 'post' }).then(on_response.bind(this));
+  return fetch('/account_histories/reload', { method: 'post', credentials: 'same-origin' }).then(on_response.bind(this));
 }
 
 function get_class() {

@@ -32,7 +32,7 @@ Vue.filter('replace', function (value, regexp, replaced = '') {
 });
 
 function fetch_accounts() {
-  return fetch('/accounts')
+  return fetch('/accounts', { credentials: 'same-origin' })
     .then(response => response.json())
     .then(accounts => this.accounts = accounts);
 }
@@ -40,6 +40,7 @@ function fetch_accounts() {
 function asf_command(account, command) {
   const fetch_options = {
     method: 'post',
+    credentials: 'same-origin',
     body: JSON.stringify({
       id: account.id,
       command: command,

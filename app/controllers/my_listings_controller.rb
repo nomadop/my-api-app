@@ -1,4 +1,4 @@
-class MyListingsController < ActionController::Base
+class MyListingsController < ApplicationController
   def list
     render json: MyListing.order(created_at: :desc).includes(:market_asset, :order_histogram, :account, :booster_creator,).as_json(
       only: [:id, :listingid, :market_hash_name, :price, :listed_date, :confirming],

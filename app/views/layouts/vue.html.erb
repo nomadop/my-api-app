@@ -29,6 +29,11 @@
 
           <div class="md-toolbar-section-end">
             <%= yield :header %>
+            <%= form_tag logout_path do %>
+            <md-button type="submit" class="md-icon-button">
+              <md-icon>power_settings_new</md-icon>
+            </md-button>
+            <% end %>
           </div>
         </md-app-toolbar>
         <md-app-drawer :md-active.sync="drawer.active">
@@ -60,6 +65,10 @@
           </md-list>
         </md-app-drawer>
         <md-app-content>
+          <div>
+            <p id="notice"><%= flash[:notice] %></p>
+            <p id="alert"><%= flash[:alert] %></p>
+          </div>
           <%= yield %>
 
           <md-snackbar :class="snackbar.type" md-position="left" :md-duration="5000" :md-active.sync="snackbar.active">
