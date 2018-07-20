@@ -5,7 +5,7 @@ class MarketAsset < ApplicationRecord
   self.inheritance_column = nil
   self.primary_key = :classid
 
-  DEFAULT_PPG_VALUE = 0.35
+  DEFAULT_PPG_VALUE = 0.3
 
   belongs_to :order_owner, class_name: 'Account'
   has_one :steam_app, primary_key: :market_fee_app, foreign_key: :steam_appid
@@ -218,7 +218,7 @@ class MarketAsset < ApplicationRecord
     # quantity = BuyOrder.purchased.with_in(3.days).where(market_hash_name: market_hash_name).count
     # quantity = 1 if quantity < 1
     # quantity = 3 if quantity > 3
-    quantity = 1
+    quantity = 3
     ApplicationJob.perform_unique(CreateBuyOrderJob, classid, order_price, quantity)
   end
 

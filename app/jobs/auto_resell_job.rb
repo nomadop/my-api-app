@@ -12,7 +12,7 @@ class AutoResellJob < ApplicationJob
 
     uuid = MyListing.auto_resell_all_by_step(step)
     uuid.nil? ?
-      AutoResellJob.set(wait: 30.minutes).perform_later(1, uuid) :
+      AutoResellJob.set(wait: 10.minutes).perform_later(1, uuid) :
       AutoResellJob.perform_later(step + 1, uuid)
   end
 end
