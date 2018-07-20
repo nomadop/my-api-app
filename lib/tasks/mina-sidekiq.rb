@@ -33,7 +33,7 @@ set :sidekiq, -> { "#{fetch(:bundle_bin)} exec sidekiq" }
 
 # ### sidekiqctl
 # Sets the path to sidekiqctl.
-set :sidekiqctl, -> { "#{fetch(:shared_path)}/#{fetch(:bundle_path)}/ruby/2.4.0/bin/sidekiqctl" }
+set :sidekiqctl, -> { "#{fetch(:bundle_prefix)} sidekiqctl" }
 
 # ### sidekiq_timeout
 # Sets a upper limit of time a process is allowed to finish, before it is killed by sidekiqctl.
@@ -72,14 +72,16 @@ namespace :sidekiq do
   desc "Quiet sidekiq (stop accepting new work)"
   task :quiet => :remote_environment do
     comment 'Quiet sidekiq (stop accepting new work)'
-    for_each_process do |pid_file|
-      command %{
-        if [ -f #{pid_file} ] && kill -0 `cat #{pid_file}` > /dev/null 2>&1; then
-          #{fetch(:sidekiqctl)} quiet #{pid_file}
-        else
-          echo 'Skip quiet command (no pid file found)'
-        fi
-      }.strip
+    in_path(fetch(:shared_path)) do
+      for_each_process do |pid_file|
+        command %{
+          if [ -f #{pid_file} ] && kill -0 `cat #{pid_file}` > /dev/null 2>&1; then
+            #{fetch(:sidekiqctl)} quiet #{pid_file}
+          else
+            echo 'Skip quiet command (no pid file found)'
+          fi
+        }.strip
+      end
     end
   end
 
