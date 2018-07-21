@@ -72,7 +72,7 @@ namespace :sidekiq do
   desc "Quiet sidekiq (stop accepting new work)"
   task :quiet => :remote_environment do
     comment 'Quiet sidekiq (stop accepting new work)'
-    in_path(fetch(:shared_path)) do
+    in_path(fetch(:current_path)) do
       for_each_process do |pid_file|
         command %{
           if [ -f #{pid_file} ] && kill -0 `cat #{pid_file}` > /dev/null 2>&1; then
@@ -89,7 +89,7 @@ namespace :sidekiq do
   desc "Stop sidekiq"
   task :stop => :remote_environment do
     comment 'Stop sidekiq'
-    in_path(fetch(:shared_path)) do
+    in_path(fetch(:current_path)) do
       for_each_process do |pid_file|
         command %{
           if [ -f #{pid_file} ] && kill -0 `cat #{pid_file}`> /dev/null 2>&1; then
