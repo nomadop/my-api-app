@@ -13,7 +13,6 @@ class TorNewnymJob < ApplicationJob
         job_concurrence.update(delegated: true)
       end
     end
-    sleep 3.seconds
-    TorNewnymJob.perform_later
+    TorNewnymJob.set(wait: 3.seconds).perform_later
   end
 end
