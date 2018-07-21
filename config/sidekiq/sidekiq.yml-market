@@ -1,5 +1,7 @@
 ---
 :concurrency: 25
+production:
+  :concurrency: 15
 :queues:
   - price_overview
   - load_histories
