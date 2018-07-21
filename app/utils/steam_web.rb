@@ -137,7 +137,7 @@ class SteamWeb
 
     def app(account, appid)
       option = get_option(
-        :get, STORE_HOST, account.cookie, "app/#{appid}",
+        :get, STORE_HOST, account.cookie, "/app/#{appid}",
         headers: { :'upgrade-insecure-requests' => 1 },
       )
       RestClient::Request.execute(option)
@@ -174,8 +174,7 @@ class SteamWeb
           sessionid: account.session_id,
         },
       )
-      response = RestClient::Request.execute(option)
-      JSON.parse(response.body)
+      RestClient::Request.execute(option)
     end
 
     def get_final_price(account, transaction)
