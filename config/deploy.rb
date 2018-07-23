@@ -4,8 +4,6 @@ require 'mina/puma'
 require 'mina/rbenv'  # for rbenv support. (https://rbenv.org)
 # require 'mina/rvm'    # for rvm support. (https://rvm.io)
 
-require './lib/tasks/mina-sidekiq.rb'
-
 # Basic settings:
 #   domain       - The hostname to SSH to.
 #   deploy_to    - Path to deploy into.
@@ -67,19 +65,19 @@ task :deploy do
   deploy do
     # Put things that will set up an empty directory into a fully set-up
     # instance of your project.
+    command 'supervisorctl stop all'
     invoke :'git:clone'
-    # invoke :'sidekiq:quiet'
     invoke :'deploy:link_shared_paths'
     invoke :'bundle:install'
     invoke :'rails:db_migrate'
-    invoke :'rails:assets_precompile'
+    # invoke :'rails:assets_precompile'
     invoke :'deploy:cleanup'
 
     on :launch do
       in_path(fetch(:current_path)) do
         command %{touch ./tmp/restart.txt}
       end
-      invoke :'sidekiq:restart'
+      command 'supervisorctl start all'
       invoke :'puma:phased_restart'
     end
   end

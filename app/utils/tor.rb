@@ -23,6 +23,10 @@ class TOR
       "#{port}_pass"
     end
 
+    def newnym_key(port)
+      "#{port}_newnym"
+    end
+
     def extract_instance(uuid)
       match = uuid.match(/^TorNewnymJob_(\d+)$/)
       match && match[1].to_i
@@ -37,12 +41,20 @@ class TOR
     end
 
     def new_nym(port)
-      raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port)
+      raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port.to_i)
+
+      version = redis.incr newnym_key(port)
+      log(port, "new nym version is #{version}", :info)
+      return false if version > 1
+      log(port, 'start new nym', :info)
       password = redis.get password_key(port)
-      system("expect -f #{Rails.root.join('lib/tor-newnym.exp')} #{port + 1} #{password}")
-      JobConcurrence.where(uuid: concurrence_uuid(port)).destroy_all
+      system("expect -f #{Rails.root.join('lib/tor-newnym.exp')} #{port.to_i + 1} #{password}")
+      redis.del newnym_key(port)
       pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{port}##{n + 1}" })
       log(port, 'new nym finished', :warning)
+    rescue Exception => e
+      log(port, "new nym error #{e.message}", :error)
+      raise e
     end
 
     def hash_password(password)
@@ -83,7 +95,7 @@ class TOR
       pool_pop.tap do |instance|
         port, _ = instance.split('#')
         raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port.to_i)
-        if JobConcurrence.where(uuid: concurrence_uuid(port)).exists?
+        if redis.exists(newnym_key(port))
           log(instance, 'wait for new nym', :warning)
           raise InstanceNotAvailable.new("Tor server on port #{port} is newing nym")
         end
@@ -100,8 +112,8 @@ class TOR
 
     def reset_instance_pool
       redis.del(:instance_pool)
-      JobConcurrence.tor.destroy_all
       instances.each do |instance|
+        redis.del(newnym_key(instance))
         pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{instance}##{n + 1}" })
         File.write("tmp/tor/#{instance}/access.log", nil)
       end
@@ -144,9 +156,10 @@ class TOR
         release_instance(instance)
       end
     rescue RestClient::TooManyRequests, RestClient::Forbidden => e
-      JobConcurrence.tor_newnym(port)
-      cost_time = (Time.now - start_time).round(1)
-      log(instance, "failed in #{cost_time}s, new nym", :error)
+      if new_nym(port)
+        cost_time = (Time.now - start_time).round(1)
+        log(instance, "failed in #{cost_time}s, new nym", :error)
+      end
       raise e
     rescue Exception => e
       release_instance(instance) unless instance.nil?
