@@ -156,10 +156,9 @@ class TOR
         release_instance(instance)
       end
     rescue RestClient::TooManyRequests, RestClient::Forbidden => e
-      if new_nym(port)
-        cost_time = (Time.now - start_time).round(1)
-        log(instance, "failed in #{cost_time}s, new nym", :error)
-      end
+      cost_time = (Time.now - start_time).round(1)
+      log(instance, "failed in #{cost_time}s, new nym", :error)
+      new_nym(port)
       raise e
     rescue Exception => e
       release_instance(instance) unless instance.nil?
