@@ -31,7 +31,7 @@ class TOR
     def log(instance, message, level = :info)
       return if level == :info
       name, _ = instance.to_s.split('#')
-      File.open("tmp/tor/#{name}/access.log", 'a') do |file|
+      File.open(Rails.root.join("tmp/tor/#{name}/access.log"), 'a') do |file|
         file.write("(#{instance})[#{Time.now.strftime('%H:%M:%S')} #{level}] #{message}\n")
       end
     end
@@ -39,7 +39,7 @@ class TOR
     def new_nym(port)
       raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port)
       password = redis.get password_key(port)
-      system("expect -f ./lib/tor-newnym.exp #{port + 1} #{password}")
+      system("expect -f #{Rails.root.join('lib/tor-newnym.exp')} #{port + 1} #{password}")
       JobConcurrence.where(uuid: concurrence_uuid(port)).destroy_all
       pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{port}##{n + 1}" })
       log(port, 'new nym finished', :warning)
@@ -50,6 +50,7 @@ class TOR
     end
 
     def instances
+      Dir.chdir(Rails.root())
       pid_files = Dir.glob('tmp/pids/*')
       matches = pid_files.map { |file| file.match(/tor\.(?<pid>\d+)\.pid$/) }
       pids = matches.compact.map { |match| match[:pid] }

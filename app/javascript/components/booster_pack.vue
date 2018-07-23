@@ -96,7 +96,7 @@
   import { wrap_fetch } from '../utilities/wrapper';
 
   function fetch_booster_pack() {
-    return fetch(`/booster_creators/detail?appid=${this.appid}`)
+    return fetch(`/booster_creators/detail?appid=${this.appid}`, { credentials: 'same-origin' })
       .then(response => response.json())
       .then(detail => {
         this.detail = _.omit(detail, 'market_assets');
