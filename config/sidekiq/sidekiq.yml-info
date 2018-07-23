@@ -1,7 +1,7 @@
 ---
 :concurrency: 25
 production:
-  :concurrency: 25
+  :concurrency: 50
 :queues:
   - [quick_buy, 2]
   - [goo_value, 1]
