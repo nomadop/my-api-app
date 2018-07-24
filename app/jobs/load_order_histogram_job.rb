@@ -6,8 +6,9 @@ class LoadOrderHistogramJob < ApplicationJob
   rescue_from TOR::NoAvailableInstance, with: :retry_now
   rescue_from TOR::InstanceNotAvailable, with: :retry_now
 
-  def perform(item_nameid)
+  def perform(item_nameid, schedule = false)
     Market.load_order_histogram(item_nameid)
+    LoadOrderHistogramJob.set(wait: 2.hour).perform_later(item_nameid, schedule) if schedule
   end
 
   def retry_now

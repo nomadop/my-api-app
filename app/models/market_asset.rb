@@ -101,10 +101,10 @@ class MarketAsset < ApplicationRecord
     end
   end
 
-  def load_order_histogram
+  def load_order_histogram(schedule = false)
     return false if item_nameid.nil?
 
-    LoadOrderHistogramJob.perform_later(item_nameid)
+    LoadOrderHistogramJob.perform_later(item_nameid, schedule)
   end
 
   def load_price_overview
