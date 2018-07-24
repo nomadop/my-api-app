@@ -2,7 +2,7 @@ require 'sidekiq/web'
 
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
-
+  root to: 'admin_sessions#new'
   mount Sidekiq::Web => '/sidekiq'
 
   resource :authentication
@@ -19,6 +19,7 @@ Rails.application.routes.draw do
   get '/booster_creators', to: 'booster_creators#show'
   get '/booster_creators/detail', to: 'booster_creators#detail'
   get '/booster_creators/creatable', to: 'booster_creators#creatable'
+  post '/tor/reset', to: 'tor#reset_instance_pool'
   post '/accounts/asf', to: 'accounts#asf_command'
   post '/inventory/reload', to: 'inventory#reload'
   post '/inventory/sell_by_ppg', to: 'inventory#sell_by_ppg'
