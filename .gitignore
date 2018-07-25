@@ -21,6 +21,5 @@
 /config/redis.yml
 /config/cert.pem
 GemSources
-/public/packs
 /public/packs-test
 /node_modules
