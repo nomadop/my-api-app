@@ -116,7 +116,7 @@ class Market
         cached_lowest_sell: [order_histogram.cached_lowest_sell, result['lowest_sell_order']].map(&Utility.method(:int_or_inf)).min,
         cached_highest_sell: [order_histogram.cached_highest_sell, result['lowest_sell_order']].map(&Utility.method(:int_or_zero)).max,
       )
-      OrderHistogramHistory.create(result.slice('item_nameid', 'highest_buy_order', 'lowest_sell_order'))
+      OrderHistogramHistory.create(result.slice('highest_buy_order', 'lowest_sell_order').merge(item_nameid: item_nameid))
     end
 
     def search(appid, start = 0, count = 10)
