@@ -36,7 +36,11 @@ class BuyOrder < ApplicationRecord
             CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
             )
           ))
-          OR (1.0 * price / market_assets.goo_value) > #{MarketAsset::DEFAULT_PPG_VALUE})
+          OR (1.0 * price / market_assets.goo_value) > #{MarketAsset::DEFAULT_PPG_VALUE}
+          OR (buy_orders.account_id IS NOT NULL 
+            AND buy_orders.account_id != market_assets.order_owner_id
+          )
+        )
         AND buy_orders.active = 1
     SQL
     joins(:market_asset, :order_histogram).where(where_sql)
@@ -158,8 +162,7 @@ class BuyOrder < ApplicationRecord
 
     def rebuy_cancelable
       cancelable = BuyOrder.cancelable.includes(:market_asset, :order_histogram).reject do |buy_order|
-        buy_order.price <= buy_order.goo_value * MarketAsset::DEFAULT_PPG_VALUE &&
-          buy_order.highest_buy_order >= buy_order.goo_value * MarketAsset::DEFAULT_PPG_VALUE
+        buy_order.belongs_to_owner? && buy_order.expensive_than_ppg?
       end
       cancelable.map(&:rebuy_later)
     end
@@ -192,6 +195,14 @@ class BuyOrder < ApplicationRecord
     def purchased_goo_value
       sum('market_assets.goo_value * (quantity - quantity_remaining)')
     end
+  end
+
+  def belongs_to_owner?
+    (order_owner.nil? && account === Account::DEFAULT) || account == order_owner
+  end
+
+  def expensive_than_ppg?
+    !highest_buy_order.nil? && highest_buy_order >= goo_value * MarketAsset::DEFAULT_PPG_VALUE
   end
 
   def refresh_status
