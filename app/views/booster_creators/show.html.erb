@@ -5,7 +5,7 @@
       <label>App ID</label>
       <md-input v-model="appid"></md-input>
     </md-field>
-    <md-button @click="on_modal({ appid })">Detail</md-button>
+    <md-button @click="appid && on_modal({ appid })">Detail</md-button>
 <% end %>
 <% content_for :modal do %>
     <booster-pack :appid="modal.appid" :name="modal.name" :price="modal.price"></booster-pack>
