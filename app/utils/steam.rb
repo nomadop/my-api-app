@@ -246,6 +246,7 @@ class Steam
       raise 'Failed to get final price' unless final_price['success'] == 1
       result = finalize_transaction(account, transaction)
       raise 'Failed to finalize transaction' unless result['success'] == 22
+      account.load_booster_creators
       result
     end
 
