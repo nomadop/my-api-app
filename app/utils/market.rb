@@ -458,7 +458,7 @@ class Market
     def request_order_activity(item_nameid)
       option = {
         method: :get,
-        url: 'http://steamcommunity.com/market/itemordersactivity',
+        url: 'https://steamcommunity.com/market/itemordersactivity',
         headers: {
           params: {
             country: :CN,
@@ -468,7 +468,8 @@ class Market
             two_factor: 0,
           }
         },
-        proxy: 'http://localhost:8888/'
+        proxy: 'http://localhost:8888/',
+        ssl_ca_file: 'config/cert.pem',
       }
       response = RestClient::Request.execute(option)
       JSON.parse(response.body)
