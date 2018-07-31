@@ -27,6 +27,7 @@ class MarketAsset < ApplicationRecord
   has_one :booster_creator, primary_key: :market_fee_app, foreign_key: :appid
   has_many :inventory_assets, primary_key: :classid, foreign_key: :classid
 
+  scope :belongs, ->(account) { where(order_owner: account) }
   scope :sack_of_gems, -> { where(market_hash_name: '753-Sack of Gems') }
   scope :by_game_name, ->(name) { where('type SIMILAR TO ?', "#{name} (#{Market::ALLOWED_ASSET_TYPE.join('|')})") }
   scope :trading_card, -> { where('type like ?', '%Trading Card').where.not('type like ?', '%Foil Trading Card') }
@@ -37,6 +38,7 @@ class MarketAsset < ApplicationRecord
   scope :orderable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histogram).where('1.0 * order_histograms.cached_lowest_buy / goo_value < ?', ppg) }
   scope :with_active_buy_order, -> { joins(:active_buy_orders).distinct }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
+  scope :without_my_buy_histories, -> { left_outer_joins(:my_buy_histories).where(my_histories: {market_hash_name: nil}) }
   scope :without_order_histogram, -> { left_outer_joins(:order_histogram).where(order_histograms: {item_nameid: nil}) }
   scope :without_sell_history, -> { left_outer_joins(:sell_histories).where(sell_histories: {classid: nil}) }
   scope :with_marketable_inventory_asset, -> { joins(:marketable_inventory_asset).distinct }
