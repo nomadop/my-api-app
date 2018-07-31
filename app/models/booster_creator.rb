@@ -94,6 +94,10 @@ class BoosterCreator < ApplicationRecord
     :sell_order_count, :buy_order_count, :order_count, :listing_url, :sell_volume, to: :booster_pack, allow_nil: true
 
   class << self
+    def create(appid, account)
+      find_by(appid: appid).create(account)
+    end
+
     def refresh_price
       find_each(&:refresh_price_later)
     end
