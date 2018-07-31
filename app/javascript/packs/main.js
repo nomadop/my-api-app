@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     el: '#vue-app',
     data: () => ({
+      appid: null,
       accounts: [],
       snackbar: {
         active: false,
