@@ -8,7 +8,11 @@ class LoadOrderHistogramJob < ApplicationJob
 
   def perform(item_nameid, schedule = false)
     Market.load_order_histogram(item_nameid)
-    LoadOrderHistogramJob.set(wait: 5.hour).perform_later(item_nameid, schedule) if schedule
+    if schedule
+      market_asset = MarketAsset.find_by(item_nameid: item_nameid)
+      market_asset.update(goo_value: market_asset.get_goo_value) unless market_asset.nil?
+      LoadOrderHistogramJob.set(wait: 6.hour).perform_later(item_nameid, schedule)
+    end
   end
 
   def retry_now
