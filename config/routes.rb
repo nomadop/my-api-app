@@ -21,6 +21,7 @@ Rails.application.routes.draw do
   get 'inventory/assets'
   get 'buy_orders/list'
   get 'my_listings/list'
+  get 'order_histograms/list'
   get 'market_assets/orderable'
   get 'account_histories/all'
   get 'booster_creators/detail'
