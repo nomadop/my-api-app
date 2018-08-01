@@ -36,7 +36,7 @@ class BuyOrder < ApplicationRecord
   SQL
   scope :cancelable, -> do
     highest_ppg = '1.0 * order_histograms.highest_buy_order / market_assets.goo_value'
-    price_ppg_lower_than_default = "(1.0 * price / market_assets.goo_value) < #{MarketAsset::DEFAULT_PPG_VALUE}"
+    price_ppg_lower_than_default = "(1.0 * (price + 1) / market_assets.goo_value) < #{MarketAsset::DEFAULT_PPG_VALUE}"
     highest_ppg_lower_than_default = "#{highest_ppg} < #{MarketAsset::DEFAULT_PPG_VALUE}"
     price_lower_than_highest = 'price < order_histograms.highest_buy_order'
     price_equal_highest = 'price = order_histograms.highest_buy_order'
