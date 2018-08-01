@@ -55,6 +55,10 @@ class Account < ApplicationRecord
     def method_missing(method, *args, &block)
       find_by(bot_name: method) || super(method, *args, &block)
     end
+
+    def search(id_or_bot_name)
+      id_or_bot_name.is_a?(Integer) ? super(id_or_bot_name) : find_by(bot_name: id_or_bot_name)
+    end
   end
 
   def cookie
