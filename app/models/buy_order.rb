@@ -35,20 +35,23 @@ class BuyOrder < ApplicationRecord
       OR market_assets.order_owner_id != buy_orders.account_id
   SQL
   scope :cancelable, -> do
+    highest_ppg = '1.0 * order_histograms.highest_buy_order / market_assets.goo_value'
+    price_ppg_lower_than_default = "(1.0 * price / market_assets.goo_value) < #{MarketAsset::DEFAULT_PPG_VALUE}"
+    highest_ppg_lower_than_default = "#{highest_ppg} < #{MarketAsset::DEFAULT_PPG_VALUE}"
+    price_lower_than_highest = 'price < order_histograms.highest_buy_order'
+    price_equal_highest = 'price = order_histograms.highest_buy_order'
+    more_highest = 'CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1'
+    price_ppg_greater_than_default = "(1.0 * price / market_assets.goo_value) > #{MarketAsset::DEFAULT_PPG_VALUE}"
+
     where_sql = <<-SQL
-        (((1.0 * order_histograms.highest_buy_order / market_assets.goo_value) < #{MarketAsset::DEFAULT_PPG_VALUE}
-          AND (price < order_histograms.highest_buy_order 
-            OR (
-            price = order_histograms.highest_buy_order AND 
-            CAST(order_histograms.buy_order_graph->0->>1 AS int) > 1
-            )
-          ))
-          OR (1.0 * price / market_assets.goo_value) > #{MarketAsset::DEFAULT_PPG_VALUE}
-          OR (#{unowned_sql})
+        (
+          (#{highest_ppg_lower_than_default} OR #{price_ppg_lower_than_default})
+          AND (#{price_lower_than_highest} OR (#{price_equal_highest} AND #{more_highest}))
         )
-        AND buy_orders.active = 1
+        OR #{price_ppg_greater_than_default}
+        OR (#{unowned_sql})
     SQL
-    joins(:market_asset, :order_histogram).where(where_sql)
+    joins(:market_asset, :order_histogram).active.where(where_sql)
   end
   scope :unowned, -> do
     joins(:market_asset).where(unowned_sql)
