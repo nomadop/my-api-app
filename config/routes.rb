@@ -17,11 +17,11 @@ Rails.application.routes.draw do
   get '/booster_creators', to: 'booster_creators#show'
   post '/tor/reset', to: 'tor#reset_instance_pool'
   post '/accounts/asf', to: 'accounts#asf_command'
+  post '/order_histograms/ids', to: 'order_histograms#list'
 
   get 'inventory/assets'
   get 'buy_orders/list'
   get 'my_listings/list'
-  get 'order_histograms/list'
   get 'market_assets/orderable'
   get 'account_histories/all'
   get 'booster_creators/detail'
