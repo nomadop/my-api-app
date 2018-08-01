@@ -34,8 +34,8 @@ class MarketAsset < ApplicationRecord
   scope :booster_pack, -> { where(type: 'Booster Pack') }
   scope :with_my_listing, -> { joins(:my_listings).distinct }
   scope :without_my_listing, -> { left_outer_joins(:my_listings).where(my_listings: {classid: nil}) }
-  scope :buyable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histogram).where('1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg) }
-  scope :orderable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histogram).where('1.0 * order_histograms.cached_lowest_buy / goo_value < ?', ppg) }
+  scope :buyable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histogram).where('goo_value > 0 AND 1.0 * order_histograms.lowest_sell_order / goo_value <= ?', ppg) }
+  scope :orderable, ->(ppg = DEFAULT_PPG_VALUE) { joins(:order_histogram).where('goo_value > 0 AND 1.0 * order_histograms.cached_lowest_buy / goo_value < ?', ppg) }
   scope :with_active_buy_order, -> { joins(:active_buy_orders).distinct }
   scope :without_active_buy_order, -> { left_outer_joins(:active_buy_orders).where(buy_orders: {market_hash_name: nil}) }
   scope :without_my_buy_histories, -> { left_outer_joins(:my_buy_histories).where(my_histories: {market_hash_name: nil}) }
