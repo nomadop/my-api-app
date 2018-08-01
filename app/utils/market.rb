@@ -577,8 +577,8 @@ class Market
       return nil
     end
 
-    def scan_my_histories(account_id = 1)
-      LoadMyHistoriesJob.perform_later(0, 100, account_id)
+    def scan_my_histories(account_id = 1, incremental = true)
+      LoadMyHistoriesJob.perform_later(0, 100, account_id, incremental)
     end
 
     def eligibility_check(account)
