@@ -169,6 +169,7 @@ class MarketAsset < ApplicationRecord
     result = Market.create_buy_order(market_hash_name, price, quantity, account_id)
     case result['success']
       when 1
+        active_buy_orders.belongs(order_owner).update_all(active: 0)
         BuyOrder.create(result.merge(
           market_hash_name: market_hash_name,
           price: price,
