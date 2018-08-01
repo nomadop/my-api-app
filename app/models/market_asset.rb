@@ -178,6 +178,9 @@ class MarketAsset < ApplicationRecord
       when 8
         Account.find(account_id).refresh
         create_buy_order(price, quantity)
+      when 25
+        update(order_owner_id: 1)
+        create_buy_order(price, quantity)
       when 29
         return
       else
