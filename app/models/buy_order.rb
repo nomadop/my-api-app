@@ -29,6 +29,11 @@ class BuyOrder < ApplicationRecord
   default_scope { where(success: 1) }
 
   scope :part_purchased, -> { where('quantity_remaining < quantity AND active = 1') }
+
+  unowned_sql = <<-SQL
+      (market_assets.order_owner_id IS NULL AND buy_orders.account_id != 1)
+      OR market_assets.order_owner_id != buy_orders.account_id
+  SQL
   scope :cancelable, -> do
     where_sql = <<-SQL
         (((1.0 * order_histograms.highest_buy_order / market_assets.goo_value) < #{MarketAsset::DEFAULT_PPG_VALUE}
@@ -39,13 +44,14 @@ class BuyOrder < ApplicationRecord
             )
           ))
           OR (1.0 * price / market_assets.goo_value) > #{MarketAsset::DEFAULT_PPG_VALUE}
-          OR (buy_orders.account_id IS NOT NULL 
-            AND buy_orders.account_id != market_assets.order_owner_id
-          )
+          OR (#{unowned_sql})
         )
         AND buy_orders.active = 1
     SQL
     joins(:market_asset, :order_histogram).where(where_sql)
+  end
+  scope :unowned, -> do
+    joins(:market_asset).where(unowned_sql)
   end
 
   delegate :load_order_histogram, :goo_value, :load_goo_value, :item_nameid, to: :market_asset
