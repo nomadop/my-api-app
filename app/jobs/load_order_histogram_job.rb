@@ -11,7 +11,7 @@ class LoadOrderHistogramJob < ApplicationJob
     if schedule
       market_asset = MarketAsset.find_by(item_nameid: item_nameid)
       market_asset.update(goo_value: market_asset.get_goo_value) unless market_asset.nil?
-      LoadOrderHistogramJob.set(wait: 6.hour).perform_later(item_nameid, schedule)
+      LoadOrderHistogramJob.set(wait: 8.hour).perform_later(item_nameid, schedule)
     end
   end
 
