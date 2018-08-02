@@ -4,7 +4,8 @@ namespace :git do
   desc "Precompile webpack"
   task :precompile => :environment do
     system('git reset .')
-    system('git rm public/packs/*')
+    system('rm -f public/packs/*')
+    system('git rm --ignore-unmatch -f public/packs/*')
     system('RAILS_ENV=production bundle exec rake assets:precompile')
     system('git add public/packs/*')
     status = %x[git status]
