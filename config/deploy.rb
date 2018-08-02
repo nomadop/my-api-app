@@ -4,6 +4,8 @@ require 'mina/puma'
 require 'mina/rbenv'  # for rbenv support. (https://rbenv.org)
 # require 'mina/rvm'    # for rvm support. (https://rvm.io)
 
+require './lib/tasks/yarn.rb'
+
 # Basic settings:
 #   domain       - The hostname to SSH to.
 #   deploy_to    - Path to deploy into.
@@ -61,14 +63,15 @@ end
 desc "Deploys the current version to the server."
 task :deploy do
   # uncomment this line to make sure you pushed your local branch to the remote origin
-  # invoke :'git:ensure_pushed'
+  invoke :'git:ensure_pushed'
   deploy do
     # Put things that will set up an empty directory into a fully set-up
     # instance of your project.
-    command 'supervisorctl stop all'
+    command 'supervisorctl stop sidekiq_info'
     invoke :'git:clone'
     invoke :'deploy:link_shared_paths'
     invoke :'bundle:install'
+    invoke :'yarn:install'
     invoke :'rails:db_migrate'
     # invoke :'rails:assets_precompile'
     invoke :'deploy:cleanup'
@@ -77,7 +80,7 @@ task :deploy do
       in_path(fetch(:current_path)) do
         command %{touch ./tmp/restart.txt}
       end
-      command 'supervisorctl start all'
+      command 'supervisorctl start sidekiq_info'
       invoke :'puma:phased_restart'
     end
   end
