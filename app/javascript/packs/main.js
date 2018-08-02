@@ -22,6 +22,10 @@ Vue.component('account-histories', function (resolve) {
   require(['../pages/account_histories/account_histories.vue'], resolve)
 });
 
+Vue.component('order-histogram', function (resolve) {
+  require(['../pages/order_histogram/order_histogram.vue'], resolve)
+});
+
 Vue.component('booster-pack', function (resolve) {
   require(['../components/booster_pack.vue'], resolve)
 });

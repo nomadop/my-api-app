@@ -4,4 +4,14 @@ class OrderHistogramsController < ApplicationController
     result = OrderHistogram.where(item_nameid: ids)
     render json: result.as_json(except: [:id, :created_at, :updated_at])
   end
+
+  def show
+    @item_nameid = params[:id]
+    render layout: 'vue'
+  end
+
+  def json
+    @item_nameid = params[:id]
+    render json: OrderHistogram.find_by(item_nameid: @item_nameid).as_json
+  end
 end
