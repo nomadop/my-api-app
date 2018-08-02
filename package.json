@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@rails/webpacker": "3.0.1",
+    "chart.js": "^2.7.2",
     "lodash": "^4.17.10",
+    "moment": "^2.22.2",
     "nprogress": "0.2.0",
     "vue": "2.5.16",
     "vue-loader": "14.2.2",
