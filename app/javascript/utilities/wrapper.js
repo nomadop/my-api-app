@@ -29,6 +29,7 @@ export const wrap_fetch = (fetch_fn, singleton = true) => {
           this.fetching = false;
           NProgress.done();
         }
+        console.log(error);
         show_message('error', error);
       });
   };
