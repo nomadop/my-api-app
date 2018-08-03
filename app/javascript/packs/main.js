@@ -1,8 +1,16 @@
 import Vue from 'vue/dist/vue.esm';
 import VueMaterial from 'vue-material';
+import Chart from 'chart.js';
 import * as _ from 'lodash';
 
 import { wrap_fetch } from "../utilities/wrapper";
+
+Chart.defaults.global.defaultFontColor = 'rgba(255, 255, 255, .7)';
+Chart.defaults.global.layout.padding = { left: 16, right: 16 };
+Chart.defaults.global.hover.intersect = false;
+Chart.defaults.global.tooltips.intersect = false;
+Chart.defaults.global.responsive = true;
+Chart.defaults.global.maintainAspectRatio = false;
 
 Vue.use(VueMaterial);
 
