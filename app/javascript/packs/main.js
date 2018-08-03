@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import { wrap_fetch } from "../utilities/wrapper";
 
 Chart.defaults.global.defaultFontColor = 'rgba(255, 255, 255, .7)';
-Chart.defaults.global.layout.padding = { left: 16, right: 16 };
+Chart.defaults.global.layout.padding = 16;
 Chart.defaults.global.hover.intersect = false;
 Chart.defaults.global.tooltips.intersect = false;
 Chart.defaults.global.responsive = true;

@@ -1,11 +1,57 @@
 import * as _ from 'lodash';
 import { wrap_fetch } from '../../utilities/wrapper';
 
+const common_dataset_option = {
+  fill: false,
+  showLine: true,
+  borderWidth: 2,
+  pointRadius: 0,
+};
+
+function reduce_chart_data(data, item) {
+  const lastItem = _.last(data);
+  if (lastItem && lastItem.formatted_date === item.formatted_date) {
+    lastItem.y += item.change;
+    return data;
+  }
+
+  const date = new Date(Date.parse(item.date));
+  return data.concat({ x: date, y: item.change, formatted_date: item.formatted_date });
+}
+
+function update_chart() {
+  const markets = this.account_histories.filter(item => item.items[0] === 'Steam 社区市场');
+  if (_.isEmpty(markets)) { return; }
+  const total_data = markets.reduce(reduce_chart_data, []);
+  const income_data = markets.filter(item => item.change > 0).reduce(reduce_chart_data, []);
+  const expense_data = markets.filter(item => item.change < 0).reduce(reduce_chart_data, []);
+  this.chart.data.datasets[0] = {
+    ...common_dataset_option,
+    label: 'Income',
+    borderColor: 'rgba(105, 142, 67, 1)',
+    data: income_data,
+  };
+  this.chart.data.datasets[1] = {
+    ...common_dataset_option,
+    label: 'Total',
+    borderColor: 'rgba(104, 138, 185, 1)',
+    data: total_data,
+  };
+  this.chart.data.datasets[2] = {
+    ...common_dataset_option,
+    label: 'Expense',
+    borderColor: 'rgba(229, 57, 53, 1)',
+    data: expense_data,
+  };
+  this.chart.update();
+}
+
 function on_response(response) {
   return response.json().then(account_histories => {
     this.account_histories = account_histories;
+    this.update_chart();
     this.on_filter();
-  })
+  });
 }
 
 function fetch_all() {
@@ -61,7 +107,7 @@ export default {
       account: '',
     },
     from_date: get_initial_from_date(),
-    include_market: false,
+    include_market: true,
   }),
   watch: {
     'filter.type': function (type) {
@@ -80,5 +126,20 @@ export default {
     get_class,
     on_select,
     on_filter,
+    update_chart,
+  },
+  mounted() {
+    this.chart = new Chart(this.$refs.canvas, {
+      type: 'scatter',
+      data: { datasets: [] },
+      options: {
+        hover: { mode: 'nearest', intersect: false },
+        scales: {
+          xAxes: [{
+            type: 'time',
+          }],
+        }
+      }
+    });
   },
 };

@@ -82,10 +82,28 @@
                 </md-table-cell>
             </md-table-row>
         </md-table>
+
+        <md-card class="chart-card">
+            <md-toolbar class="md-transparent" md-elevation="1">
+                <h3 class="md-title">Market Chart</h3>
+            </md-toolbar>
+            <md-content class="market-chart">
+                <canvas ref="canvas"></canvas>
+            </md-content>
+        </md-card>
     </div>
 </template>
 
 <style scoped>
+    .chart-card {
+        margin-top: 32px;
+    }
+
+    .market-chart {
+        height: 400px;
+        position: relative;
+    }
+
     .date-cell {
         width: 84px;
     }

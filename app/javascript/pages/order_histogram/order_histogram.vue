@@ -1,6 +1,6 @@
 <template>
     <md-card>
-        <md-toolbar class="md-transparent" md-elevation="0">
+        <md-toolbar class="md-transparent" md-elevation="1">
             <h3 class="md-title">Order Graphs - {{item_nameid}}</h3>
         </md-toolbar>
         <md-content class="order-chart">
