@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180802044303) do
+ActiveRecord::Schema.define(version: 20180806100529) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -296,12 +296,13 @@ ActiveRecord::Schema.define(version: 20180802044303) do
     t.integer  "lowest_sell_order"
     t.jsonb    "buy_order_graph"
     t.jsonb    "sell_order_graph"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
     t.integer  "cached_highest_buy"
     t.integer  "cached_lowest_buy"
     t.integer  "cached_highest_sell"
     t.integer  "cached_lowest_sell"
+    t.integer  "schedule_interval",   default: 21600
     t.index ["item_nameid"], name: "index_order_histograms_on_item_nameid", unique: true, using: :btree
   end
 
