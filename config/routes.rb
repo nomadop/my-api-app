@@ -17,6 +17,7 @@ Rails.application.routes.draw do
   get '/booster_creators', to: 'booster_creators#show'
   get '/order_histograms/:id', to: 'order_histograms#show'
   get '/order_histograms/:id/json', to: 'order_histograms#json'
+  get '/order_histograms/:id/history', to: 'order_histograms#history'
   post '/tor/reset', to: 'tor#reset_instance_pool'
   post '/accounts/asf', to: 'accounts#asf_command'
   post '/order_histograms/ids', to: 'order_histograms#list'
