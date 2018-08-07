@@ -1,6 +1,6 @@
 class OrderHistogram < ApplicationRecord
   MAX_SCHEDULE_INTERVAL = 8.day.to_i
-  MIN_SCHEDULE_INTERVAL = 3.hour.to_i
+  MIN_SCHEDULE_INTERVAL = 6.hour.to_i
 
   belongs_to :market_asset, primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :my_listings, through: :market_asset
