@@ -56,8 +56,8 @@ class OrderHistogram < ApplicationRecord
   end
 
   def refresh_interval
-    scheduled_histories = histories.since(scheduled_at).order(:created_at).to_a
-    return if scheduled_histories.count < 4
+    scheduled_histories = histories.with_timestamp.since(scheduled_at).order(:created_at).to_a
+    return schedule_interval if scheduled_histories.count < 4
 
     uniq_count = scheduled_histories
       .uniq { |history| "#{history.highest_buy_order},#{history.lowest_sell_order}" }
@@ -69,7 +69,7 @@ class OrderHistogram < ApplicationRecord
     else
       schedule_interval
     end
-    update(schedule_interval: new_interval, scheduled_at: Time.now)
+    new_interval.tap { update(schedule_interval: new_interval, scheduled_at: Time.now) }
   end
 
   def refresh
