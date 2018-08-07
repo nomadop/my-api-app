@@ -1,6 +1,10 @@
 class OrderHistogram < ApplicationRecord
+  MAX_SCHEDULE_INTERVAL = 8.day.to_i
+  MIN_SCHEDULE_INTERVAL = 3.hour.to_i
+
   belongs_to :market_asset, primary_key: :item_nameid, foreign_key: :item_nameid
   has_many :my_listings, through: :market_asset
+  has_many :histories, class_name: 'OrderHistogramHistory', primary_key: :item_nameid, foreign_key: :item_nameid
 
   scope :with_my_listing, -> { find(joins(:my_listing).distinct.pluck(:id)) }
   scope :without_my_listing, -> { left_outer_joins(:my_listing).where(my_listings: { classid: nil }) }
@@ -16,6 +20,18 @@ class OrderHistogram < ApplicationRecord
     def sog_graphs(split = true)
       order_histogram = sack_of_gems.take.refresh
       split ? order_histogram.sell_order_graphs : order_histogram.sell_order_graph
+    end
+
+    def import_json_file(path)
+      json = JSON.parse(File.read(path))
+      json.each_slice(1000) do |slice|
+        transaction do
+          slice.each do |item|
+                order_histogram = find_by(item_nameid: item['item_nameid'])
+                order_histogram.update(item)
+          end
+        end
+      end
     end
   end
 
@@ -37,6 +53,23 @@ class OrderHistogram < ApplicationRecord
 
   def lowest_sell_order_exclude_vat
     Utility.exclude_val(lowest_sell_order)
+  end
+
+  def refresh_interval
+    scheduled_histories = histories.since(scheduled_at).order(:created_at).to_a
+    return if scheduled_histories.count < 4
+
+    uniq_count = scheduled_histories
+      .uniq { |history| "#{history.highest_buy_order},#{history.lowest_sell_order}" }
+      .count
+    new_interval = if uniq_count >= 4
+      [schedule_interval / 2, MIN_SCHEDULE_INTERVAL].max
+    elsif uniq_count == 1
+      [schedule_interval * 2, MAX_SCHEDULE_INTERVAL].min
+    else
+      schedule_interval
+    end
+    update(schedule_interval: new_interval, scheduled_at: Time.now)
   end
 
   def refresh
