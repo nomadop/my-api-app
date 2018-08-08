@@ -6,7 +6,6 @@ import { wrap_fetch } from '../../utilities/wrapper';
 const common_dataset_option = {
   showLine: true,
   borderWidth: 2,
-  pointRadius: 0,
 };
 
 function map_graph_to_line_data(graph) {
@@ -21,6 +20,7 @@ function on_order_histogram_response(response) {
       ...common_dataset_option,
       fill: 'start',
       label: 'Buy Order',
+      pointRadius: 0,
       borderColor: 'rgba(104, 138, 185, 1)',
       backgroundColor: 'rgba(41, 55, 76, .3)',
       data: buy_order_data,
@@ -29,6 +29,7 @@ function on_order_histogram_response(response) {
       ...common_dataset_option,
       fill: 'start',
       label: 'Sell Order',
+      pointRadius: 0,
       borderColor: 'rgba(105, 142, 67, 1)',
       backgroundColor: 'rgba(39, 55, 37, .3)',
       data: sell_order_data,
