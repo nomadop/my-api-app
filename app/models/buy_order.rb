@@ -131,8 +131,15 @@ class BuyOrder < ApplicationRecord
 
     def refresh_active
       actives = active.includes(:market_asset)
-      actives.refresh_order_histogram_later
+      # actives.refresh_order_histogram_later
       actives.load_goo_value_later
+    end
+
+    def export_active
+      active.in_batches(of: 3000).each_with_index do |relation, index|
+        ids = relation.joins(:order_histogram).pluck('order_histograms.item_nameid').uniq.to_json
+        File.write(Rails.root.join('tmp', "active#{index}.ids"), ids)
+      end
     end
 
     # def rebuy_purchased

@@ -147,6 +147,13 @@ class BoosterCreator < ApplicationRecord
     def refresh_all_market_assets_later
       MarketAsset.where(market_fee_app: pluck(:appid)).find_each(&:refresh)
     end
+
+    def export_assets_ids(path)
+      assets = MarketAsset.where(market_fee_app: pluck(:appid))
+      assets.in_batches(of: 3000).each_with_index do |relation, index|
+        File.write(Rails.root.join(path, "assets#{index}.ids"), relation.joins(:order_histogram).pluck('order_histograms.item_nameid'))
+      end
+    end
   end
 
   def trading_card_prices

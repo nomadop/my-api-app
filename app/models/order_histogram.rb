@@ -24,12 +24,15 @@ class OrderHistogram < ApplicationRecord
 
     def import_json_file(path)
       json = JSON.parse(File.read(path))
-      json.each_slice(1000) do |slice|
+      json.each_slice(500) do |slice|
         transaction do
-          slice.each do |item|
-                order_histogram = find_by(item_nameid: item['item_nameid'])
-                order_histogram.update(item)
-          end
+          OrderHistogram.import(slice, on_duplicate_key_update: {
+            conflict_target: [:item_nameid],
+            columns: [
+              :highest_buy_order, :lowest_sell_order, :buy_order_graph, :sell_order_graph,
+              :cached_highest_buy, :cached_lowest_buy, :cached_highest_sell, :cached_lowest_sell,
+            ],
+          })
         end
       end
     end
