@@ -207,7 +207,7 @@ class Steam
 
     def handle_game_page(body)
       doc = Nokogiri::HTML(body)
-      purchase_area = doc.search('.game_area_purchase_game').first
+      purchase_area = doc.search('.game_area_purchase_game:not(.demo_above_purchase)').first
       price_text = purchase_area.search('.game_purchase_price').inner_text.strip
       subid_match = purchase_area.search('.btn_addtocart a').first&.attr('href')&.match(/^javascript:addToCart\((?<subid>\d+)\);$/)
       subid = subid_match&.[](:subid)
