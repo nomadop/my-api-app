@@ -147,16 +147,24 @@ class Market
     end
 
     def search_by_query(query, start = 0, count = 10)
-      response = RestClient.get('http://steamcommunity.com/market/search/render/', {
-        params: {
-          query: query,
-          start: start,
-          count: count,
-          search_descriptions: 0,
-          sort_column: 'default',
-          sort_dir: 'desc',
+      option = {
+        method: :get,
+        url: 'https://steamcommunity.com/market/search/render/',
+        headers: {
+          :params => {
+            query: query,
+            start: start,
+            count: count,
+            search_descriptions: 0,
+            sort_column: 'default',
+            sort_dir: 'desc',
+            norender: 1,
+          },
         },
-      })
+        proxy: 'http://localhost:8888/',
+        ssl_ca_file: 'config/cert.pem',
+      }
+      response = RestClient::Request.execute(option)
       JSON.parse(response.body)
     end
 
@@ -506,7 +514,7 @@ class Market
       handle_order_activity(item_nameid, result)
     end
 
-    def request_my_history(start, count, account_id = 1)
+    def request_my_history(start, count, account_id)
       account = Account.find(account_id)
       cookie = account.cookie
       option = {
@@ -540,6 +548,9 @@ class Market
       else
         result
       end
+    rescue Authentication::AccountExpired
+      account.refresh
+      request_my_history(start, count, account_id)
     end
 
     def handle_my_history_result(result, account_id = 1)
