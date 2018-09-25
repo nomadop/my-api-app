@@ -1,7 +1,7 @@
 class TorNewnymJob < ApplicationJob
   queue_as :tor_newnym
 
-  def perform
+  def perform(port)
     JobConcurrence.tor.not_delegated.find_each do |job_concurrence|
       port = TOR.extract_instance(job_concurrence.uuid)
       if port.nil?
