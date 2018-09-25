@@ -35,7 +35,7 @@ class MyListing < ApplicationRecord
   scope :confirming, -> { where(confirming: true) }
 
   delegate :load_order_histogram, :find_sell_balance, :goo_value, :booster_pack?,
-    :market_name, :market_fee_app, :type, to: :market_asset
+    :market_name, :market_fee_app, :type, to: :market_asset, allow_nil: true
   delegate :lowest_sell_order, :lowest_sell_order_exclude_vat, to: :order_histogram
   delegate :name, :booster_creator_cost, :booster_creations_count, to: :booster_creator, allow_nil: true
   delegate :bot_name, to: :account
@@ -82,7 +82,7 @@ class MyListing < ApplicationRecord
     def refresh_order_histogram(account)
       JobConcurrence.start do
         my_listings = account.nil? ? all : belongs(account)
-        my_listings.includes(:market_asset).map { |market_asset| market_asset.load_order_histogram }
+        my_listings.includes(:market_asset).map { |my_listing| my_listing.load_order_histogram }
       end
     end
 
