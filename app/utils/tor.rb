@@ -1,5 +1,4 @@
 class TOR
-  COOKIE_PATH = '/Users/twer/Library/Application Support/TorBrowser-Data/Tor/control_auth_cookie'
   INSTANCE_CONCURRENCE = 3
   @redis = Redis.new(
     host: Rails.configuration.redis['host'],
@@ -40,7 +39,7 @@ class TOR
       end
     end
 
-    def new_nym(port)
+    def new_nym(port, reset_pool = true)
       raise InstanceNotAvailable.new("Tor server on port #{port} is not running") unless instances.include?(port.to_i)
 
       version = redis.incr newnym_key(port)
@@ -50,11 +49,22 @@ class TOR
       password = redis.get password_key(port)
       system("expect -f #{Rails.root.join('lib/tor-newnym.exp')} #{port.to_i + 1} #{password}")
       redis.del newnym_key(port)
-      pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{port}##{n + 1}" })
+      pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{port}##{n + 1}" }) if reset_pool
       log(port, 'new nym finished', :warning)
     rescue Exception => e
       log(port, "new nym error #{e.message}", :error)
       raise e
+    end
+
+    def retry_new_nym(port, option)
+      return nil unless new_nym(port, false)
+      RestClient::Request.execute(option).tap do
+        log(instance, 'retry new nym succeed', :success)
+        pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{port}##{n + 1}" })
+      end
+    rescue RestClient::TooManyRequests, RestClient::Forbidden
+      log(instance, 'retry new nym failed', :warning)
+      retry_new_nym(port, option)
     end
 
     def hash_password(password)
@@ -158,7 +168,8 @@ class TOR
     rescue RestClient::TooManyRequests, RestClient::Forbidden => e
       cost_time = (Time.now - start_time).round(1)
       log(instance, "failed in #{cost_time}s, new nym", :error)
-      new_nym(port)
+      DelegateJob.perform_later('TOR', 'new_nym', port)
+      # new_nym(port)
       raise e
     rescue Exception => e
       release_instance(instance) unless instance.nil?
