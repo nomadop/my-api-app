@@ -105,23 +105,16 @@ class SteamWeb
     end
 
     def more_account_history(account, cursor)
-      param_str = <<~PATH
-        cursor[wallet_txnid]=#{cursor['wallet_txnid']}&
-        cursor[timestamp_newest]=#{cursor['timestamp_newest']}&
-        cursor[balance]=#{cursor['balance']}&
-        cursor[currency]=#{cursor['currency']}&
-        sessionid=#{account.session_id}
-      PATH
-      param_str.gsub!(/\s/, '')
       option = get_option(
-        :get, STORE_HOST, account.cookie,
-        "/account/AjaxLoadMoreHistory/?#{param_str}",
+        :post, STORE_HOST, account.cookie,
+        "/account/AjaxLoadMoreHistory/",
         '/account/history/',
-        headers: {
-          :':authority' => 'store.steampowered.com',
-          :':method' => 'GET',
-          :':path' => "/account/history/?#{param_str}",
-          :':scheme' => 'https',
+        payload: {
+          :'cursor[wallet_txnid]' => "#{cursor['wallet_txnid']}",
+          :'cursor[timestamp_newest]' => "#{cursor['timestamp_newest']}",
+          :'cursor[balance]' => "#{cursor['balance']}",
+          :'cursor[currency]' => "#{cursor['currency']}",
+          :sessionid => "#{account.session_id}",
         }
       )
       RestClient::Request.execute(option)
