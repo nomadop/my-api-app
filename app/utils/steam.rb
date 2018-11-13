@@ -159,11 +159,11 @@ class Steam
         total_text_match = total_text.match(/¥\s+(?<price>\d+(\.\d+)?)/)
         total = total_text_match && total_text_match[:price].to_f * 100
         change_text = row.search('.wht_wallet_change').inner_text.strip
-        change_text_match = change_text.match(/(?<type>[+-])¥\s+(?<price>\d+(\.\d+)?)/)
+        change_text_match = change_text.match(/(?<type>[+-])¥\s+(?<price>\d+(\.\d+)?)$/)
         change = change_text_match && change_text_match[:price].to_f * 100
         change = -change if change_text_match && change_text_match[:type] == '-'
         balance_text = row.search('.wht_wallet_balance').inner_text.strip
-        balance_text_match = balance_text.match(/¥\s+(?<price>\d+(,\d+)*?(\.\d+)?)/)
+        balance_text_match = balance_text.match(/¥\s+(?<price>\d+(,\d+)*?(\.\d+)?)$/)
         balance = balance_text_match && balance_text_match[:price].gsub(',', '').to_f * 100
         {
           account_id: account.id,
