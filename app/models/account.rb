@@ -59,6 +59,11 @@ class Account < ApplicationRecord
     def search(id_or_bot_name)
       id_or_bot_name.is_a?(Integer) ? super(id_or_bot_name) : find_by(bot_name: id_or_bot_name)
     end
+
+    def balances
+      balances = enabled.map {|account| [account.bot_name, Utility.format_price(account.balance)]}
+      Hash[balances.sort]
+    end
   end
 
   def cookie
@@ -178,5 +183,9 @@ class Account < ApplicationRecord
     result = asf('2fa')['Result']
     match = result.match(/二次验证令牌︰ (.{5})$/)
     match.nil? ? raise('2fa failed') : match[1]
+  end
+
+  def balance
+    account_histories.market.first.balance + account_histories.purchase.not_refunded.with_in(2.week).sum(:total)
   end
 end
