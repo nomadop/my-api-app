@@ -27,19 +27,19 @@ function update_chart() {
   const expense_data = markets.filter(item => item.change < 0).reduce(reduce_chart_data, []);
   this.chart.data.datasets[0] = {
     ...common_dataset_option,
-    label: 'Income',
+    label: '收入',
     borderColor: 'rgba(105, 142, 67, 1)',
     data: income_data,
   };
   this.chart.data.datasets[1] = {
     ...common_dataset_option,
-    label: 'Total',
+    label: '合计',
     borderColor: 'rgba(104, 138, 185, 1)',
     data: total_data,
   };
   this.chart.data.datasets[2] = {
     ...common_dataset_option,
-    label: 'Expense',
+    label: '支出',
     borderColor: 'rgba(229, 57, 53, 1)',
     data: expense_data,
   };
@@ -137,6 +137,18 @@ export default {
         scales: {
           xAxes: [{
             type: 'time',
+            ticks: {
+              callback: (value, index, data) => {
+                const major = _.get(data, `[${index}].major`, false);
+                const date = new Date(_.get(data, `[${index}].value`, 0));
+                return major ? `${date.getMonth() + 1}-${date.getDate()}` : '';
+              },
+            }
+          }],
+          yAxes: [{
+            ticks: {
+              callback: value => `￥${(value / 100).toFixed(2)}`,
+            }
           }],
         }
       }
