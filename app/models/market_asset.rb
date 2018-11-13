@@ -206,6 +206,7 @@ class MarketAsset < ApplicationRecord
 
   def quick_order(buy_booster_pack = false)
     return if !buy_booster_pack && booster_pack?
+    return if goo_value < 10
     # return if active_buy_orders.reload.exists?
     Market.load_order_histogram(item_nameid)
     refresh_goo_value unless booster_pack?
