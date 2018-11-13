@@ -544,7 +544,7 @@ class Market
       result = JSON.parse(response.body)
       if result['total_count'].nil?
         account.refresh
-        request_my_history(start, count)
+        request_my_history(start, count, account_id)
       else
         result
       end

@@ -1,8 +1,7 @@
 class LoadMyHistoriesJob < ApplicationJob
   queue_as :load_my_history
 
-  def perform(start, count, account_id = 1, incremental = true)
-    @account_id = account_id
+  def perform(start, count, account_id, incremental = true)
     result = Market.request_my_history(start, count, account_id)
     return clean_job_concurrence unless result['success']
 
@@ -10,12 +9,7 @@ class LoadMyHistoriesJob < ApplicationJob
     return clean_job_concurrence if incremental && import_result&.ids.blank?
 
     tail = start + count
-    LoadMyHistoriesJob.perform_later(tail, count, account_id) if tail < result['total_count']
+    LoadMyHistoriesJob.perform_later(tail, count, account_id, incremental) if tail < result['total_count']
     clean_job_concurrence
-  end
-
-  rescue_from(Authentication::AccountExpired) do
-    Account.find(@account_id).refresh
-    retry_job
   end
 end
