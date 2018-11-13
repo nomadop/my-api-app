@@ -17,6 +17,12 @@ class OrderHistogramsController < ApplicationController
 
   def history
     @item_nameid = params[:id]
-    render json: OrderHistogramHistory.where(item_nameid: @item_nameid).where.not(created_at: nil).order(:created_at).as_json
+    render json: OrderHistogramHistory
+      .where(item_nameid: @item_nameid)
+      .where.not(created_at: nil)
+      .order(:created_at)
+      .as_json(except: :id)
+  end
+
   end
 end
