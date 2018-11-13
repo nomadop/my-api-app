@@ -157,14 +157,14 @@ class BuyOrder < ApplicationRecord
       Authentication.refresh
       concurrence_uuid = JobConcurrence.start { Market.scan_my_histories }
       JobConcurrence.wait_for(concurrence_uuid)
-      MarketAsset.with_my_buy_histories(10.minute).quick_order_later
+      MarketAsset.with_my_buy_histories(15.minute).quick_order_later
     end
 
     def rebuy_purchased_by_step(step)
       case step
         when 1 then Account.refresh_all(false)
         when 2 then Account.delegate_all([{ class_name: :Market, method: :scan_my_histories }], false)
-        when 3 then MarketAsset.with_my_buy_histories(10.minute).quick_order_later
+        when 3 then MarketAsset.with_my_buy_histories(15.minute).quick_order_later
         else return
       end
     end
@@ -179,10 +179,7 @@ class BuyOrder < ApplicationRecord
     end
 
     def rebuy_cancelable
-      cancelable = BuyOrder.cancelable.includes(:market_asset, :order_histogram).reject do |buy_order|
-        buy_order.belongs_to_owner? && buy_order.expensive_than_ppg?
-      end
-      cancelable.map(&:rebuy_later)
+      BuyOrder.cancelable.includes(:market_asset, :order_histogram).map(&:rebuy_later)
     end
 
     def rebuy_cancelable_by_step(step)
