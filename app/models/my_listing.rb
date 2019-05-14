@@ -75,8 +75,8 @@ class MyListing < ApplicationRecord
       reload_confirming(account)
     end
 
-    def reload_all_confirming!
-      Account.delegate_all({ class_name: :MyListing, method: :reload_confirming! })
+    def reload_all_confirming!(wait = true)
+      Account.delegate_all({ class_name: :MyListing, method: :reload_confirming! }, wait)
     end
 
     def refresh_order_histogram(account)
