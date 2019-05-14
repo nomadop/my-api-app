@@ -136,7 +136,7 @@ class BuyOrder < ApplicationRecord
     end
 
     def export_active
-      active.in_batches(of: 3000).each_with_index do |relation, index|
+      active.in_batches(of: 5000).each_with_index do |relation, index|
         ids = relation.joins(:order_histogram).pluck('order_histograms.item_nameid').uniq.to_json
         File.write(Rails.root.join('tmp', "active#{index}.ids"), ids)
       end
@@ -273,7 +273,7 @@ class BuyOrder < ApplicationRecord
   end
 
   def rebuy_later
-    ApplicationJob.perform_unique(CancelBuyorderJob, id, true)
+    CancelBuyorderJob.perform_later(id, true)
   end
 
   def auto_rebuy
