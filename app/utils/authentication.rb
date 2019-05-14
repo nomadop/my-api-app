@@ -87,6 +87,20 @@ class Authentication
         account = Account.find_or_create_by(account_id: result['transfer_parameters']['steamid'])
         account.update_cookie(response)
         account
+      elsif result['captcha_needed']
+        puts "https://store.steampowered.com/login/rendercaptcha/?gid=#{result['captcha_gid']}"
+        puts 'input captcha text:'
+        captcha_text = gets.chomp
+        do_login(username, password, rsa_timestamp, captchagid: result['captcha_gid'], captcha_text: captcha_text)
+      elsif result['requires_twofactor']
+        acc = Account.find_by(bot_name: username)
+        puts 'input two factory code:'
+        two_factory_code = acc.nil? ? gets.chomp : acc.fa_code
+        do_login(username, password, rsa_timestamp, twofactorcode: two_factory_code)
+      elsif result['emailauth_needed']
+        puts 'input email auth code:'
+        email_auth = gets.chomp
+        do_login(username, password, rsa_timestamp, emailsteamid: result['emailsteamid'], emailauth: email_auth)
       else
         result
       end
@@ -106,17 +120,7 @@ class Authentication
       JAVASCRIPT
 
       rsa_timestamp = rsa_key['timestamp']
-      result = do_login(username, encrypted_password, rsa_timestamp)
-      account = if result['requires_twofactor']
-        acc = Account.find_by(bot_name: username)
-        puts 'input two factory code:'
-        two_factory_code = acc.nil? ? gets.chomp : acc.fa_code
-        do_login(username, encrypted_password, rsa_timestamp, twofactorcode: two_factory_code)
-      elsif result['emailauth_needed']
-        puts 'input email auth code:'
-        email_auth = gets.chomp
-        do_login(username, encrypted_password, rsa_timestamp, emailsteamid: result['emailsteamid'], emailauth: email_auth)
-      end
+      account = do_login(username, encrypted_password, rsa_timestamp)
       return unless account.is_a?(Account)
       enabled ? account.enabled! : account.disabled!
     end
