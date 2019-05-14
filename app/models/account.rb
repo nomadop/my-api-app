@@ -181,11 +181,13 @@ class Account < ApplicationRecord
   def fa_code
     raise 'no bot name' if bot_name.nil?
     result = asf('2fa')['Result']
-    match = result.match(/二次验证令牌︰ (.{5})$/)
+    match = result.match(/2FA Token: (.{5})$/)
     match.nil? ? raise('2fa failed') : match[1]
   end
 
   def balance
-    account_histories.market.first.balance + account_histories.purchase.not_refunded.with_in(2.week).sum(:total)
+    account_histories.market.first.balance +
+      account_histories.purchase.not_refunded.with_in(2.week).sum(:total) +
+      account_histories.unconfirmed.refund.sum(:total)
   end
 end
