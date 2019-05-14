@@ -5,7 +5,7 @@ class MarketAsset < ApplicationRecord
   self.inheritance_column = nil
   self.primary_key = :classid
 
-  DEFAULT_PPG_VALUE = 0.3
+  DEFAULT_PPG_VALUE = 0.1
 
   belongs_to :order_owner, class_name: 'Account'
   has_one :steam_app, primary_key: :market_fee_app, foreign_key: :steam_appid
@@ -213,7 +213,8 @@ class MarketAsset < ApplicationRecord
     goo_value = booster_pack? ? trading_cards.take.goo_value * 3 : self.goo_value
     highest_buy_order_graph = order_histogram.highest_buy_order_graph
     lowest_sell_order_graph = order_histogram.lowest_sell_order_graph
-    lowest_price = [(goo_value * 0.1).ceil, 3].max
+    lowest_price = (goo_value * 0.1).ceil
+    return if lowest_price < 3
     highest_price = (goo_value * DEFAULT_PPG_VALUE).floor
     highest_buy_order_graph_price = highest_buy_order_graph.nil? ? lowest_price : highest_buy_order_graph.price + 1
     highest_buy_order_graph_price = highest_price if 1.0 * highest_buy_order_graph_price / goo_value > DEFAULT_PPG_VALUE
