@@ -103,10 +103,14 @@ class InventoryAsset < ApplicationRecord
 
   def sell(price, amount = self.amount.to_i)
     response = Inventory.sell(assetid, price, amount, account)
-    if JSON.parse(response.body)['success']
+    result = JSON.parse(response.body)
+    if result['success']
       remain_amount = self.amount.to_i - amount
       remain_amount > 0 ? update(amount: remain_amount) : destroy
+    else
+      puts result['message']
     end
+    result
   end
 
   def sell_by_ppg(ppg)
@@ -173,7 +177,9 @@ class InventoryAsset < ApplicationRecord
     response = RestClient::Request.execute(option)
     puts "#{Time.now}: grind #{account.bot_name}'s `#{market_hash_name}(#{type})' into goo for #{market_asset.goo_value}."
     account.update_cookie(response)
-    destroy if JSON.parse(response.body)['success'] == 1
+    result = JSON.parse(response.body)
+    destroy if result['success'] == 1
+    result
   rescue RestClient::Forbidden => e
     account.refresh
     raise e
@@ -245,8 +251,10 @@ class InventoryAsset < ApplicationRecord
   end
 
   def auto_sell_and_grind
-    Market.load_order_histogram(market_asset.item_nameid, false)
-    market_asset.refresh_goo_value(false)
+    if marketable? || order_histogram.nil? || order_histogram.updated_at < 3.hours.ago
+      Market.load_order_histogram(market_asset.item_nameid, false)
+      market_asset.refresh_goo_value(false)
+    end
     ppg = reload.price_per_goo_exclude_vat
     raise "invalid price per goo for `#{market_hash_name}'" if ppg.nil?
     return quick_sell if marketable? && (ppg > 1 || (booster_pack? && booster_creations.exists?))
