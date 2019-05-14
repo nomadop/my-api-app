@@ -23,6 +23,7 @@ class AccountHistory < ApplicationRecord
   scope :payment, ->(payment) { where(payment: payment) }
   scope :refundable, -> { purchase.with_in(2.weeks) }
   scope :refunded, -> { where(refunded: true) }
+  scope :unconfirmed, -> { where(balance: nil) }
   scope :not_refunded, -> { where(refunded: false) }
   scope :group_by_month, -> { group('CAST(date_trunc(\'month\', date) AS DATE)') }
 
