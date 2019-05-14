@@ -28,6 +28,7 @@ class BoosterCreator < ApplicationRecord
   scope :unavailable, -> { where(unavailable: true) }
   scope :available, -> { where(unavailable: false) }
   scope :with_inventory_assets, -> { joins(:inventory_assets).distinct }
+  scope :with_my_listings, -> { joins(:listing_trading_cards).distinct }
 
   scope :ppg_group, -> do
     trading_cards_select_sql = <<-SQL
@@ -117,6 +118,10 @@ class BoosterCreator < ApplicationRecord
         .each(&:refresh_price_later)
     end
 
+    def refresh_creatable(ppg: 0.6)
+      creatable(ppg: ppg).refresh_price
+    end
+
     def scan_market
       find_each(&:scan_market)
     end
@@ -148,11 +153,22 @@ class BoosterCreator < ApplicationRecord
       MarketAsset.where(market_fee_app: pluck(:appid)).find_each(&:refresh)
     end
 
-    def export_assets_ids(path)
-      assets = MarketAsset.where(market_fee_app: pluck(:appid))
-      assets.in_batches(of: 3000).each_with_index do |relation, index|
-        File.write(Rails.root.join(path, "assets#{index}.ids"), relation.joins(:order_histogram).pluck('order_histograms.item_nameid'))
+    def export_assets_ids(assets)
+      assets.in_batches(of: 5000).each_with_index do |relation, index|
+        File.write(Rails.root.join('tmp', "assets#{index}.ids"), relation.joins(:order_histogram).pluck('order_histograms.item_nameid'))
       end
+    end
+
+    def export_all_assets_ids
+      assets = MarketAsset.where(market_fee_app: pluck(:appid))
+      export_assets_ids(assets)
+    end
+
+    def export_pack_assets_ids
+      assets = MarketAsset
+        .where(market_fee_app: pluck(:appid))
+        .where('(type like ?) OR (type = ?)', '%Trading Card', 'Booster Pack')
+      export_assets_ids(assets)
     end
   end
 
