@@ -58,6 +58,10 @@ class Utility
       ActionController::Base.helpers.number_to_currency(price / 100.0, locale: :cn)
     end
 
+    def currency_to_number(currency)
+      currency.to_s.gsub(/[¥$,.]/,'').to_i
+    end
+
     def parse_int(number, default = nil)
       number.nil? ? default : number.to_i
     end
