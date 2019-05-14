@@ -7,10 +7,14 @@ class AutoSellAndGrindJob < ApplicationJob
   NOT_EXIST_MESSAGE = '指定的物品不再存在于您的库存，或者不允许在社区市场交易该物品。'
   EXPIRED_MESSAGE = '您选择的项目已过期或已不存在。'
   NETWORK_ERROR_MESSAGE = '与网络连接时出现错误。请稍后再试。'
+  RETRY_MESSAGE = '您的物品在上架时出现问题。请刷新页面并重试。'
 
   def perform(id)
     @asset = InventoryAsset.find(id)
-    @asset.auto_sell_and_grind
+    result = @asset.auto_sell_and_grind
+    if result&.[]('message') === RETRY_MESSAGE
+      retry_job
+    end
   end
 
   def handle_error(exception)
