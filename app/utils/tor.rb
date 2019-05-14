@@ -130,7 +130,7 @@ class TOR
     end
 
     def new_instance(latest_port = nil)
-      latest_port ||= instances.max || 9000
+      latest_port ||= instances.max || 19000
       ports = { socks: latest_port + 10, control: latest_port + 11, dns: latest_port + 12 }
       data_dir = "tmp/tor/#{ports[:socks]}"
       Dir.mkdir('tmp/tor') unless Dir.exists?('tmp/tor')
@@ -141,6 +141,10 @@ class TOR
       raise error[0] unless error.nil?
       redis.set(password_key(ports[:socks]), password)
       pool_push(INSTANCE_CONCURRENCE.times.map { |n| "#{ports[:socks]}##{n + 1}" })
+    end
+
+    def new_instances(number)
+      number.times { new_instance }
     end
 
     def kill_instance(port = nil)
@@ -168,12 +172,16 @@ class TOR
     rescue RestClient::TooManyRequests, RestClient::Forbidden => e
       cost_time = (Time.now - start_time).round(1)
       log(instance, "failed in #{cost_time}s, new nym", :error)
+      puts e
       DelegateJob.perform_later('TOR', 'new_nym', port)
       # new_nym(port)
-      raise e
+      # raise e
+      request(option)
     rescue Exception => e
       release_instance(instance) unless instance.nil?
-      raise e
+      puts e
+      # raise e
+      request(option)
     end
   end
 end
